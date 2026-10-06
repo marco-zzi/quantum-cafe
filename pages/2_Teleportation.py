@@ -1,6 +1,6 @@
 import streamlit as st
-import time
 import numpy as np
+import random
 
 st.set_page_config(page_title="Quantum Teleportation Protocol", layout="wide")
 
@@ -68,7 +68,7 @@ col_main, col_info = st.columns([1.3, 1])
 
 with col_main:
     # STEP 1: State Preparation
-    st.markdown("### Step 1: Alice Prepares an Arbitrary State $\vert{}\psi\\rangle$")
+    st.markdown(r"### Step 1: Alice Prepares an Arbitrary State $\vert{}\psi\rangle$")
     theta = st.slider(r"Polar Angle ($\theta$)", 0.0, 180.0, 60.0, key="t_angle")
     phi = st.slider(r"Phase Angle ($\varphi$)", 0.0, 360.0, 0.0, key="p_angle")
     
@@ -92,7 +92,6 @@ with col_main:
         
         if st.session_state.bell_measured is None:
             if st.button("🎲 Measure Alice's Qubits"):
-                # Probabilistic sampling across the 4 Bell basis states
                 bell_outcomes = [
                     (r"|\Phi^+\rangle", "00", "Identity (I)"),
                     (r"|\Psi^+\rangle", "01", "Pauli-X"),
@@ -146,18 +145,20 @@ with col_info:
     if st.session_state.step == 1:
         st.warning("Awaiting state preparation...")
     elif st.session_state.step == 2:
-        st.info("State locked. Entangled $\vert{}\Phi^+\rangle$ pair shared between VU Physics and MKIC.")
+        st.info(r"State locked. Entangled $\vert{}\Phi^+\rangle$ pair shared between VU Physics and MKIC.")
     elif st.session_state.step >= 3:
         state_str, correct_bits, correct_gate = st.session_state.bell_measured
         st.markdown("#### Live State Telemetry")
-        st.markdown(f"- **Alice's Input State:** $\vert{}\psi\\rangle = {alpha:.2f}\vert{}0\\rangle + {beta:.2f}\vert{}1\\rangle$")
+        st.markdown(fr"- **Alice's Input State:** $\vert{}\psi\rangle = {alpha:.2f}\vert{}0\rangle + {beta:.2f}\vert{}1\rangle$")
         st.markdown(f"- **Bell Basis Collapse:** {state_str}")
         st.markdown(f"- **Transmitted Channel Bits:** `{correct_bits}`")
         st.markdown(f"- **Bob's Applied Unitary:** {correct_gate}")
         
         if st.session_state.step == 4:
             st.success(
-                f"**Reconstructed Output at Bob's Station:**\n\n"
-                f"$\vert{}\\psi\\rangle_{\\text{{Bob}}} = {alpha:.2f}\vert{}0\\rangle + e^{{i{phi:.0f}^\\circ}}{beta:.2f}\vert{}1\\rangle$\n\n"
-                f"**Fidelity:** 100%"
+                fr"**Reconstructed Output at Bob's Station:**"
+                "\n\n"
+                fr"$\vert{}\psi\rangle_{{\text{{Bob}}}} = {alpha:.2f}\vert{}0\rangle + e^{{i{phi:.0f}^\circ}}{beta:.2f}\vert{}1\rangle$"
+                "\n\n"
+                fr"**Fidelity:** 100%"
             )
