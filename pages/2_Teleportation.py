@@ -93,10 +93,10 @@ with col_main:
         if st.session_state.bell_measured is None:
             if st.button("🎲 Measure Alice's Qubits"):
                 bell_outcomes = [
-                    (r"|\Phi^+\rangle", "00", "Identity (I)"),
-                    (r"|\Psi^+\rangle", "01", "Pauli-X"),
-                    (r"|\Phi^-\rangle", "10", "Pauli-Z"),
-                    (r"|\Psi^-\rangle", "11", "Pauli-Z then Pauli-X")
+                    (r"$|\Phi^+\rangle$", "00", "Identity (I)"),
+                    (r"$|\Psi^+\rangle$", "01", "Pauli-X"),
+                    (r"$|\Phi^-\rangle$", "10", "Pauli-Z"),
+                    (r"$|\Psi^-\rangle$", "11", "Pauli-Z then Pauli-X")
                 ]
                 st.session_state.bell_measured = random.choice(bell_outcomes)
                 st.session_state.step = 3
@@ -108,7 +108,7 @@ with col_main:
     # STEP 3: Exercise - User selects classical bits and Bob's operation
     if st.session_state.step >= 3:
         st.markdown("---")
-        st.markdown("### Step 3: Exercise — Select Classical Bits & Bob's Correction")
+        st.markdown("### Step 3: Select Classical Bits & Bob's Correction")
         
         state_str, correct_bits, correct_gate = st.session_state.bell_measured
         
@@ -134,7 +134,7 @@ with col_main:
                 )
 
     if st.session_state.step >= 4:
-        if st.button("🔄 Reset Exercise"):
+        if st.button("🔄 Reset Experiment"):
             st.session_state.step = 1
             st.session_state.bell_measured = None
             st.rerun()
