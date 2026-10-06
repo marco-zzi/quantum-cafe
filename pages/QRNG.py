@@ -386,7 +386,7 @@ rng_tavern_html = f"""
 </head>
 <body>
 
-  <p class="app-subtitle">Drag coins horizontally to alter superposition states, then measure to generate a random byte.</p>
+  <p class="app-title">Drag coins horizontally to alter superposition states, then measure to generate a random byte.</p>
 
   <div class="tavern-stage">
     <div class="table-overlay">
@@ -513,4 +513,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=1500)
+components.html(rng_tavern_html, height=1200)
