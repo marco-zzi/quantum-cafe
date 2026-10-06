@@ -117,22 +117,24 @@ rng_tavern_html = f"""
     .tavern-stage {{
       position: relative;
       width: 100%;
+      aspect-ratio: 16 / 9;
       margin: 0 auto;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 15px 35px rgba(0,0,0,0.9);
       background-image: url('data:image/jpeg;base64,{table_desktop_b64}');
-      background-size: 100% 100%;
+      background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
     }}
 
     .table-overlay {{
-      position: relative;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       width: 90%;
       max-width: 720px;
-      margin: 0 auto;
-      padding: 32px 0;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
@@ -241,24 +243,27 @@ rng_tavern_html = f"""
     .tavern-stage {{
       position: relative;
       width: 100%;
+      aspect-ratio: 9 / 16;
       margin: 0 auto;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 10px 25px rgba(0,0,0,0.9);
       background-image: url('data:image/jpeg;base64,{table_mobile_b64}');
-      background-size: 100% 100%;
+      background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
     }}
 
     .table-overlay {{
-      position: relative;
-      width: 92%;
-      margin: 0 auto;
-      padding: 20px 0;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 85%;
+      max-width: 260px;
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
+      grid-template-columns: 1fr;
+      gap: 4px;
       justify-items: center;
     }}
 
@@ -266,41 +271,44 @@ rng_tavern_html = f"""
       background: rgba(40, 22, 10, 0.78);
       border: 1px solid #8b5a2b;
       backdrop-filter: blur(4px);
-      border-radius: 8px;
-      padding: 6px;
+      border-radius: 6px;
+      padding: 3px 8px;
       width: 100%;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
     }}
 
     .card-header {{
-      font-size: 12px;
+      font-size: 11px;
       color: #ffd875;
       font-weight: bold;
     }}
 
     .coin-slot {{
-      --coin-radius: 28px;
-      width: 56px;
-      height: 56px;
-      margin: 4px auto;
+      --coin-radius: 18px;
+      width: 36px;
+      height: 36px;
+      margin: 0;
       perspective: 600px;
       cursor: ew-resize;
       touch-action: none;
     }}
 
-    .face-front {{ transform: translateZ(3px); }}
-    .face-back {{ transform: rotateY(180deg) translateZ(3px); }}
+    .face-front {{ transform: translateZ(2px); }}
+    .face-back {{ transform: rotateY(180deg) translateZ(2px); }}
 
     .edge-facet {{
-      height: 6px;
+      height: 4px;
       width: calc(var(--coin-radius) * 0.3978);
       left: calc(50% - (var(--coin-radius) * 0.1989));
-      top: calc(50% - 3px);
+      top: calc(50% - 2px);
     }}
 
     .stats {{
       font-size: 11px;
-      margin-top: 2px;
+      margin-top: 0;
       color: #fce8bd;
       font-weight: bold;
     }}
@@ -469,4 +477,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=1000)
+components.html(rng_tavern_html, height=1200)
