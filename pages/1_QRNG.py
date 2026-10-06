@@ -6,12 +6,12 @@ st.set_page_config(page_title="Quantum Café - QRNG", layout="wide")
 
 # Custom CSS for clean layout
 st.markdown("""
-<style>
-    header { visibility: hidden; }
-    footer { visibility: hidden; }
-    .main-title { font-size: 2.2rem; font-weight: 700; color: #1E3A8A; }
-    .sub-title { font-size: 1.1rem; color: #4B5563; margin-bottom: 1.5rem; }
-</style>
+    <style>
+    [data-testid="stHeader"] { background-color: rgba(0,0,0,0) !important; }
+    [data-testid="stToolbar"] { display: none !important; }
+    #MainMenu { visibility: hidden !important; }
+    footer, [data-testid="stFooter"], [data-testid="stStatusWidget"] { display: none !important; }
+    </style>
 """, unsafe_allow_html=True)
 
 def img_to_b64(file_path):
