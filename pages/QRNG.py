@@ -38,7 +38,6 @@ rng_tavern_html = f"""
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-  /* GLOBAL BASE STYLES (No layout rules) */
   * {{
     box-sizing: border-box;
   }}
@@ -118,6 +117,7 @@ rng_tavern_html = f"""
     .tavern-stage {{
       position: relative;
       width: 100%;
+      max-height: 560px;
       aspect-ratio: 16 / 9;
       margin: 0 auto;
       border-radius: 12px;
@@ -128,7 +128,6 @@ rng_tavern_html = f"""
       background-position: center;
     }}
 
-    /* Centered both vertically and horizontally */
     .table-overlay {{
       position: absolute;
       top: 50%;
@@ -188,7 +187,7 @@ rng_tavern_html = f"""
 
     .ui-panel {{
       position: relative;
-      margin: 18px auto 0 auto;
+      margin: 16px auto 0 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -310,7 +309,6 @@ rng_tavern_html = f"""
       font-weight: bold;
     }}
 
-    /* Measure panel placed cleanly under the game table */
     .ui-panel {{
       position: relative;
       margin: 12px auto 0 auto;
@@ -350,12 +348,10 @@ rng_tavern_html = f"""
 
   <h1 class="app-title">🎲 Quantum Random Number Generator</h1>
 
-  <!-- Game Table Stage -->
   <div class="tavern-stage">
     <div class="table-overlay" id="tableSurface"></div>
   </div>
 
-  <!-- Measure UI Panel (External to table stage) -->
   <div class="ui-panel">
     <button class="measure-btn" onclick="measureByte()">⚡ Measure</button>
     <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
@@ -477,4 +473,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=900)
+components.html(rng_tavern_html, height=1000)
