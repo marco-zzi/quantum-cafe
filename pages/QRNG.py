@@ -185,7 +185,7 @@ rng_tavern_html = f"""
 </head>
 <body>
 
-  <h1 class="app-title">🎲 Quantum Random Number Generator</h1>
+  <!--<h1 class="app-title">🎲 Quantum Random Number Generator</h1>-->
 
   <div class="tavern-stage">
     <div class="table-overlay" id="tableSurface"></div>
