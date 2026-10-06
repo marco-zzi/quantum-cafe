@@ -9,11 +9,35 @@ st.set_page_config(
 
 # Custom CSS for clean layout
 st.markdown("""
-<style>
-    footer { visibility: hidden; }
-    .main-title { font-size: 2.2rem; font-weight: 700; color: #1E3A8A; }
-    .sub-title { font-size: 1.1rem; color: #4B5563; margin-bottom: 1.5rem; }
-</style>
+    <style>
+    /* Make top header background transparent */
+    [data-testid="stHeader"] {
+        background-color: rgba(0, 0, 0, 0) !important;
+    }
+
+    /* Hide top-right action buttons (Deploy, main menu) only */
+    [data-testid="stToolbarActions"],
+    .stAppDeployButton,
+    #MainMenu {
+        display: none !important;
+    }
+
+    /* Hide footer and 'Manage app' bottom-right widget */
+    footer,
+    [data-testid="stFooter"],
+    [data-testid="stStatusWidget"] {
+        display: none !important;
+    }
+
+    /* Explicitly preserve sidebar toggle arrow and page navigation controls */
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="stHeaderNav"],
+    [data-testid="stSidebarNav"] {
+        display: flex !important;
+        visibility: visible !important;
+        z-index: 1000000 !important;
+    }
+    </style>
 """, unsafe_allow_html=True)
 
 st.markdown('<div class="main-title">☕ Quantum Café</div>', unsafe_allow_html=True)
