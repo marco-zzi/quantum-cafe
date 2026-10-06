@@ -4,31 +4,13 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Quantum Café - QRNG", layout="wide")
 
-# CSS to remove header actions, footers, and 'Manage App' badges while preserving sidebar toggle
+# Custom CSS for clean layout
 st.markdown("""
-    <style>
-    /* 1. Make top header transparent and hide right-side toolbar/menu */
-    [data-testid="stHeader"] {
-        background-color: rgba(0, 0, 0, 0) !important;
-    }
-    [data-testid="stToolbar"] {
-        display: none !important;
-    }
-    #MainMenu {
-        visibility: hidden !important;
-    }
-
-    /* 2. Hide default Streamlit footer and Cloud 'Manage App' status badge */
-    footer {
-        display: none !important;
-    }
-    [data-testid="stFooter"] {
-        display: none !important;
-    }
-    [data-testid="stStatusWidget"] {
-        display: none !important;
-    }
-    </style>
+<style>
+    footer { visibility: hidden; }
+    .main-title { font-size: 2.2rem; font-weight: 700; color: #1E3A8A; }
+    .sub-title { font-size: 1.1rem; color: #4B5563; margin-bottom: 1.5rem; }
+</style>
 """, unsafe_allow_html=True)
 
 def img_to_b64(file_path):
