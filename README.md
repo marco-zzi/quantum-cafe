@@ -1,4 +1,4 @@
-# Vilnius Quantum Café: Interactive Apps
+# Quantum Café: Interactive Apps
 
 Welcome to the open-source repository for the **Quantum Café** interactive visualization suite, developed for Vilnius University (VU) and the Lithuanian Quantum Technologies Association (LKTA).
 
