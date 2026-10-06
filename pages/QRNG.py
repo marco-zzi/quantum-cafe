@@ -4,12 +4,12 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Quantum Café - QRNG", layout="wide")
 
-# Reduce Streamlit default padding
+# Streamlit container layout overrides
 st.markdown("""
     <style>
         .block-container {
             padding-top: 0.5rem !important;
-            padding-bottom: 0rem !important;
+            padding-bottom: 0.5rem !important;
             padding-left: 0.5rem !important;
             padding-right: 0.5rem !important;
         }
@@ -52,28 +52,30 @@ rng_tavern_html = f"""
     color: #f3e5ab;
     text-align: center;
     overflow-x: hidden;
+    overflow-y: auto;
   }}
 
   .app-title {{
-    font-size: 22px;
-    margin: 4px 0 6px 0;
+    font-size: 24px;
+    margin: 6px 0 8px 0;
     color: #f3e5ab;
     text-shadow: 0 2px 4px rgba(0,0,0,0.8);
   }}
 
   .app-subtitle {{
-    font-size: 12px;
+    font-size: 13px;
     font-style: italic;
     color: #b8975a;
-    margin: 6px 0 0 0;
+    margin: 8px 0 12px 0;
   }}
   
-  /* 2.5D Table Stage - Fluid width scaling for desktop */
+  /* 2.5D Table Stage with Container Query Scaling for Desktop */
   .tavern-stage {{
+    container-type: inline-size;
     position: relative;
     width: 100%;
-    max-width: 900px;
-    aspect-ratio: 860 / 500;
+    max-width: 1100px;
+    aspect-ratio: 860 / 520;
     margin: 0 auto;
     border-radius: 12px;
     overflow: hidden;
@@ -86,29 +88,36 @@ rng_tavern_html = f"""
   .table-overlay {{
     position: absolute;
     top: 13%;
-    left: 9%;
-    width: 82%;
+    left: 7%;
+    width: 86%;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
+    gap: 1.8cqw;
     justify-items: center;
   }}
 
+  /* Scaling cards, text, and coin slots relative to container width (cqw) */
   .coin-card {{
-    background: rgba(15, 8, 4, 0.75);
+    background: rgba(15, 8, 4, 0.78);
     border: 1px solid #8b5a2b;
     backdrop-filter: blur(4px);
     border-radius: 10px;
-    padding: 6px;
+    padding: 0.8cqw;
     width: 100%;
-    max-width: 125px;
+    max-width: 18cqw;
     box-shadow: 0 8px 16px rgba(0,0,0,0.8);
   }}
 
+  .card-header {{
+    font-size: 1.3cqw;
+    color: #d4af37;
+    font-weight: bold;
+  }}
+
   .coin-slot {{
-    width: 68px;
-    height: 68px;
-    margin: 4px auto;
+    width: 9.2cqw;
+    height: 9.2cqw;
+    margin: 0.6cqw auto;
     perspective: 600px;
     cursor: ew-resize;
     touch-action: none;
@@ -124,8 +133,8 @@ rng_tavern_html = f"""
 
   .face {{
     position: absolute;
-    width: 68px;
-    height: 68px;
+    width: 100%;
+    height: 100%;
     border-radius: 50%;
     backface-visibility: hidden;
     background-size: cover;
@@ -135,12 +144,12 @@ rng_tavern_html = f"""
 
   .face-front {{
     background-image: url('data:image/png;base64,{front_b64}');
-    transform: translateZ(5px);
+    transform: translateZ(0.4cqw);
   }}
 
   .face-back {{
     background-image: url('data:image/png;base64,{back_b64}');
-    transform: rotateY(180deg) translateZ(5px);
+    transform: rotateY(180deg) translateZ(0.4cqw);
   }}
 
   .coin-edge-3d {{
@@ -152,15 +161,17 @@ rng_tavern_html = f"""
 
   .edge-facet {{
     position: absolute;
-    height: 10px;
+    height: 0.8cqw;
     background-image: url('data:image/png;base64,{edge_b64}');
+    background-size: cover;
+    background-position: center;
     background-repeat: no-repeat;
     transform-style: preserve-3d;
   }}
 
   .stats {{
-    font-size: 11px;
-    margin-top: 2px;
+    font-size: 1.2cqw;
+    margin-top: 0.3cqw;
     color: #e6c687;
     font-weight: bold;
   }}
@@ -173,7 +184,7 @@ rng_tavern_html = f"""
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
+    gap: 0.6cqw;
     width: 90%;
   }}
 
@@ -181,8 +192,8 @@ rng_tavern_html = f"""
     background: linear-gradient(to bottom, #d4af37, #8a5a12);
     color: #120a05;
     border: 1px solid #ffe89c;
-    padding: 8px 24px;
-    font-size: 15px;
+    padding: 0.8cqw 2.4cqw;
+    font-size: 1.6cqw;
     font-weight: bold;
     border-radius: 8px;
     cursor: pointer;
@@ -196,55 +207,80 @@ rng_tavern_html = f"""
   }}
 
   .result-box {{
-    font-size: 15px;
+    font-size: 1.7cqw;
     letter-spacing: 1px;
     color: #00ffcc;
     font-family: monospace;
     background: rgba(0,0,0,0.85);
-    padding: 4px 12px;
+    padding: 0.4cqw 1.2cqw;
     border-radius: 6px;
     border: 1px solid #00ffcc44;
   }}
 
-  /* Mobile Adaptation Rules */
+  /* Mobile Adaptation Rules (< 680px) */
   @media (max-width: 680px) {{
     .app-title {{
-      display: none; /* Hide title on mobile */
+      display: none !important; /* Hide title on mobile */
     }}
+
     .tavern-stage {{
       aspect-ratio: auto;
-      height: 510px; /* Fixed height accommodating 4 rows + UI panel */
+      height: 640px;
       width: 100%;
     }}
+
     .table-overlay {{
-      top: 15px;
-      left: 5%;
-      width: 90%;
+      top: 15px; /* Upper qubits visible without cut-off */
+      left: 4%;
+      width: 92%;
       grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }}
+
+    .coin-card {{
+      max-width: 100%;
+      padding: 6px;
+    }}
+
+    .card-header {{
+      font-size: 12px;
+    }}
+
+    .coin-slot {{
+      width: 62px;
+      height: 62px;
+      margin: 4px auto;
+    }}
+
+    .face-front {{ transform: translateZ(3px); }}
+    .face-back {{ transform: rotateY(180deg) translateZ(3px); }}
+
+    .edge-facet {{
+      height: 6px;
+    }}
+
+    .stats {{
+      font-size: 12px;
+    }}
+
+    .ui-panel {{
+      bottom: 12px;
       gap: 6px;
     }}
-    .coin-card {{
-      max-width: 110px;
-      padding: 3px;
-    }}
-    .coin-slot, .face {{
-      width: 52px;
-      height: 52px;
-    }}
-    .ui-panel {{
-      bottom: 10px;
-    }}
+
     .measure-btn {{
-      padding: 6px 18px;
-      font-size: 13px;
+      padding: 8px 20px;
+      font-size: 14px;
     }}
+
     .result-box {{
-      font-size: 12px;
-      padding: 3px 8px;
+      font-size: 13px;
+      padding: 4px 10px;
     }}
+
     .app-subtitle {{
       font-size: 11px;
-      margin-top: 4px;
+      margin: 10px 4px;
     }}
   }}
 </style>
@@ -270,9 +306,12 @@ rng_tavern_html = f"""
   const table = document.getElementById('tableSurface');
 
   const numFacets = 16;
-  const radius = 33.5;
-  const facetWidth = (2 * radius * Math.tan(Math.PI / numFacets)).toFixed(2);
-  const facetLeft = (34 - facetWidth / 2).toFixed(2);
+  
+  // Proportional 3D cylindrical edge math in container query units (cqw)
+  const radiusCQW = 4.6; // Half of coin slot width (9.2cqw)
+  const facetWidthCQW = (2 * radiusCQW * Math.tan(Math.PI / numFacets)).toFixed(3);
+  const facetLeftCQW = (4.6 - facetWidthCQW / 2).toFixed(3);
+  const facetTopCQW = (4.6 - 0.4).toFixed(3); // Center aligned for 0.8cqw height
 
   for (let i = 0; i < numCoins; i++) {{
     coinData.push({{ angle: 0 }});
@@ -284,18 +323,16 @@ rng_tavern_html = f"""
     for (let f = 0; f < numFacets; f++) {{
       let phi = f * (360 / numFacets);
       edgeFacetsHTML += `<div class="edge-facet" style="
-        width: ${{facetWidth}}px;
-        left: ${{facetLeft}}px;
-        top: 29px;
-        background-size: ${{numFacets * 100}}% 100%;
-        background-position: -${{f * 100}}% 0;
-        transform: rotateZ(${{phi}}deg) translateY(-${{radius}}px) rotateX(90deg);
+        width: ${{facetWidthCQW}}cqw;
+        left: ${{facetLeftCQW}}cqw;
+        top: ${{facetTopCQW}}cqw;
+        transform: rotateZ(${{phi}}deg) translateY(-${{radiusCQW}}cqw) rotateX(90deg);
       "></div>`;
     }}
     edgeFacetsHTML += '</div>';
 
     card.innerHTML = `
-      <div style="font-size: 11px; color: #d4af37;">Qubit ${{i}}</div>
+      <div class="card-header">Qubit ${{i}}</div>
       <div class="coin-slot" id="slot_${{i}}">
         <div class="coin-3d" id="coin_${{i}}">
           <div class="face face-front"></div>
@@ -387,4 +424,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=600)
+components.html(rng_tavern_html, height=740)
