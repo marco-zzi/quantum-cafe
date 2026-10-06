@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="Quantum RNG - Vilnius Quantum Café", layout="wide")
 
 st.title("🎲 Programmable Quantum RNG")
-st.markdown("*Quantum Café Session 1: Adjust the 8 quantum coins directly on the tavern table to alter their superposition states, then measure to generate a true random byte.*")
+st.markdown("*Quantum Café Session 1: Rotate the 3D tavern coins along their vertical axis to change superposition probabilities, then measure to generate a random byte.*")
 
 rng_tavern_html = """
 <!DOCTYPE html>
@@ -15,7 +15,6 @@ rng_tavern_html = """
     margin: 0;
     padding: 0;
     background-color: #1a0f08;
-    /* Cozy fantasy tavern ambient lighting */
     background-image: radial-gradient(circle at 50% 30%, #3d2314 0%, #120a05 80%);
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #f3e5ab;
@@ -23,79 +22,97 @@ rng_tavern_html = """
   }
   .tavern-container {
     perspective: 1000px;
-    padding: 20px;
-    max-width: 900px;
+    padding: 10px;
+    max-width: 950px;
     margin: 0 auto;
   }
   .table-surface {
     background: linear-gradient(135deg, #2c1810, #1b0e08);
     border: 6px solid #4a2e18;
     border-radius: 15px;
-    padding: 20px;
+    padding: 15px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 0 30px rgba(0,0,0,0.6);
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
+    gap: 15px;
     justify-items: center;
   }
   .coin-card {
     background: rgba(0, 0, 0, 0.3);
     border: 2px solid #6b4423;
     border-radius: 10px;
-    padding: 10px;
-    width: 150px;
+    padding: 8px;
+    width: 140px;
     box-shadow: 0 8px 16px rgba(0,0,0,0.5);
   }
   .coin-slot {
-    width: 90px;
-    height: 90px;
-    margin: 10px auto;
+    width: 80px;
+    height: 80px;
+    margin: 15px auto;
     perspective: 800px;
-    cursor: grab;
+    cursor: ew-resize;
   }
-  .coin {
+  
+  /* True 3D CSS Coin Construction */
+  .coin-3d {
     width: 100%;
     height: 100%;
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 0.1s ease-out;
-    border-radius: 50%;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+    transition: transform 0.05s linear;
   }
-  .coin-face {
+  .face {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
+    width: 80px;
+    height: 80px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 20px;
+    font-size: 22px;
+    backface-visibility: hidden;
     border: 3px solid #d4af37;
   }
-  .coin-front {
-    background: radial-gradient(circle, #e6c687 0%, #b8860b 100%);
-    color: #2c1810;
+  .face-front {
+    background: radial-gradient(circle, #f3e5ab 0%, #d4af37 70%, #996515 100%);
+    color: #1a0f08;
+    transform: translateZ(6px);
   }
-  .coin-back {
-    background: radial-gradient(circle, #cd7f32 0%, #8b4513 100%);
+  .face-back {
+    background: radial-gradient(circle, #cd7f32 0%, #a0522d 70%, #5c2c16 100%);
     color: #f3e5ab;
-    transform: rotateY(180deg);
+    transform: rotateY(180deg) translateZ(6px);
   }
+  /* 3D Edge / Thickness with dented/ribbed illusion */
+  .coin-edge {
+    position: absolute;
+    width: 80px;
+    height: 12px;
+    top: 34px;
+    left: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      #8b6508,
+      #8b6508 3px,
+      #4a3504 3px,
+      #4a3504 6px
+    );
+    transform-style: preserve-3d;
+  }
+
   .stats {
-    font-size: 12px;
-    margin-top: 5px;
+    font-size: 11px;
+    margin-top: 8px;
     color: #d4af37;
   }
   .measure-btn {
-    margin-top: 25px;
+    margin-top: 20px;
     background: linear-gradient(to bottom, #d4af37, #996515);
     color: #1a0f08;
     border: none;
-    padding: 12px 30px;
-    font-size: 18px;
+    px: 25px; padding: 10px 25px;
+    font-size: 16px;
     font-weight: bold;
     border-radius: 8px;
     cursor: pointer;
@@ -107,9 +124,9 @@ rng_tavern_html = """
     transform: scale(1.05);
   }
   .result-box {
-    margin-top: 15px;
-    font-size: 24px;
-    letter-spacing: 3px;
+    margin-top: 10px;
+    font-size: 20px;
+    letter-spacing: 2px;
     color: #00ffcc;
     font-family: monospace;
   }
@@ -119,11 +136,9 @@ rng_tavern_html = """
 
 <div class="tavern-container">
   <h3>Interactive Tavern Table (8 Qubits / 1 Byte)</h3>
-  <p style="font-size: 13px; color: #b8975a; margin-top: -5px;">Drag or scroll vertically over each coin to tilt its probability axis ($\theta$)</p>
+  <p style="font-size: 12px; color: #b8975a; margin-top: -5px;">Drag horizontally across each coin to rotate it along its vertical axis</p>
   
-  <div class="table-surface" id="tableSurface">
-    <!-- Generated dynamically via JS for 8 coins -->
-  </div>
+  <div class="table-surface" id="tableSurface"></div>
 
   <button class="measure-btn" onclick="measureByte()">⚡ Measure Quantum Byte</button>
   <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
@@ -132,113 +147,102 @@ rng_tavern_html = """
 <script>
   const numCoins = 8;
   let coinData = [];
-
   const table = document.getElementById('tableSurface');
 
   for (let i = 0; i < numCoins; i++) {
-    coinData.push({ theta: 0.5 }); // default equal superposition
+    coinData.push({ angle: 0 }); // 0 degrees rotation
 
     const card = document.createElement('div');
     card.className = 'coin-card';
     card.innerHTML = `
-      <div>Qubit ${i}</div>
+      <div style="font-size: 12px;">Qubit ${i}</div>
       <div class="coin-slot" id="slot_${i}">
-        <div class="coin" id="coin_${i}">
-          <div class="coin-face coin-front">0</div>
-          <div class="coin-face coin-back">1</div>
+        <div class="coin-3d" id="coin_${i}">
+          <div class="face face-front">0</div>
+          <div class="face face-back">1</div>
+          <div class="coin-edge" id="edge_${i}"></div>
         </div>
       </div>
       <div class="stats" id="stat_${i}">P(1): 50%</div>
     `;
     table.appendChild(card);
-
     setupInteraction(i);
   }
 
   function setupInteraction(index) {
     const slot = document.getElementById(`slot_${index}`);
-    const coin = document.getElementById(`coin_${index}`);
-    const stat = document.getElementById(`stat_${index}`);
-
     let isDragging = false;
-    let startY = 0;
+    let startX = 0;
 
     slot.addEventListener('mousedown', (e) => {
       isDragging = true;
-      startY = e.clientY;
+      startX = e.clientX;
     });
 
     window.addEventListener('mousemove', (e) => {
       if (!isDragging) return;
-      let deltaY = startY - e.clientY;
-      startY = e.clientY;
+      let deltaX = e.clientX - startX;
+      startX = e.clientX;
 
-      let currentTheta = coinData[index].theta + deltaY * 0.01;
-      currentTheta = Math.max(0, Math.min(1, currentTheta)); // clamp between 0 and 1
-      coinData[index].theta = currentTheta;
-
+      coinData[index].angle += deltaX * 1.5; // Rotate along Y axis
       updateCoinVisual(index);
     });
 
     window.addEventListener('mouseup', () => { isDragging = false; });
 
-    // Touch support for mobile devices in the café
+    // Touch support
     slot.addEventListener('touchstart', (e) => {
       isDragging = true;
-      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
     });
     window.addEventListener('touchmove', (e) => {
       if (!isDragging) return;
-      let deltaY = startY - e.touches[0].clientY;
-      startY = e.touches[0].clientY;
+      let deltaX = e.touches[0].clientX - startX;
+      startX = e.touches[0].clientX;
 
-      let currentTheta = coinData[index].theta + deltaY * 0.01;
-      currentTheta = Math.max(0, Math.min(1, currentTheta));
-      coinData[index].theta = currentTheta;
-
+      coinData[index].angle += deltaX * 1.5;
       updateCoinVisual(index);
     });
     window.addEventListener('touchend', () => { isDragging = false; });
   }
 
   function updateCoinVisual(index) {
-    let theta = coinData[index].theta;
+    let angle = coinData[index].angle;
     let coin = document.getElementById(`coin_${index}`);
     let stat = document.getElementById(`stat_${index}`);
 
-    // Map theta (0 to 1) to rotation angles
-    let rotateX = theta * 180;
-    let rotateY = theta * 360;
-    coin.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    // Restrict rotation strictly to Y axis
+    coin.style.transform = `rotateY(${angle}deg)`;
 
-    // Calculate quantum probability of measuring state '1' -> sin^2(theta * pi / 2)
-    let prob1 = Math.sin((theta * Math.PI) / 2) ** 2;
+    // Calculate probability based on normalized angle cycle (0 to 360 deg maps to quantum phase/probability)
+    let normalizedAngle = (angle % 360 + 360) % 360;
+    let rad = (normalizedAngle * Math.PI) / 180;
+    let prob1 = Math.sin(rad / 2) ** 2;
     stat.innerText = `P(1): ${Math.round(prob1 * 100)}%`;
   }
 
   function measureByte() {
     let binaryString = "";
     for (let i = 0; i < numCoins; i++) {
-      let theta = coinData[i].theta;
-      let prob1 = Math.sin((theta * Math.PI) / 2) ** 2;
+      let angle = coinData[i].angle;
+      let normalizedAngle = (angle % 360 + 360) % 360;
+      let prob1 = Math.sin((normalizedAngle * Math.PI) / 180) ** 2;
+      
       let outcome = Math.random() < prob1 ? "1" : "0";
       binaryString += outcome;
 
-      // Quick visual collapse effect
+      // Snap visual to nearest definitive state (0 deg or 180 deg) on collapse
       let coin = document.getElementById(`coin_${i}`);
-      coin.style.transition = "transform 0.3s ease";
-      if (outcome === "1") {
-        coin.style.transform = "rotateX(180deg) rotateY(360deg)";
-      } else {
-        coin.style.transform = "rotateX(0deg) rotateY(0deg)";
-      }
+      coin.style.transition = "transform 0.4s ease";
+      let targetAngle = outcome === "1" ? 180 : 0;
+      coinData[i].angle = targetAngle;
+      coin.style.transform = `rotateY(${targetAngle}deg)`;
+      document.getElementById(`stat_${i}`).innerText = `P(1): ${outcome === "1" ? "100%" : "0%"}`;
     }
 
-    // Convert binary byte to Hex and Decimal for flavor
     let decimalVal = parseInt(binaryString, 2);
     let hexVal = decimalVal.toString(16).toUpperCase().padStart(2, '0');
-    
-    document.getElementById('byteResult').innerHTML = `Byte: ${binaryString} (0x${hexVal} | ${decimalVal})`
+    document.getElementById('byteResult').innerHTML = `Byte: ${binaryString} (0x${hexVal} | ${decimalVal})`;
   }
 </script>
 
@@ -246,4 +250,4 @@ rng_tavern_html = """
 </html>
 """
 
-components.html(rng_tavern_html, height=520)
+components.html(rng_tavern_html, height=480)
