@@ -38,9 +38,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("🚀 Quantum Teleportation: Step-by-Step Protocol")
-st.write("Follow the exact quantum mechanics workflow: State Preparation $\rightarrow$ Bell Measurement $\rightarrow$ Classical Bit Transmission $\rightarrow$ Bob's Correction Gates.")
+st.write(
+    r"Follow the exact quantum mechanics workflow: State Preparation $\rightarrow$ Bell Measurement $\rightarrow$ Classical Bit Transmission $\rightarrow$ Bob's Correction Gates."
+)
 
-# Session state initialization to track the steps
+# Session state initialization to track workflow steps
 if "step" not in st.session_state:
     st.session_state.step = 1
 
@@ -52,8 +54,8 @@ with col_left:
     # STEP 1: Alice selects state
     if st.session_state.step >= 1:
         st.markdown("### Step 1: Alice Prepares the Qubit")
-        theta = st.slider("Polar Angle ($\theta$)", 0.0, 180.0, 60.0, key="t_angle")
-        phi = st.slider("Phase Angle ($\varphi$)", 0.0, 360.0, 0.0, key="p_angle")
+        theta = st.slider(r"Polar Angle ($\theta$)", 0.0, 180.0, 60.0, key="t_angle")
+        phi = st.slider(r"Phase Angle ($\varphi$)", 0.0, 360.0, 0.0, key="p_angle")
         
         if st.session_state.step == 1:
             if st.button("Lock State & Proceed to Step 2"):
@@ -66,8 +68,10 @@ with col_left:
         st.markdown("### Step 2: Bell-State Measurement (VU Lab)")
         st.write("Alice interacts her qubit with her half of the shared entangled Bell pair and measures.")
         
-        # User can select or simulate Alice's measurement outcome (which yields 2 classical bits)
-        bell_outcome = st.selectbox("Alice's Measurement Outcome", ["00 (Φ+)", "01 (Ψ+)", "10 (Φ-)", "11 (Ψ-)"])
+        bell_outcome = st.selectbox(
+            "Alice's Measurement Outcome",
+            [r"00 ($\Phi^+$)", r"01 ($\Psi^+$)", r"10 ($\Phi^-$)", r"11 ($\Psi^-$)"]
+        )
         
         if st.session_state.step == 2:
             if st.button("Perform Measurement & Send Bits"):
@@ -79,17 +83,16 @@ with col_left:
         st.markdown("---")
         st.markdown("### Step 3 & 4: Transmission & Bob's Correction (MKIC)")
         
-        # Extract the 2 classical bits from Alice's outcome string
         bits = bell_outcome[:2]
         
         # Determine Bob's required correction gates based on standard teleportation rules
-        correction_gate = "Identity ($I$)"
+        correction_gate = r"Identity ($I$)"
         if bits == "01":
-            correction_gate = "Pauli-$X$ ($\sigma_x$)"
+            correction_gate = r"Pauli-$X$ ($\sigma_x$)"
         elif bits == "10":
-            correction_gate = "Pauli-$Z$ ($\sigma_z$)"
+            correction_gate = r"Pauli-$Z$ ($\sigma_z$)"
         elif bits == "11":
-            correction_gate = "Pauli-$X$ and Pauli-$Z$"
+            correction_gate = r"Pauli-$X$ and Pauli-$Z$"
 
         st.info(f"📡 Transmitted 2 classical bits: **{bits}** across Vilnius fiber link.")
         st.success(f"🛠️ Bob applies correction gate: **{correction_gate}**")
@@ -115,8 +118,15 @@ with col_right:
         status_box.info("Status: State ready. Entangled pair active. Awaiting Bell measurement.")
     elif st.session_state.step >= 3:
         status_box.success(
-            f"**Teleportation Successful!**\n\n"
-            f"Original State (Alice):\n$|\\psi\\rangle = {c0:.2f}|0\\rangle + e^{{i{phi_deg}^\\circ}}{c1:.2f}|1\\rangle$\n\n"
-            f"Reconstructed State (Bob):\n$|\\psi_{\\text{recalled}}\\rangle = {c0:.2f}|0\\rangle + e^{{i{phi_deg}^\\circ}}{c1:.2f}|1\\rangle$\n\n"
-            f"Fidelity: **100%**"
+            fr"**Teleportation Successful!**"
+            "\n\n"
+            fr"Original State (Alice):"
+            "\n"
+            fr"$|\psi\rangle = {c0:.2f}|0\rangle + e^{{i{phi_deg}^\circ}}{c1:.2f}|1\rangle$"
+            "\n\n"
+            fr"Reconstructed State (Bob):"
+            "\n"
+            fr"$|\psi_{{\text{{recalled}}}}\rangle = {c0:.2f}|0\rangle + e^{{i{phi_deg}^\circ}}{c1:.2f}|1\rangle$"
+            "\n\n"
+            fr"Fidelity: **100%**"
         )
