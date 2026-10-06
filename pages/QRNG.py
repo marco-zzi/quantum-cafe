@@ -306,3 +306,15 @@ rng_tavern_html = f"""
       coin.style.transform = `rotateY(${{targetAngle}}deg)`;
       document.getElementById(`stat_${{i}}`).innerText = `P(1): ${{outcome === "1" ? "100%" : "0%"}}`;
     }}
+
+    let decimalVal = parseInt(binaryString, 2);
+    let hexVal = decimalVal.toString(16).toUpperCase().padStart(2, '0');
+    document.getElementById('byteResult').innerHTML = `Byte: ${{binaryString}} (0x${{hexVal}} | ${{decimalVal}})`;
+  }}
+</script>
+
+</body>
+</html>
+"""
+
+components.html(rng_tavern_html, height=680)
