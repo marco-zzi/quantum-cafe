@@ -102,7 +102,7 @@ rng_tavern_html = f"""
   @media (min-width: 681px) {{
     .app-title {{
       font-size: 24px;
-      margin: 6px 0 8px 0;
+      margin: 6px 0 4px 0;
       color: #f3e5ab;
       text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     }}
@@ -111,7 +111,7 @@ rng_tavern_html = f"""
       font-size: 13px;
       font-style: italic;
       color: #b8975a;
-      margin: 12px 0 16px 0;
+      margin: 0 0 12px 0;
     }}
 
     .tavern-stage {{
@@ -134,11 +134,16 @@ rng_tavern_html = f"""
       left: 50%;
       transform: translate(-50%, -50%);
       width: 90%;
-      max-width: 720px;
+      max-width: 760px;
+      padding-bottom: 20px;
+    }}
+
+    .coins-grid {{
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       justify-items: center;
+      margin-bottom: 20px;
     }}
 
     .coin-card {{
@@ -186,13 +191,11 @@ rng_tavern_html = f"""
     }}
 
     .ui-panel {{
-      position: relative;
-      margin: 16px auto 0 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
-      width: 90%;
+      gap: 8px;
+      width: 100%;
     }}
 
     .measure-btn {{
@@ -230,14 +233,17 @@ rng_tavern_html = f"""
      ========================================================================== */
   @media (max-width: 680px) {{
     .app-title {{
-      display: none !important;
+      font-size: 18px;
+      margin: 4px 0 2px 0;
+      color: #f3e5ab;
     }}
 
     .app-subtitle {{
       font-size: 11px;
       font-style: italic;
       color: #b8975a;
-      margin: 10px 0 12px 0;
+      margin: 0 0 10px 0;
+      padding: 0 8px;
     }}
 
     .tavern-stage {{
@@ -259,20 +265,25 @@ rng_tavern_html = f"""
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 85%;
-      max-width: 260px;
+      width: 90%;
+      max-width: 320px;
+      padding-bottom: 12px;
+    }}
+
+    .coins-grid {{
       display: grid;
       grid-template-columns: 1fr;
-      gap: 4px;
+      gap: 5px;
       justify-items: center;
+      margin-bottom: 10px;
     }}
 
     .coin-card {{
-      background: rgba(40, 22, 10, 0.78);
+      background: rgba(40, 22, 10, 0.82);
       border: 1px solid #8b5a2b;
       backdrop-filter: blur(4px);
       border-radius: 6px;
-      padding: 3px 8px;
+      padding: 4px 10px;
       width: 100%;
       display: flex;
       align-items: center;
@@ -281,68 +292,70 @@ rng_tavern_html = f"""
     }}
 
     .card-header {{
-      font-size: 11px;
+      font-size: 12px;
       color: #ffd875;
       font-weight: bold;
+      min-width: 55px;
+      text-align: left;
     }}
 
     .coin-slot {{
-      --coin-radius: 18px;
-      width: 36px;
-      height: 36px;
-      margin: 0;
+      --coin-radius: 24px;
+      width: 48px;
+      height: 48px;
+      margin: 0 auto;
       perspective: 600px;
       cursor: ew-resize;
       touch-action: none;
     }}
 
-    .face-front {{ transform: translateZ(2px); }}
-    .face-back {{ transform: rotateY(180deg) translateZ(2px); }}
+    .face-front {{ transform: translateZ(3px); }}
+    .face-back {{ transform: rotateY(180deg) translateZ(3px); }}
 
     .edge-facet {{
-      height: 4px;
+      height: 5px;
       width: calc(var(--coin-radius) * 0.3978);
       left: calc(50% - (var(--coin-radius) * 0.1989));
-      top: calc(50% - 2px);
+      top: calc(50% - 2.5px);
     }}
 
     .stats {{
-      font-size: 11px;
+      font-size: 12px;
       margin-top: 0;
       color: #fce8bd;
       font-weight: bold;
+      min-width: 60px;
+      text-align: right;
     }}
 
     .ui-panel {{
-      position: relative;
-      margin: 12px auto 0 auto;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
-      width: 95%;
+      gap: 6px;
+      width: 100%;
     }}
 
     .measure-btn {{
       background: linear-gradient(to bottom, #d4af37, #8a5a12);
       color: #120a05;
       border: 1px solid #ffe89c;
-      padding: 8px 22px;
-      font-size: 14px;
+      padding: 6px 18px;
+      font-size: 13px;
       font-weight: bold;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.7);
     }}
 
     .result-box {{
-      font-size: 13px;
-      letter-spacing: 1px;
+      font-size: 12px;
+      letter-spacing: 0.5px;
       color: #00ffcc;
       font-family: monospace;
       background: rgba(0,0,0,0.85);
-      padding: 5px 10px;
-      border-radius: 6px;
+      padding: 4px 8px;
+      border-radius: 4px;
       border: 1px solid #00ffcc44;
     }}
   }}
@@ -351,17 +364,18 @@ rng_tavern_html = f"""
 <body>
 
   <h1 class="app-title">🎲 Quantum Random Number Generator</h1>
+  <p class="app-subtitle">Drag coins horizontally to alter superposition states (&theta;), then measure to generate a random byte.</p>
 
   <div class="tavern-stage">
-    <div class="table-overlay" id="tableSurface"></div>
+    <div class="table-overlay">
+      <div class="coins-grid" id="tableSurface"></div>
+      
+      <div class="ui-panel">
+        <button class="measure-btn" onclick="measureByte()">⚡ Measure</button>
+        <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
+      </div>
+    </div>
   </div>
-
-  <div class="ui-panel">
-    <button class="measure-btn" onclick="measureByte()">⚡ Measure</button>
-    <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
-  </div>
-
-  <p class="app-subtitle">Drag coins horizontally to alter superposition states (&theta;), then measure to generate a random byte.</p>
 
 <script>
   const numCoins = 8;
