@@ -44,7 +44,7 @@ rng_tavern_html = f"""
 
   body {{
     margin: 0;
-    padding: 0;
+    padding: 0 0 16px 0;
     background-color: #0d0704;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #f3e5ab;
@@ -67,6 +67,7 @@ rng_tavern_html = f"""
     margin: 12px 0 16px 0;
   }}
   
+  /* Desktop Game Table Stage */
   .tavern-stage {{
     position: relative;
     width: 100%;
@@ -81,12 +82,12 @@ rng_tavern_html = f"""
     background-position: center;
   }}
 
-  /* Desktop: Centered overlay with tighter grid max-width */
+  /* Desktop: Coins centered both vertically and horizontally */
   .table-overlay {{
     position: absolute;
-    top: 10%;
+    top: 50%;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translate(-50%, -50%);
     width: 90%;
     max-width: 720px;
     display: grid;
@@ -95,7 +96,6 @@ rng_tavern_html = f"""
     justify-items: center;
   }}
 
-  /* Lighter card background color */
   .coin-card {{
     background: rgba(55, 33, 18, 0.72);
     border: 1px solid #a87944;
@@ -179,15 +179,14 @@ rng_tavern_html = f"""
     font-weight: bold;
   }}
 
+  /* Measure panel positioned outside the game table container */
   .ui-panel {{
-    position: absolute;
-    bottom: 4%;
-    left: 50%;
-    transform: translateX(-50%);
+    position: relative;
+    margin: 18px auto 0 auto;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     width: 90%;
   }}
 
@@ -220,29 +219,27 @@ rng_tavern_html = f"""
     border: 1px solid #00ffcc44;
   }}
 
-  /* Mobile Layout Fixes (< 680px) */
+  /* Mobile Adaptation Rules (< 680px) */
   @media (max-width: 680px) {{
     .app-title {{
       display: none !important;
     }}
 
     .tavern-stage {{
-      aspect-ratio: auto;
-      height: auto;
-      min-height: auto;
+      aspect-ratio: 9 / 16;
       width: 100%;
+      max-height: 520px;
       background-image: url('data:image/jpeg;base64,{table_mobile_b64}');
-      padding-bottom: 24px;
     }}
 
     .table-overlay {{
-      position: relative;
-      top: 0;
-      left: 0;
-      transform: none;
-      width: 100%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 92%;
       max-width: 100%;
-      padding: 16px 10px 0 10px;
+      padding: 0;
       grid-template-columns: repeat(2, 1fr);
       gap: 10px;
     }}
@@ -276,11 +273,7 @@ rng_tavern_html = f"""
     }}
 
     .ui-panel {{
-      position: relative;
-      bottom: auto;
-      left: auto;
-      transform: none;
-      margin: 20px auto 0 auto;
+      margin-top: 14px;
       width: 95%;
     }}
 
@@ -300,13 +293,15 @@ rng_tavern_html = f"""
 
   <h1 class="app-title">🎲 Quantum Random Number Generator</h1>
 
+  <!-- Game Table Stage -->
   <div class="tavern-stage">
     <div class="table-overlay" id="tableSurface"></div>
+  </div>
 
-    <div class="ui-panel">
-      <button class="measure-btn" onclick="measureByte()">⚡ Measure</button>
-      <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
-    </div>
+  <!-- Measure UI Panel (Located outside game table) -->
+  <div class="ui-panel">
+    <button class="measure-btn" onclick="measureByte()">⚡ Measure ⚡</button>
+    <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
   </div>
 
   <p class="app-subtitle">Drag coins horizontally to alter superposition states (&theta;), then measure to generate a random byte.</p>
@@ -425,4 +420,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=800)
+components.html(rng_tavern_html, height=950)
