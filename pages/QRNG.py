@@ -197,7 +197,7 @@ rng_tavern_html = f"""
 
     .ui-panel {{
       position: absolute;
-      bottom: 20px;
+      bottom: 25px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -349,7 +349,7 @@ rng_tavern_html = f"""
 
     .ui-panel {{
       position: absolute;
-      bottom: 12px;
+      bottom: 15px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
