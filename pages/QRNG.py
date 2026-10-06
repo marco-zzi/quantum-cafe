@@ -108,7 +108,7 @@ rng_tavern_html = f"""
     }}
 
     .app-subtitle {{
-      font-size: 13px;
+      font-size: 14px;
       font-style: italic;
       color: #b8975a;
       margin: 0 0 12px 0;
@@ -202,7 +202,7 @@ rng_tavern_html = f"""
       background: linear-gradient(to bottom, #d4af37, #8a5a12);
       color: #120a05;
       border: 1px solid #ffe89c;
-      padding: 10px 28px;
+      padding: 100px 28px;
       font-size: 16px;
       font-weight: bold;
       border-radius: 8px;
@@ -239,7 +239,7 @@ rng_tavern_html = f"""
     }}
 
     .app-subtitle {{
-      font-size: 11px;
+      font-size: 14px;
       font-style: italic;
       color: #b8975a;
       margin: 0 0 10px 0;
@@ -363,7 +363,6 @@ rng_tavern_html = f"""
 </head>
 <body>
 
-  <h1 class="app-title">🎲 Quantum Random Number Generator</h1>
   <p class="app-subtitle">Drag coins horizontally to alter superposition states (&theta;), then measure to generate a random byte.</p>
 
   <div class="tavern-stage">
@@ -371,7 +370,7 @@ rng_tavern_html = f"""
       <div class="coins-grid" id="tableSurface"></div>
       
       <div class="ui-panel">
-        <button class="measure-btn" onclick="measureByte()">⚡ Measure</button>
+        <button class="measure-btn" onclick="measureByte()">⚡ Measure ⚡</button>
         <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
       </div>
     </div>
