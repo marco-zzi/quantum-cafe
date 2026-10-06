@@ -2,7 +2,7 @@ import base64
 import streamlit as st
 import streamlit.components.v1 as components
 
-st.set_page_config(page_title="Quantum RNG - Vilnius Quantum Café", layout="wide")
+st.set_page_config(page_title="Quantum Café - QRNG", layout="wide")
 
 def img_to_b64(file_path):
     """Converts a local image file to a Base64 string for HTML embedding."""
@@ -18,8 +18,7 @@ front_b64 = img_to_b64("assets/QRNG_0.png")
 back_b64 = img_to_b64("assets/QRNG_1.png")
 edge_b64 = img_to_b64("assets/QRNG_edge.png")
 
-st.title("🎲 Programmable Quantum RNG")
-st.markdown("*Quantum Café Session 1: Drag coins horizontally to alter superposition states ($\theta$), then measure to generate a random byte.*")
+st.title("🎲 Quantum Random Number Generator")
 
 rng_tavern_html = f"""
 <!DOCTYPE html>
@@ -176,7 +175,7 @@ rng_tavern_html = f"""
   <div class="table-overlay" id="tableSurface"></div>
 
   <div class="ui-panel">
-    <button class="measure-btn" onclick="measureByte()">⚡ Measure Quantum Byte</button>
+    <button class="measure-btn" onclick="measureByte()">⚡ Measure</button>
     <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
   </div>
 </div>
@@ -283,3 +282,4 @@ rng_tavern_html = f"""
 """
 
 components.html(rng_tavern_html, height=620)
+st.markdown("*Drag coins horizontally to alter superposition states ($\theta$), then measure to generate a random byte.*")
