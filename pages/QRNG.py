@@ -14,9 +14,9 @@ def img_to_b64(file_path):
 
 # Load cropped image assets
 table_b64 = img_to_b64("./assets/QRNG_table.jpg")
-front_b64 = img_to_b64("assets/coin_front.jpg")
-back_b64 = img_to_b64("assets/coin_back.jpg")
-edge_b64 = img_to_b64("assets/coin_edge.jpg")
+front_b64 = img_to_b64("assets/QRNG_0.png")
+back_b64 = img_to_b64("assets/QRNG_1.png")
+edge_b64 = img_to_b64("assets/QRNG_edge.png")
 
 st.title("🎲 Programmable Quantum RNG")
 st.markdown("*Quantum Café Session 1: Drag coins horizontally to alter superposition states ($\theta$), then measure to generate a random byte.*")
