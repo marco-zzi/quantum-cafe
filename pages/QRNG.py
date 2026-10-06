@@ -31,9 +31,9 @@ def img_to_b64(file_path):
 # Load assets (Ensure filenames match your local asset directory)
 table_desktop_b64 = img_to_b64("./assets/QRNG_table_desktop.jpg")  # 16:9
 table_mobile_b64  = img_to_b64("./assets/QRNG_table_mobile.jpg")   # 9:16
-front_b64         = img_to_b64("assets/QRNG_0.png")
-back_b64          = img_to_b64("assets/QRNG_1.png")
-edge_b64          = img_to_b64("assets/QRNG_edge.png")
+front_b64         = img_to_b64("./assets/QRNG_0.png")
+back_b64          = img_to_b64("./assets/QRNG_1.png")
+edge_b64          = img_to_b64("./assets/QRNG_edge.png")
 
 rng_tavern_html = f"""
 <!DOCTYPE html>
