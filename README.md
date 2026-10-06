@@ -14,5 +14,5 @@ This repository contains lightweight, interactive web applications built with Py
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/your-username/quantum-cafe-apps.git](https://github.com/your-username/quantum-cafe-apps.git)
-   cd quantum-cafe-apps
+   git clone [https://github.com/your-username/quantum-cafe-apps.git](https://github.com/marco-zzi/quantum-cafe.git)
+   cd quantum-cafe
