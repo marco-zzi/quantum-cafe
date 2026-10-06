@@ -4,7 +4,6 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Quantum Café - QRNG", layout="wide")
 
-# Streamlit container layout overrides
 st.markdown("""
     <style>
         .block-container {
@@ -21,16 +20,14 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def img_to_b64(file_path):
-    """Converts a local image file to a Base64 string for HTML embedding."""
     try:
         with open(file_path, "rb") as f:
             return base64.b64encode(f.read()).decode("utf-8")
     except FileNotFoundError:
         return ""
 
-# Load assets
-table_desktop_b64 = img_to_b64("./assets/QRNG_table_desktop.jpg")  # 16:9
-table_mobile_b64  = img_to_b64("./assets/QRNG_table_mobile.jpg")   # 9:16
+table_desktop_b64 = img_to_b64("./assets/QRNG_table_desktop.jpg")
+table_mobile_b64  = img_to_b64("./assets/QRNG_table_mobile.jpg")
 front_b64         = img_to_b64("assets/QRNG_0.png")
 back_b64          = img_to_b64("assets/QRNG_1.png")
 edge_b64          = img_to_b64("assets/QRNG_edge.png")
@@ -70,7 +67,6 @@ rng_tavern_html = f"""
     margin: 12px 0 16px 0;
   }}
   
-  /* Full-width 16:9 stage on Desktop (Uncapped width) */
   .tavern-stage {{
     position: relative;
     width: 100%;
@@ -85,32 +81,35 @@ rng_tavern_html = f"""
     background-position: center;
   }}
 
+  /* Desktop: Centered overlay with tighter grid max-width */
   .table-overlay {{
     position: absolute;
-    top: 12%;
-    left: 5%;
+    top: 10%;
+    left: 50%;
+    transform: translateX(-50%);
     width: 90%;
+    max-width: 720px;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    gap: 12px;
     justify-items: center;
   }}
 
-  /* Fixed pixel dimensions for coins and cards */
+  /* Lighter card background color */
   .coin-card {{
-    background: rgba(15, 8, 4, 0.82);
-    border: 1px solid #8b5a2b;
-    backdrop-filter: blur(4px);
+    background: rgba(55, 33, 18, 0.72);
+    border: 1px solid #a87944;
+    backdrop-filter: blur(6px);
     border-radius: 10px;
     padding: 10px;
     width: 100%;
     max-width: 150px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.8);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.6);
   }}
 
   .card-header {{
     font-size: 14px;
-    color: #d4af37;
+    color: #ffd875;
     font-weight: bold;
   }}
 
@@ -176,7 +175,7 @@ rng_tavern_html = f"""
   .stats {{
     font-size: 13px;
     margin-top: 4px;
-    color: #e6c687;
+    color: #fce8bd;
     font-weight: bold;
   }}
 
@@ -221,41 +220,47 @@ rng_tavern_html = f"""
     border: 1px solid #00ffcc44;
   }}
 
-  /* Mobile Adaptation Rules (< 680px) */
+  /* Mobile Layout Fixes (< 680px) */
   @media (max-width: 680px) {{
     .app-title {{
       display: none !important;
     }}
 
     .tavern-stage {{
-      aspect-ratio: 9 / 16;
-      max-height: 85vh;
+      aspect-ratio: auto;
+      height: auto;
+      min-height: auto;
       width: 100%;
       background-image: url('data:image/jpeg;base64,{table_mobile_b64}');
+      padding-bottom: 24px;
     }}
 
     .table-overlay {{
-      top: 8%;
-      left: 4%;
-      width: 92%;
+      position: relative;
+      top: 0;
+      left: 0;
+      transform: none;
+      width: 100%;
+      max-width: 100%;
+      padding: 16px 10px 0 10px;
       grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
+      gap: 10px;
     }}
 
     .coin-card {{
       max-width: 100%;
-      padding: 6px;
+      padding: 8px;
     }}
 
     .card-header {{
-      font-size: 12px;
+      font-size: 13px;
     }}
 
     .coin-slot {{
-      --coin-radius: 29px;
-      width: 58px;
-      height: 58px;
-      margin: 4px auto;
+      --coin-radius: 32px;
+      width: 64px;
+      height: 64px;
+      margin: 6px auto;
     }}
 
     .face-front {{ transform: translateZ(3px); }}
@@ -271,18 +276,22 @@ rng_tavern_html = f"""
     }}
 
     .ui-panel {{
-      bottom: 3%;
-      gap: 6px;
+      position: relative;
+      bottom: auto;
+      left: auto;
+      transform: none;
+      margin: 20px auto 0 auto;
+      width: 95%;
     }}
 
     .measure-btn {{
-      padding: 8px 20px;
-      font-size: 14px;
+      padding: 8px 22px;
+      font-size: 15px;
     }}
 
     .result-box {{
       font-size: 13px;
-      padding: 4px 10px;
+      padding: 5px 12px;
     }}
   }}
 </style>
@@ -416,4 +425,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=1080)
+components.html(rng_tavern_html, height=800)
