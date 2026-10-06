@@ -4,7 +4,7 @@ import streamlit.components.v1 as components
 st.set_page_config(page_title="Quantum RNG - Vilnius Quantum Café", layout="wide")
 
 st.title("🎲 Programmable Quantum RNG")
-st.markdown("*Quantum Café Session 1: Rotate the 3D tavern coins along their vertical axis to change superposition probabilities, then measure to generate a random byte.*")
+st.markdown("*Quantum Café Session 1: Rotate the 3D coins on the tavern table to set superposition probabilities ($\theta$), then measure to generate a random byte.*")
 
 rng_tavern_html = """
 <!DOCTYPE html>
@@ -14,46 +14,67 @@ rng_tavern_html = """
   body {
     margin: 0;
     padding: 0;
-    background-color: #1a0f08;
-    background-image: radial-gradient(circle at 50% 30%, #3d2314 0%, #120a05 80%);
+    background-color: #0d0704;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #f3e5ab;
     text-align: center;
+    overflow-x: hidden;
   }
-  .tavern-container {
-    perspective: 1000px;
-    padding: 10px;
-    max-width: 950px;
+  
+  /* 2.5D Tavern Canvas Container */
+  .tavern-stage {
+    position: relative;
+    width: 950px;
+    height: 520px;
     margin: 0 auto;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.9);
+    background: #110905;
   }
-  .table-surface {
-    background: linear-gradient(135deg, #2c1810, #1b0e08);
-    border: 6px solid #4a2e18;
-    border-radius: 15px;
-    padding: 15px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 0 30px rgba(0,0,0,0.6);
+
+  /* Embedded 2.5D Isometric SVG Tavern Illustration */
+  .tavern-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  /* Interactive Table Overlay Grid */
+  .table-overlay {
+    position: absolute;
+    top: 140px;
+    left: 75px;
+    width: 800px;
+    z-index: 2;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 15px;
     justify-items: center;
   }
+
   .coin-card {
-    background: rgba(0, 0, 0, 0.3);
-    border: 2px solid #6b4423;
+    background: rgba(20, 10, 5, 0.65);
+    border: 1px solid #7a4f26;
+    backdrop-filter: blur(4px);
     border-radius: 10px;
     padding: 8px;
-    width: 140px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+    width: 150px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.7);
   }
+
   .coin-slot {
-    width: 80px;
-    height: 80px;
-    margin: 15px auto;
-    perspective: 800px;
+    width: 75px;
+    height: 75px;
+    margin: 10px auto;
+    perspective: 600px;
     cursor: ew-resize;
   }
   
-  /* True 3D CSS Coin Construction */
+  /* 3D Coin Construction */
   .coin-3d {
     width: 100%;
     height: 100%;
@@ -63,85 +84,126 @@ rng_tavern_html = """
   }
   .face {
     position: absolute;
-    width: 80px;
-    height: 80px;
+    width: 75px;
+    height: 75px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 22px;
+    font-size: 20px;
     backface-visibility: hidden;
     border: 3px solid #d4af37;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
   }
   .face-front {
-    background: radial-gradient(circle, #f3e5ab 0%, #d4af37 70%, #996515 100%);
+    background: radial-gradient(circle, #f3e5ab 0%, #d4af37 70%, #8a5a12 100%);
     color: #1a0f08;
-    transform: translateZ(6px);
+    transform: translateZ(5px);
   }
   .face-back {
-    background: radial-gradient(circle, #cd7f32 0%, #a0522d 70%, #5c2c16 100%);
+    background: radial-gradient(circle, #cd7f32 0%, #a0522d 70%, #4a210d 100%);
     color: #f3e5ab;
-    transform: rotateY(180deg) translateZ(6px);
-  }
-  /* 3D Edge / Thickness with dented/ribbed illusion */
-  .coin-edge {
-    position: absolute;
-    width: 80px;
-    height: 12px;
-    top: 34px;
-    left: 0;
-    background: repeating-linear-gradient(
-      90deg,
-      #8b6508,
-      #8b6508 3px,
-      #4a3504 3px,
-      #4a3504 6px
-    );
-    transform-style: preserve-3d;
+    transform: rotateY(180deg) translateZ(5px);
   }
 
   .stats {
     font-size: 11px;
-    margin-top: 8px;
+    margin-top: 4px;
     color: #d4af37;
+    font-weight: bold;
   }
+
+  .ui-panel {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
   .measure-btn {
-    margin-top: 20px;
-    background: linear-gradient(to bottom, #d4af37, #996515);
-    color: #1a0f08;
-    border: none;
-    px: 25px; padding: 10px 25px;
+    background: linear-gradient(to bottom, #d4af37, #8a5a12);
+    color: #120a05;
+    border: 1px solid #ffe89c;
+    padding: 10px 28px;
     font-size: 16px;
     font-weight: bold;
     border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.6);
     transition: all 0.2s;
   }
   .measure-btn:hover {
     background: linear-gradient(to bottom, #f3e5ab, #d4af37);
-    transform: scale(1.05);
+    transform: scale(1.04);
   }
+
   .result-box {
-    margin-top: 10px;
-    font-size: 20px;
+    font-size: 18px;
     letter-spacing: 2px;
     color: #00ffcc;
     font-family: monospace;
+    background: rgba(0,0,0,0.8);
+    padding: 6px 16px;
+    border-radius: 6px;
+    border: 1px solid #00ffcc44;
   }
 </style>
 </head>
 <body>
 
-<div class="tavern-container">
-  <h3>Interactive Tavern Table (8 Qubits / 1 Byte)</h3>
-  <p style="font-size: 12px; color: #b8975a; margin-top: -5px;">Drag horizontally across each coin to rotate it along its vertical axis</p>
-  
-  <div class="table-surface" id="tableSurface"></div>
+<div class="tavern-stage">
+  <!-- 2.5D Isometric Tavern Background Vector -->
+  <svg class="tavern-bg" viewBox="0 0 950 520" preserveAspectRatio="none">
+    <defs>
+      <!-- Warm Ambient Lighting -->
+      <radialGradient id="lanternGlow" cx="20%" cy="20%" r="60%">
+        <stop offset="0%" stop-color="#ffaa33" stop-opacity="0.4"/>
+        <stop offset="100%" stop-color="#0d0704" stop-opacity="0"/>
+      </radialGradient>
+      <!-- Wood Plank Pattern -->
+      <linearGradient id="woodTexture" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#3a2012"/>
+        <stop offset="50%" stop-color="#26140a"/>
+        <stop offset="100%" stop-color="#190d06"/>
+      </linearGradient>
+      <linearGradient id="tableTop" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#54331a"/>
+        <stop offset="100%" stop-color="#2d1a0d"/>
+      </linearGradient>
+    </defs>
 
-  <button class="measure-btn" onclick="measureByte()">⚡ Measure Quantum Byte</button>
-  <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
+    <!-- Tavern Floor Planks -->
+    <rect width="950" height="520" fill="url(#woodTexture)"/>
+    <path d="M 0 100 L 950 100 M 0 200 L 950 200 M 0 300 L 950 300 M 0 400 L 950 400" stroke="#120904" stroke-width="3"/>
+    
+    <!-- 2.5D Isometric Table Base & Surface -->
+    <polygon points="50,110 900,110 850,420 100,420" fill="#1f1108" stroke="#0a0502" stroke-width="4"/>
+    <polygon points="60,115 890,115 843,410 107,410" fill="url(#tableTop)" stroke="#7a4f26" stroke-width="3"/>
+    
+    <!-- Carved Table Details / Inlays -->
+    <polygon points="80,130 870,130 830,395 120,395" fill="none" stroke="#3d2312" stroke-width="2" stroke-dasharray="8,4"/>
+    
+    <!-- Decorative Lanterns in Corners -->
+    <circle cx="80" cy="70" r="100" fill="url(#lanternGlow)"/>
+    <circle cx="870" cy="70" r="100" fill="url(#lanternGlow)"/>
+    <circle cx="80" cy="70" r="8" fill="#ffcc44"/>
+    <circle cx="870" cy="70" r="8" fill="#ffcc44"/>
+  </svg>
+
+  <!-- Interactive 8 Qubit Overlay -->
+  <div class="table-overlay" id="tableSurface"></div>
+
+  <!-- Bottom Action Panel -->
+  <div class="ui-panel">
+    <button class="measure-btn" onclick="measureByte()">⚡ Measure Quantum Byte</button>
+    <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
+  </div>
 </div>
 
 <script>
@@ -150,20 +212,19 @@ rng_tavern_html = """
   const table = document.getElementById('tableSurface');
 
   for (let i = 0; i < numCoins; i++) {
-    coinData.push({ angle: 0 }); // 0 degrees rotation
+    coinData.push({ angle: 0 });
 
     const card = document.createElement('div');
     card.className = 'coin-card';
     card.innerHTML = `
-      <div style="font-size: 12px;">Qubit ${i}</div>
+      <div style="font-size: 11px; color: #b8975a;">Qubit ${i}</div>
       <div class="coin-slot" id="slot_${i}">
         <div class="coin-3d" id="coin_${i}">
           <div class="face face-front">0</div>
           <div class="face face-back">1</div>
-          <div class="coin-edge" id="edge_${i}"></div>
         </div>
       </div>
-      <div class="stats" id="stat_${i}">P(1): 50%</div>
+      <div class="stats" id="stat_${i}">P(1): 0%</div>
     `;
     table.appendChild(card);
     setupInteraction(i);
@@ -184,13 +245,13 @@ rng_tavern_html = """
       let deltaX = e.clientX - startX;
       startX = e.clientX;
 
-      coinData[index].angle += deltaX * 1.5; // Rotate along Y axis
+      coinData[index].angle += deltaX * 1.5;
       updateCoinVisual(index);
     });
 
     window.addEventListener('mouseup', () => { isDragging = false; });
 
-    // Touch support
+    // Touch support for mobile devices
     slot.addEventListener('touchstart', (e) => {
       isDragging = true;
       startX = e.touches[0].clientX;
@@ -211,13 +272,10 @@ rng_tavern_html = """
     let coin = document.getElementById(`coin_${index}`);
     let stat = document.getElementById(`stat_${index}`);
 
-    // Restrict rotation strictly to Y axis
     coin.style.transform = `rotateY(${angle}deg)`;
 
-    // Calculate probability based on normalized angle cycle (0 to 360 deg maps to quantum phase/probability)
     let normalizedAngle = (angle % 360 + 360) % 360;
-    let rad = (normalizedAngle * Math.PI) / 180;
-    let prob1 = Math.sin(rad / 2) ** 2;
+    let prob1 = Math.sin((normalizedAngle * Math.PI) / 360) ** 2;
     stat.innerText = `P(1): ${Math.round(prob1 * 100)}%`;
   }
 
@@ -226,14 +284,13 @@ rng_tavern_html = """
     for (let i = 0; i < numCoins; i++) {
       let angle = coinData[i].angle;
       let normalizedAngle = (angle % 360 + 360) % 360;
-      let prob1 = Math.sin((normalizedAngle * Math.PI) / 180) ** 2;
+      let prob1 = Math.sin((normalizedAngle * Math.PI) / 360) ** 2;
       
       let outcome = Math.random() < prob1 ? "1" : "0";
       binaryString += outcome;
 
-      // Snap visual to nearest definitive state (0 deg or 180 deg) on collapse
       let coin = document.getElementById(`coin_${i}`);
-      coin.style.transition = "transform 0.4s ease";
+      coin.style.transition = "transform 0.3s ease";
       let targetAngle = outcome === "1" ? 180 : 0;
       coinData[i].angle = targetAngle;
       coin.style.transform = `rotateY(${targetAngle}deg)`;
@@ -250,4 +307,4 @@ rng_tavern_html = """
 </html>
 """
 
-components.html(rng_tavern_html, height=480)
+components.html(rng_tavern_html, height=550)
