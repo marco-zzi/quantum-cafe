@@ -7,20 +7,10 @@ st.set_page_config(page_title="Quantum Café - QRNG", layout="wide")
 # Custom CSS for clean layout
 st.markdown("""
 <style>
-    /* Hide default Streamlit header overlaying top controls */
-        [data-testid="stHeader"] {
-            display: none !important;
-        }
-        .block-container {
-            padding-top: 1.5rem !important;
-            padding-bottom: 0.5rem !important;
-            padding-left: 0.5rem !important;
-            padding-right: 0.5rem !important;
-        }
-        iframe {
-            display: block;
-            width: 100% !important;
-        }
+    header { visibility: hidden; }
+    footer { visibility: hidden; }
+    .main-title { font-size: 2.2rem; font-weight: 700; color: #1E3A8A; }
+    .sub-title { font-size: 1.1rem; color: #4B5563; margin-bottom: 1.5rem; }
 </style>
 """, unsafe_allow_html=True)
 
