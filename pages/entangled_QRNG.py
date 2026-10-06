@@ -430,4 +430,286 @@ rng_tavern_html = f"""
 
   <!-- Mode Control Bar -->
   <div class="mode-bar">
-    <button class
+    <button class="mode-btn active" id="btnModeSingle" onclick="setMode('single')">Single Rotation</button>
+    <button class="mode-btn" id="btnModeBell" onclick="setMode('bell')">🔗 Bell State</button>
+    <button class="mode-btn" id="btnModeGHZ" onclick="setMode('ghz')">🌐 GHZ State</button>
+    <button class="mode-btn reset" onclick="clearEntanglements()">Clear Entanglements</button>
+  </div>
+
+  <p class="app-title" id="appTitleText">Drag coins horizontally to alter superposition states, then measure to generate a random byte.</p>
+
+  <div class="tavern-stage">
+    <div class="table-overlay">
+      <div class="coins-grid" id="tableSurface"></div>
+      
+      <div class="ui-panel">
+        <button class="measure-btn" onclick="measureByte()">⚡ Measure ⚡</button>
+        <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const numCoins = 8;
+  const numFacets = 16;
+  const table = document.getElementById('tableSurface');
+
+  let currentMode = 'single';
+  let pendingSelection = [];
+  let groups = [];
+  const groupColors = ['#00e5ff', '#ff007f', '#00ff66', '#ffbe00', '#a100ff'];
+
+  let coinData = Array.from({{ length: numCoins }}, () => ({{
+    angle: 0,
+    locked: false,
+    groupId: null
+  }}));
+
+  for (let i = 0; i < numCoins; i++) {{
+    const card = document.createElement('div');
+    card.className = 'coin-card';
+    card.id = `card_${{i}}`;
+    
+    let edgeFacetsHTML = '<div class="coin-edge-3d">';
+    for (let f = 0; f < numFacets; f++) {{
+      let phi = f * (360 / numFacets);
+      edgeFacetsHTML += `<div class="edge-facet" style="
+        transform: rotateZ(${{phi}}deg) translateY(calc(-1 * var(--coin-radius))) rotateX(90deg);
+      "></div>`;
+    }}
+    edgeFacetsHTML += '</div>';
+
+    card.innerHTML = `
+      <div class="card-header">Qubit ${{i}}</div>
+      <div class="coin-slot" id="slot_${{i}}">
+        <div class="coin-3d" id="coin_${{i}}">
+          <div class="face face-front"></div>
+          <div class="face face-back"></div>
+          ${{edgeFacetsHTML}}
+        </div>
+      </div>
+      <div class="stats" id="stat_${{i}}">P(1): 0%</div>
+      <div id="badge_${{i}}"></div>
+    `;
+
+    card.addEventListener('click', (e) => handleCardClick(i, e));
+    table.appendChild(card);
+    setupInteraction(i);
+  }}
+
+  function setMode(mode) {{
+    currentMode = mode;
+    pendingSelection = [];
+    
+    document.getElementById('btnModeSingle').classList.toggle('active', mode === 'single');
+    document.getElementById('btnModeBell').classList.toggle('active', mode === 'bell');
+    document.getElementById('btnModeGHZ').classList.toggle('active', mode === 'ghz');
+
+    const titleText = document.getElementById('appTitleText');
+    if (mode === 'single') {{
+      titleText.innerText = "Drag coins horizontally to alter superposition states, then measure to generate a random byte.";
+    }} else if (mode === 'bell') {{
+      titleText.innerText = "Click any 2 unentangled qubits to form a Bell pair (|00⟩ + |11⟩) / √2.";
+    }} else if (mode === 'ghz') {{
+      titleText.innerText = "Click any 3 unentangled qubits to form a GHZ triplet (|000⟩ + |111⟩) / √2.";
+    }}
+
+    updateCardVisuals();
+  }}
+
+  function handleCardClick(index, e) {{
+    if (currentMode === 'single') return;
+
+    // Disband existing group if user clicks an entangled qubit card
+    if (coinData[index].groupId) {{
+      const gId = coinData[index].groupId;
+      groups = groups.filter(g => g.id !== gId);
+      coinData.forEach((c, idx) => {{
+        if (c.groupId === gId) {{
+          c.locked = false;
+          c.groupId = null;
+          c.angle = 0;
+          updateCoinVisual(idx);
+        }}
+      }});
+      pendingSelection = pendingSelection.filter(id => id !== index);
+      updateCardVisuals();
+      return;
+    }}
+
+    const targetSize = currentMode === 'bell' ? 2 : 3;
+    const pIdx = pendingSelection.indexOf(index);
+
+    if (pIdx !== -1) {{
+      pendingSelection.splice(pIdx, 1);
+    }} else {{
+      pendingSelection.push(index);
+      if (pendingSelection.length === targetSize) {{
+        const groupColor = groupColors[groups.length % groupColors.length];
+        const newGroupId = 'group_' + Date.now();
+        const newGroup = {{
+          id: newGroupId,
+          type: currentMode.toUpperCase(),
+          members: [...pendingSelection],
+          color: groupColor
+        }};
+        groups.push(newGroup);
+
+        newGroup.members.forEach(m => {{
+          coinData[m].locked = true;
+          coinData[m].groupId = newGroupId;
+          coinData[m].angle = 90; // Sets equal superposition (P(1) = 50%)
+          updateCoinVisual(m);
+        }});
+
+        pendingSelection = [];
+      }}
+    }}
+
+    updateCardVisuals();
+  }}
+
+  function clearEntanglements() {{
+    groups = [];
+    pendingSelection = [];
+    coinData.forEach((c, i) => {{
+      c.locked = false;
+      c.groupId = null;
+      c.angle = 0;
+      updateCoinVisual(i);
+    }});
+    updateCardVisuals();
+  }}
+
+  function updateCardVisuals() {{
+    for (let i = 0; i < numCoins; i++) {{
+      const card = document.getElementById(`card_${{i}}`);
+      const badge = document.getElementById(`badge_${{i}}`);
+      const isPending = pendingSelection.includes(i);
+      const group = groups.find(g => g.members.includes(i));
+
+      card.classList.toggle('pending', isPending);
+      card.classList.toggle('locked', coinData[i].locked);
+
+      if (group) {{
+        card.style.borderColor = group.color;
+        card.style.boxShadow = `0 0 10px ${{group.color}}88`;
+        badge.innerHTML = `<span class="entangle-badge" style="background:${{group.color}}33; color:${{group.color}}; border: 1px solid ${{group.color}};">${{group.type}}</span>`;
+      }} else {{
+        card.style.borderColor = '';
+        card.style.boxShadow = '';
+        badge.innerHTML = '';
+      }}
+    }}
+  }}
+
+  function setupInteraction(index) {{
+    const slot = document.getElementById(`slot_${{index}}`);
+    let isDragging = false;
+    let startX = 0;
+
+    slot.addEventListener('mousedown', (e) => {{
+      if (coinData[index].locked) return;
+      isDragging = true;
+      startX = e.clientX;
+    }});
+
+    window.addEventListener('mousemove', (e) => {{
+      if (!isDragging || coinData[index].locked) return;
+      let deltaX = e.clientX - startX;
+      startX = e.clientX;
+
+      coinData[index].angle += deltaX * 1.5;
+      updateCoinVisual(index);
+    }});
+
+    window.addEventListener('mouseup', () => {{ isDragging = false; }});
+
+    slot.addEventListener('touchstart', (e) => {{
+      if (coinData[index].locked) return;
+      isDragging = true;
+      startX = e.touches[0].clientX;
+    }}, {{ passive: true }});
+
+    window.addEventListener('touchmove', (e) => {{
+      if (!isDragging || coinData[index].locked) return;
+      let deltaX = e.touches[0].clientX - startX;
+      startX = e.touches[0].clientX;
+
+      coinData[index].angle += deltaX * 1.5;
+      updateCoinVisual(index);
+    }}, {{ passive: true }});
+
+    window.addEventListener('touchend', () => {{ isDragging = false; }});
+  }}
+
+  function updateCoinVisual(index) {{
+    let angle = coinData[index].angle;
+    let coin = document.getElementById(`coin_${{index}}`);
+    let stat = document.getElementById(`stat_${{index}}`);
+
+    coin.style.transform = `rotateY(${{angle}}deg)`;
+
+    let normalizedAngle = (angle % 360 + 360) % 360;
+    let prob1 = Math.sin((normalizedAngle * Math.PI) / 360) ** 2;
+    stat.innerText = `P(1): ${{Math.round(prob1 * 100)}}%`;
+  }}
+
+  function measureByte() {{
+    let outcomes = new Array(numCoins);
+
+    // 1. Joint Wavefunction Collapse for Entangled Groups
+    groups.forEach(group => {{
+      // Correlated outcome across all members in the entangled state
+      let groupOutcome = Math.random() < 0.5 ? "1" : "0";
+      group.members.forEach(m => {{
+        outcomes[m] = groupOutcome;
+      }});
+    }});
+
+    // 2. Measure Single/Unentangled Qubits
+    for (let i = 0; i < numCoins; i++) {{
+      if (outcomes[i] === undefined) {{
+        let angle = coinData[i].angle;
+        let normalizedAngle = (angle % 360 + 360) % 360;
+        let prob1 = Math.sin((normalizedAngle * Math.PI) / 360) ** 2;
+        outcomes[i] = Math.random() < prob1 ? "1" : "0";
+      }}
+    }}
+
+    // 3. Clear Entanglements (State Collapse disbands entangled superpositions)
+    groups = [];
+    pendingSelection = [];
+
+    // 4. Update Qubit States, Unlock, and Trigger 3D Visual Transitions
+    let binaryString = "";
+    for (let i = 0; i < numCoins; i++) {{
+      let outcome = outcomes[i];
+      binaryString += outcome;
+
+      let targetAngle = outcome === "1" ? 180 : 0;
+      
+      // Permanently collapse qubit state and unlock dragging
+      coinData[i].angle = targetAngle;
+      coinData[i].locked = false;
+      coinData[i].groupId = null;
+
+      let coin = document.getElementById(`coin_${{i}}`);
+      coin.style.transition = "transform 0.3s ease";
+      coin.style.transform = `rotateY(${{targetAngle}}deg)`;
+      document.getElementById(`stat_${{i}}`).innerText = `P(1): ${{outcome === "1" ? "100%" : "0%"}}`;
+    }}
+
+    updateCardVisuals();
+
+    let decimalVal = parseInt(binaryString, 2);
+    let hexVal = decimalVal.toString(16).toUpperCase().padStart(2, '0');
+    document.getElementById('byteResult').innerHTML = `Byte: ${{binaryString}} (0x${{hexVal}} | ${{decimalVal}})`;
+  }}
+</script>
+
+</body>
+</html>
+"""
+
+components.html(rng_tavern_html, height=1200)
