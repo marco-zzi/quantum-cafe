@@ -44,7 +44,7 @@ rng_tavern_html = f"""
 
   body {{
     margin: 0;
-    padding: 12px 0 16px 0;
+    padding: 24px 0 16px 0;
     background-color: #0d0704;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #f3e5ab;
@@ -130,12 +130,12 @@ rng_tavern_html = f"""
 
     .table-overlay {{
       position: absolute;
-      top: 50%;
+      top: 0;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%);
       width: 90%;
       max-width: 760px;
-      height: 90%;
+      height: 100%;
     }}
 
     .coins-grid {{
@@ -197,7 +197,7 @@ rng_tavern_html = f"""
 
     .ui-panel {{
       position: absolute;
-      bottom: 18px;
+      bottom: 20px;
       left: 50%;
       transform: translateX(-50%);
       display: flex;
@@ -251,7 +251,7 @@ rng_tavern_html = f"""
       font-size: 13px;
       font-style: italic;
       color: #b8975a;
-      margin: 0 0 12px 0;
+      margin: 0 0 14px 0;
       padding: 0 8px;
     }}
 
@@ -271,17 +271,17 @@ rng_tavern_html = f"""
 
     .table-overlay {{
       position: absolute;
-      top: 50%;
+      top: 0;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%);
       width: 88%;
       max-width: 280px;
-      height: 94%;
+      height: 100%;
     }}
 
     .coins-grid {{
       position: absolute;
-      top: 38%;
+      top: 42%;
       left: 50%;
       transform: translate(-50%, -50%);
       display: grid;
