@@ -18,8 +18,6 @@ front_b64 = img_to_b64("assets/QRNG_0.png")
 back_b64 = img_to_b64("assets/QRNG_1.png")
 edge_b64 = img_to_b64("assets/QRNG_edge.png")
 
-st.title("🎲 Quantum Random Number Generator")
-
 rng_tavern_html = f"""
 <!DOCTYPE html>
 <html>
@@ -27,19 +25,33 @@ rng_tavern_html = f"""
 <style>
   body {{
     margin: 0;
-    padding: 0;
+    padding: 10px 0;
     background-color: #0d0704;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #f3e5ab;
     text-align: center;
     overflow-x: hidden;
   }}
+
+  .app-title {{
+    font-size: 28px;
+    margin: 0 0 10px 0;
+    color: #f3e5ab;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+  }}
+
+  .app-subtitle {{
+    font-size: 14px;
+    font-style: italic;
+    color: #b8975a;
+    margin-bottom: 15px;
+  }}
   
-  /* 2.5D Table Stage with Custom Background */
+  /* 2.5D Table Stage */
   .tavern-stage {{
     position: relative;
     width: 900px;
-    height: 600px;
+    height: 580px;
     margin: 0 auto;
     border-radius: 12px;
     overflow: hidden;
@@ -49,10 +61,9 @@ rng_tavern_html = f"""
     background-position: center;
   }}
 
-  /* Grid overlay aligned to central wooden board */
   .table-overlay {{
     position: absolute;
-    top: 100px;
+    top: 90px;
     left: 100px;
     width: 700px;
     display: grid;
@@ -62,7 +73,7 @@ rng_tavern_html = f"""
   }}
 
   .coin-card {{
-    background: rgba(15, 8, 4, 0.7);
+    background: rgba(15, 8, 4, 0.75);
     border: 1px solid #8b5a2b;
     backdrop-filter: blur(4px);
     border-radius: 10px;
@@ -79,7 +90,6 @@ rng_tavern_html = f"""
     cursor: ew-resize;
   }}
   
-  /* 3D Coin with Image Textures */
   .coin-3d {{
     width: 100%;
     height: 100%;
@@ -100,24 +110,28 @@ rng_tavern_html = f"""
   }}
 
   .face-front {{
-    background-image: url('data:image/jpeg;base64,{front_b64}');
+    background-image: url('data:image/png;base64,{front_b64}');
     transform: translateZ(5px);
   }}
 
   .face-back {{
-    background-image: url('data:image/jpeg;base64,{back_b64}');
+    background-image: url('data:image/png;base64,{back_b64}');
     transform: rotateY(180deg) translateZ(5px);
   }}
 
-  /* Ribbed Edge Texture Cylinder */
-  .coin-edge {{
+  .coin-edge-3d {{
     position: absolute;
-    width: 80px;
+    width: 100%;
+    height: 100%;
+    transform-style: preserve-3d;
+  }}
+
+  .edge-facet {{
+    position: absolute;
     height: 10px;
-    top: 35px;
-    left: 0;
-    background-image: url('data:image/jpeg;base64,{edge_b64}');
-    background-size: auto 100%;
+    background-image: url('data:image/png;base64,{edge_b64}');
+    background-size: cover;
+    background-position: center;
     transform-style: preserve-3d;
   }}
 
@@ -130,7 +144,7 @@ rng_tavern_html = f"""
 
   .ui-panel {{
     position: absolute;
-    bottom: 20px;
+    bottom: 15px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
@@ -171,32 +185,54 @@ rng_tavern_html = f"""
 </head>
 <body>
 
-<div class="tavern-stage">
-  <div class="table-overlay" id="tableSurface"></div>
+  <h1 class="app-title">🎲 Quantum Random Number Generator</h1>
 
-  <div class="ui-panel">
-    <button class="measure-btn" onclick="measureByte()">⚡ Measure</button>
-    <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
+  <div class="tavern-stage">
+    <div class="table-overlay" id="tableSurface"></div>
+
+    <div class="ui-panel">
+      <button class="measure-btn" onclick="measureByte()">⚡ Measure</button>
+      <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
+    </div>
   </div>
-</div>
+
+  <p class="app-subtitle">Drag coins horizontally to alter superposition states (&theta;), then measure to generate a random byte.</p>
 
 <script>
   const numCoins = 8;
   let coinData = [];
   const table = document.getElementById('tableSurface');
 
+  const numFacets = 16;
+  const radius = 39.5;
+  const facetWidth = (2 * radius * Math.tan(Math.PI / numFacets)).toFixed(2);
+  const facetLeft = (40 - facetWidth / 2).toFixed(2);
+
   for (let i = 0; i < numCoins; i++) {{
     coinData.push({{ angle: 0 }});
 
     const card = document.createElement('div');
     card.className = 'coin-card';
+    
+    let edgeFacetsHTML = '<div class="coin-edge-3d">';
+    for (let f = 0; f < numFacets; f++) {{
+      let phi = f * (360 / numFacets);
+      edgeFacetsHTML += `<div class="edge-facet" style="
+        width: ${{facetWidth}}px;
+        left: ${{facetLeft}}px;
+        top: 35px;
+        transform: rotateZ(${{phi}}deg) translateY(-${{radius}}px) rotateX(90deg);
+      "></div>`;
+    }}
+    edgeFacetsHTML += '</div>';
+
     card.innerHTML = `
       <div style="font-size: 11px; color: #d4af37;">Qubit ${{i}}</div>
       <div class="coin-slot" id="slot_${{i}}">
         <div class="coin-3d" id="coin_${{i}}">
           <div class="face face-front"></div>
           <div class="face face-back"></div>
-          <div class="coin-edge"></div>
+          ${{edgeFacetsHTML}}
         </div>
       </div>
       <div class="stats" id="stat_${{i}}">P(1): 0%</div>
@@ -270,16 +306,3 @@ rng_tavern_html = f"""
       coin.style.transform = `rotateY(${{targetAngle}}deg)`;
       document.getElementById(`stat_${{i}}`).innerText = `P(1): ${{outcome === "1" ? "100%" : "0%"}}`;
     }}
-
-    let decimalVal = parseInt(binaryString, 2);
-    let hexVal = decimalVal.toString(16).toUpperCase().padStart(2, '0');
-    document.getElementById('byteResult').innerHTML = `Byte: ${{binaryString}} (0x${{hexVal}} | ${{decimalVal}})`;
-  }}
-</script>
-
-</body>
-</html>
-"""
-
-components.html(rng_tavern_html, height=620)
-st.markdown("*Drag coins horizontally to alter superposition states ($\theta$), then measure to generate a random byte.*")
