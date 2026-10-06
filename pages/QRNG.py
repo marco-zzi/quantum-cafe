@@ -363,7 +363,7 @@ rng_tavern_html = f"""
 </head>
 <body>
 
-  <p class="app-subtitle">Drag coins horizontally to alter superposition states (&theta;), then measure to generate a random byte.</p>
+  <p class="app-subtitle">Drag coins horizontally to alter superposition states, then measure to generate a random byte.</p>
 
   <div class="tavern-stage">
     <div class="table-overlay">
