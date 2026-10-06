@@ -1,6 +1,6 @@
 # Vilnius Quantum Café: Interactive Apps
 
-Welcome to the open-source repository for the **Vilnius Quantum Café** interactive visualization suite, developed for Vilnius University (VU) and the Lithuanian Quantum Technologies Association (QL).
+Welcome to the open-source repository for the **Vilnius Quantum Café** interactive visualization suite, developed for Vilnius University (VU) and the Lithuanian Quantum Technologies Association (LKTA).
 
 This repository contains lightweight, interactive web applications built with Python and Streamlit, featuring 2.5D isometric animations designed to demystify quantum computing concepts during public engagement events and hackathons.
 
