@@ -51,10 +51,10 @@ with st.sidebar:
 
         | Measured Bell State | Classical Bits | Bob's Gate |
         | :--- | :---: | :---: |
-        | $|\Phi^+\rangle$ | **00** | $I$ (None) |
-        | $|\Psi^+\rangle$ | **01** | $X$ (Bit flip) |
-        | $|\Phi^-\rangle$ | **10** | $Z$ (Phase flip) |
-        | $|\Psi^-\rangle$ | **11** | $Z \cdot X$ (Both) |
+        | $\vert\Phi^+\rangle$ | **00** | $I$ (None) |
+        | $\vert\Psi^+\rangle$ | **01** | $X$ (Bit flip) |
+        | $\vert\Phi^-\rangle$ | **10** | $Z$ (Phase flip) |
+        | $\vert\Psi^-\rangle$ | **11** | $Z \cdot X$ (Both) |
         """
     )
 
