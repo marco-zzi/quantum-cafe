@@ -7,10 +7,33 @@ st.set_page_config(page_title="Quantum Café - QRNG", layout="wide")
 # Custom CSS for clean layout
 st.markdown("""
     <style>
-    [data-testid="stHeader"] { background-color: rgba(0,0,0,0) !important; }
-    [data-testid="stToolbar"] { display: none !important; }
-    #MainMenu { visibility: hidden !important; }
-    footer, [data-testid="stFooter"], [data-testid="stStatusWidget"] { display: none !important; }
+    /* Make top header background transparent */
+    [data-testid="stHeader"] {
+        background-color: rgba(0, 0, 0, 0) !important;
+    }
+
+    /* Hide top-right action buttons (Deploy, main menu) only */
+    [data-testid="stToolbarActions"],
+    .stAppDeployButton,
+    #MainMenu {
+        display: none !important;
+    }
+
+    /* Hide footer and 'Manage app' bottom-right widget */
+    footer,
+    [data-testid="stFooter"],
+    [data-testid="stStatusWidget"] {
+        display: none !important;
+    }
+
+    /* Explicitly preserve sidebar toggle arrow and page navigation controls */
+    [data-testid="stSidebarCollapseButton"],
+    [data-testid="stHeaderNav"],
+    [data-testid="stSidebarNav"] {
+        display: flex !important;
+        visibility: visible !important;
+        z-index: 1000000 !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
