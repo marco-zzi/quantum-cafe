@@ -44,7 +44,7 @@ rng_tavern_html = f"""
 
   body {{
     margin: 0;
-    padding: 0 0 16px 0;
+    padding: 12px 0 16px 0;
     background-color: #0d0704;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #f3e5ab;
@@ -91,23 +91,23 @@ rng_tavern_html = f"""
     transform-style: preserve-3d;
   }}
 
-  /* Control Panel for Entanglement Selection */
+  /* Mode Bar Controls */
   .mode-bar {{
     display: flex;
     justify-content: center;
     align-items: center;
     gap: 8px;
-    margin: 10px auto 12px auto;
+    margin: 0 auto 8px auto;
     flex-wrap: wrap;
-    max-width: 720px;
+    max-width: 760px;
   }}
 
   .mode-btn {{
     background: #1e110a;
     color: #b8975a;
     border: 1px solid #5a3c1e;
-    padding: 6px 14px;
-    font-size: 13px;
+    padding: 5px 12px;
+    font-size: 12px;
     font-weight: bold;
     border-radius: 6px;
     cursor: pointer;
@@ -132,29 +132,15 @@ rng_tavern_html = f"""
     border-color: #772222;
   }}
 
-  .mode-btn.reset:hover {{
-    background: #551818;
-    color: #ffaaaa;
-  }}
-
-  .status-text {{
-    font-size: 13px;
-    color: #00e5ff;
-    margin: 4px 0 10px 0;
-    min-height: 18px;
-  }}
-
   .entangle-badge {{
     font-size: 10px;
     font-weight: bold;
     text-transform: uppercase;
-    padding: 2px 6px;
+    padding: 1px 5px;
     border-radius: 4px;
-    margin-top: 2px;
     display: inline-block;
   }}
 
-  /* Locked / Pending States */
   .coin-card.pending {{
     border: 2px dashed #00e5ff !important;
     box-shadow: 0 0 10px rgba(0, 229, 255, 0.6) !important;
@@ -169,44 +155,47 @@ rng_tavern_html = f"""
      ========================================================================== */
   @media (min-width: 681px) {{
     .app-title {{
-      font-size: 24px;
-      margin: 6px 0 4px 0;
+      font-size: 18px;
+      font-style: italic;
+      margin: 2px 0 6px 0;
       color: #f3e5ab;
       text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-    }}
-
-    .app-subtitle {{
-      font-size: 13px;
-      font-style: italic;
-      color: #b8975a;
-      margin: 10px 0 16px 0;
     }}
 
     .tavern-stage {{
       position: relative;
       width: 100%;
-      max-height: 540px;
       aspect-ratio: 16 / 9;
       margin: 0 auto;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 15px 35px rgba(0,0,0,0.9);
       background-image: url('data:image/jpeg;base64,{table_desktop_b64}');
-      background-size: cover;
+      background-size: contain;
+      background-repeat: no-repeat;
       background-position: center;
     }}
 
     .table-overlay {{
       position: absolute;
-      top: 50%;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 760px;
+      height: 100%;
+    }}
+
+    .coins-grid {{
+      position: absolute;
+      top: 48%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 90%;
-      max-width: 720px;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       justify-items: center;
+      width: 100%;
     }}
 
     .coin-card {{
@@ -214,16 +203,15 @@ rng_tavern_html = f"""
       border: 1px solid #a87944;
       backdrop-filter: blur(6px);
       border-radius: 10px;
-      padding: 10px;
+      padding: 8px;
       width: 100%;
       max-width: 150px;
       box-shadow: 0 8px 16px rgba(0,0,0,0.6);
-      cursor: pointer;
-      transition: all 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }}
 
     .card-header {{
-      font-size: 14px;
+      font-size: 13px;
       color: #ffd875;
       font-weight: bold;
     }}
@@ -253,16 +241,19 @@ rng_tavern_html = f"""
       margin-top: 2px;
       color: #fce8bd;
       font-weight: bold;
+      font-variant-numeric: tabular-nums;
     }}
 
     .ui-panel {{
-      position: relative;
-      margin: 14px auto 0 auto;
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
-      width: 90%;
+      gap: 8px;
+      width: 100%;
     }}
 
     .measure-btn {{
@@ -299,115 +290,137 @@ rng_tavern_html = f"""
      2. MOBILE MODE ONLY (max-width: 680px)
      ========================================================================== */
   @media (max-width: 680px) {{
-    .app-title {{ display: none !important; }}
-
-    .app-subtitle {{
-      font-size: 11px;
+    .app-title {{
+      font-size: 14px;
       font-style: italic;
-      color: #b8975a;
-      margin: 8px 0 10px 0;
+      margin: 2px 0 4px 0;
+      color: #f3e5ab;
     }}
 
     .tavern-stage {{
       position: relative;
       width: 100%;
       aspect-ratio: 9 / 16;
-      max-height: 480px;
       margin: 0 auto;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 10px 25px rgba(0,0,0,0.9);
       background-image: url('data:image/jpeg;base64,{table_mobile_b64}');
-      background-size: cover;
+      background-size: contain;
+      background-repeat: no-repeat;
       background-position: center;
     }}
 
     .table-overlay {{
       position: absolute;
-      top: 50%;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 88%;
+      max-width: 280px;
+      height: 100%;
+    }}
+
+    .coins-grid {{
+      position: absolute;
+      top: 48%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 92%;
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
+      grid-template-columns: 1fr;
+      gap: 4px;
       justify-items: center;
+      width: 100%;
     }}
 
     .coin-card {{
-      background: rgba(40, 22, 10, 0.78);
-      border: 1px solid #8b5a2b;
-      backdrop-filter: blur(4px);
-      border-radius: 8px;
-      padding: 6px;
+      background: rgba(40, 22, 10, 0.55);
+      border: 1px solid rgba(139, 90, 43, 0.6);
+      backdrop-filter: blur(3px);
+      border-radius: 6px;
+      padding: 3px 8px;
       width: 100%;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
-      cursor: pointer;
+      max-width: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.4);
     }}
 
     .card-header {{
       font-size: 12px;
       color: #ffd875;
       font-weight: bold;
+      width: 55px;
+      flex-shrink: 0;
+      text-align: left;
     }}
 
     .coin-slot {{
-      --coin-radius: 28px;
-      width: 56px;
-      height: 56px;
-      margin: 4px auto;
+      --coin-radius: 24px;
+      width: 48px;
+      height: 48px;
+      margin: 0;
       perspective: 600px;
       cursor: ew-resize;
       touch-action: none;
+      flex-shrink: 0;
     }}
 
     .face-front {{ transform: translateZ(3px); }}
     .face-back  {{ transform: rotateY(180deg) translateZ(3px); }}
 
     .edge-facet {{
-      height: 6px;
+      height: 5px;
       width: calc(var(--coin-radius) * 0.3978);
       left: calc(50% - (var(--coin-radius) * 0.1989));
-      top: calc(50% - 3px);
+      top: calc(50% - 2.5px);
     }}
 
     .stats {{
-      font-size: 11px;
-      margin-top: 2px;
+      font-size: 12px;
+      margin-top: 0;
       color: #fce8bd;
       font-weight: bold;
+      width: 72px;
+      flex-shrink: 0;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+      display: inline-block;
     }}
 
     .ui-panel {{
-      position: relative;
-      margin: 10px auto 0 auto;
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
-      width: 95%;
+      gap: 6px;
+      width: 100%;
     }}
 
     .measure-btn {{
       background: linear-gradient(to bottom, #d4af37, #8a5a12);
       color: #120a05;
       border: 1px solid #ffe89c;
-      padding: 8px 22px;
-      font-size: 14px;
+      padding: 6px 18px;
+      font-size: 13px;
       font-weight: bold;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
+      box-shadow: 0 3px 8px rgba(0,0,0,0.7);
     }}
 
     .result-box {{
-      font-size: 13px;
-      letter-spacing: 1px;
+      font-size: 12px;
+      letter-spacing: 0.5px;
       color: #00ffcc;
       font-family: monospace;
       background: rgba(0,0,0,0.85);
-      padding: 5px 10px;
-      border-radius: 6px;
+      padding: 4px 8px;
+      border-radius: 4px;
       border: 1px solid #00ffcc44;
     }}
   }}
@@ -415,290 +428,6 @@ rng_tavern_html = f"""
 </head>
 <body>
 
-  <h1 class="app-title">🎲 Quantum Random Number Generator</h1>
-
-  <!-- Entanglement Mode Selection Bar -->
+  <!-- Mode Control Bar -->
   <div class="mode-bar">
-    <button class="mode-btn active" id="btnModeSingle" onclick="setMode('single')">Single Rotation</button>
-    <button class="mode-btn" id="btnModeBell" onclick="setMode('bell')">🔗 Bell State (Pairs)</button>
-    <button class="mode-btn" id="btnModeGHZ" onclick="setMode('ghz')">🌐 GHZ State (Triplets)</button>
-    <button class="mode-btn reset" onclick="clearEntanglements()">Clear Entanglements</button>
-  </div>
-
-  <div class="status-text" id="statusMessage">Mode: Single Qubit (Drag coins to set superposition)</div>
-
-  <!-- Game Table Stage -->
-  <div class="tavern-stage">
-    <div class="table-overlay" id="tableSurface"></div>
-  </div>
-
-  <!-- External Measure Panel -->
-  <div class="ui-panel">
-    <button class="measure-btn" onclick="measureByte()">⚡ Measure</button>
-    <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
-  </div>
-
-  <p class="app-subtitle">Drag coins to rotate or select Bell/GHZ modes to create correlated quantum entanglement.</p>
-
-<script>
-  const numCoins = 8;
-  const numFacets = 16;
-  const table = document.getElementById('tableSurface');
-
-  let currentMode = 'single'; // 'single', 'bell', 'ghz'
-  let pendingSelection = [];
-  let groups = []; 
-  const groupColors = ['#00e5ff', '#ff007f', '#00ff66', '#ffbe00', '#a100ff'];
-
-  let coinData = Array.from({{ length: numCoins }}, () => ({{
-    angle: 0,
-    locked: false,
-    groupId: null
-  }}));
-
-  // Initialize Qubit Cards
-  for (let i = 0; i < numCoins; i++) {{
-    const card = document.createElement('div');
-    card.className = 'coin-card';
-    card.id = `card_${{i}}`;
-    
-    let edgeFacetsHTML = '<div class="coin-edge-3d">';
-    for (let f = 0; f < numFacets; f++) {{
-      let phi = f * (360 / numFacets);
-      edgeFacetsHTML += `<div class="edge-facet" style="
-        transform: rotateZ(${{phi}}deg) translateY(calc(-1 * var(--coin-radius))) rotateX(90deg);
-      "></div>`;
-    }}
-    edgeFacetsHTML += '</div>';
-
-    card.innerHTML = `
-      <div class="card-header">Qubit ${{i}}</div>
-      <div class="coin-slot" id="slot_${{i}}">
-        <div class="coin-3d" id="coin_${{i}}">
-          <div class="face face-front"></div>
-          <div class="face face-back"></div>
-          ${{edgeFacetsHTML}}
-        </div>
-      </div>
-      <div class="stats" id="stat_${{i}}">P(1): 0%</div>
-      <div id="badge_${{i}}"></div>
-    `;
-
-    card.addEventListener('click', (e) => handleCardClick(i, e));
-    table.appendChild(card);
-    setupInteraction(i);
-  }}
-
-  function setMode(mode) {{
-    currentMode = mode;
-    pendingSelection = [];
-    
-    document.getElementById('btnModeSingle').classList.toggle('active', mode === 'single');
-    document.getElementById('btnModeBell').classList.toggle('active', mode === 'bell');
-    document.getElementById('btnModeGHZ').classList.toggle('active', mode === 'ghz');
-
-    updateUIStatus();
-    updateCardVisuals();
-  }}
-
-  function updateUIStatus() {{
-    const msg = document.getElementById('statusMessage');
-    if (currentMode === 'single') {{
-      msg.innerText = "Mode: Single Qubit (Drag coins horizontally)";
-    }} else if (currentMode === 'bell') {{
-      msg.innerText = `Mode: Bell State | Click 2 qubits to entangle (${{pendingSelection.length}}/2 selected)`;
-    }} else if (currentMode === 'ghz') {{
-      msg.innerText = `Mode: GHZ State | Click 3 qubits to entangle (${{pendingSelection.length}}/3 selected)`;
-    }}
-  }}
-
-  function handleCardClick(index, e) {{
-    // If clicking directly on drag area in single mode, skip mode selection
-    if (currentMode === 'single') return;
-
-    // Disband group if user clicks an already entangled card
-    if (coinData[index].groupId) {{
-      const gId = coinData[index].groupId;
-      groups = groups.filter(g => g.id !== gId);
-      coinData.forEach((c, idx) => {{
-        if (c.groupId === gId) {{
-          c.locked = false;
-          c.groupId = null;
-          c.angle = 0;
-          updateCoinVisual(idx);
-        }}
-      }});
-      pendingSelection = pendingSelection.filter(id => id !== index);
-      updateCardVisuals();
-      updateUIStatus();
-      return;
-    }}
-
-    const targetSize = currentMode === 'bell' ? 2 : 3;
-    const pIdx = pendingSelection.indexOf(index);
-
-    if (pIdx !== -1) {{
-      pendingSelection.splice(pIdx, 1);
-    }} else {{
-      pendingSelection.push(index);
-      if (pendingSelection.length === targetSize) {{
-        // Create Entanglement Group
-        const groupColor = groupColors[groups.length % groupColors.length];
-        const newGroupId = 'group_' + Date.now();
-        const newGroup = {{
-          id: newGroupId,
-          type: currentMode.toUpperCase(),
-          members: [...pendingSelection],
-          color: groupColor
-        }};
-        groups.push(newGroup);
-
-        // Lock entangled qubits to 50% superposition (|0> + |1>) / sqrt(2)
-        newGroup.members.forEach(m => {{
-          coinData[m].locked = true;
-          coinData[m].groupId = newGroupId;
-          coinData[m].angle = 90; 
-          updateCoinVisual(m);
-        }});
-
-        pendingSelection = [];
-      }}
-    }}
-
-    updateCardVisuals();
-    updateUIStatus();
-  }}
-
-  function clearEntanglements() {{
-    groups = [];
-    pendingSelection = [];
-    coinData.forEach((c, i) => {{
-      c.locked = false;
-      c.groupId = null;
-      c.angle = 0;
-      updateCoinVisual(i);
-    }});
-    updateCardVisuals();
-    updateUIStatus();
-  }}
-
-  function updateCardVisuals() {{
-    for (let i = 0; i < numCoins; i++) {{
-      const card = document.getElementById(`card_${{i}}`);
-      const badge = document.getElementById(`badge_${{i}}`);
-      const isPending = pendingSelection.includes(i);
-      const group = groups.find(g => g.members.includes(i));
-
-      card.classList.toggle('pending', isPending);
-      card.classList.toggle('locked', coinData[i].locked);
-
-      if (group) {{
-        card.style.borderColor = group.color;
-        card.style.boxShadow = `0 0 12px ${{group.color}}66`;
-        badge.innerHTML = `<span class="entangle-badge" style="background:${{group.color}}33; color:${{group.color}}; border: 1px solid ${{group.color}};">${{group.type}}</span>`;
-      }} else {{
-        card.style.borderColor = '';
-        card.style.boxShadow = '';
-        badge.innerHTML = '';
-      }}
-    }}
-  }}
-
-  function setupInteraction(index) {{
-    const slot = document.getElementById(`slot_${{index}}`);
-    let isDragging = false;
-    let startX = 0;
-
-    slot.addEventListener('mousedown', (e) => {{
-      if (coinData[index].locked) return;
-      isDragging = true;
-      startX = e.clientX;
-    }});
-
-    window.addEventListener('mousemove', (e) => {{
-      if (!isDragging || coinData[index].locked) return;
-      let deltaX = e.clientX - startX;
-      startX = e.clientX;
-
-      coinData[index].angle += deltaX * 1.5;
-      updateCoinVisual(index);
-    }});
-
-    window.addEventListener('mouseup', () => {{ isDragging = false; }});
-
-    slot.addEventListener('touchstart', (e) => {{
-      if (coinData[index].locked) return;
-      isDragging = true;
-      startX = e.touches[0].clientX;
-    }}, {{ passive: true }});
-
-    window.addEventListener('touchmove', (e) => {{
-      if (!isDragging || coinData[index].locked) return;
-      let deltaX = e.touches[0].clientX - startX;
-      startX = e.touches[0].clientX;
-
-      coinData[index].angle += deltaX * 1.5;
-      updateCoinVisual(index);
-    }}, {{ passive: true }});
-
-    window.addEventListener('touchend', () => {{ isDragging = false; }});
-  }}
-
-  function updateCoinVisual(index) {{
-    let angle = coinData[index].angle;
-    let coin = document.getElementById(`coin_${{index}}`);
-    let stat = document.getElementById(`stat_${{index}}`);
-
-    coin.style.transform = `rotateY(${{angle}}deg)`;
-
-    let normalizedAngle = (angle % 360 + 360) % 360;
-    let prob1 = Math.sin((normalizedAngle * Math.PI) / 360) ** 2;
-    stat.innerText = `P(1): ${{Math.round(prob1 * 100)}}%`;
-  }}
-
-  function measureByte() {{
-    let results = new Array(numCoins);
-
-    // 1. Measure Entangled Groups (Correlated Outcomes)
-    groups.forEach(group => {{
-      let groupOutcome = Math.random() < 0.5 ? "1" : "0";
-      group.members.forEach(m => {{
-        results[m] = groupOutcome;
-      }});
-    }});
-
-    // 2. Measure Independent Unentangled Qubits
-    for (let i = 0; i < numCoins; i++) {{
-      if (results[i] === undefined) {{
-        let angle = coinData[i].angle;
-        let normalizedAngle = (angle % 360 + 360) % 360;
-        let prob1 = Math.sin((normalizedAngle * Math.PI) / 360) ** 2;
-        results[i] = Math.random() < prob1 ? "1" : "0";
-      }}
-    }}
-
-    // 3. Apply Visual Collapse & Transitions
-    let binaryString = "";
-    for (let i = 0; i < numCoins; i++) {{
-      let outcome = results[i];
-      binaryString += outcome;
-
-      let coin = document.getElementById(`coin_${{i}}`);
-      coin.style.transition = "transform 0.3s ease";
-      let targetAngle = outcome === "1" ? 180 : 0;
-      coinData[i].angle = targetAngle;
-      coin.style.transform = `rotateY(${{targetAngle}}deg)`;
-      document.getElementById(`stat_${{i}}`).innerText = `P(1): ${{outcome === "1" ? "100%" : "0%"}}`;
-    }}
-
-    let decimalVal = parseInt(binaryString, 2);
-    let hexVal = decimalVal.toString(16).toUpperCase().padStart(2, '0');
-    document.getElementById('byteResult').innerHTML = `Byte: ${{binaryString}} (0x${{hexVal}} | ${{decimalVal}})`;
-  }}
-</script>
-
-</body>
-</html>
-"""
-
-components.html(rng_tavern_html, height=1050)
+    <button class
