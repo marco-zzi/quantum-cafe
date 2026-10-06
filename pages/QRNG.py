@@ -513,4 +513,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=1200)
+components.html(rng_tavern_html, height=1500)
