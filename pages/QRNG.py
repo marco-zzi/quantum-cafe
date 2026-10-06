@@ -117,24 +117,22 @@ rng_tavern_html = f"""
     .tavern-stage {{
       position: relative;
       width: 100%;
-      max-height: 560px;
-      aspect-ratio: 16 / 9;
       margin: 0 auto;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 15px 35px rgba(0,0,0,0.9);
       background-image: url('data:image/jpeg;base64,{table_desktop_b64}');
-      background-size: cover;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
       background-position: center;
     }}
 
     .table-overlay {{
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      position: relative;
       width: 90%;
       max-width: 720px;
+      margin: 0 auto;
+      padding: 32px 0;
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
@@ -243,23 +241,21 @@ rng_tavern_html = f"""
     .tavern-stage {{
       position: relative;
       width: 100%;
-      aspect-ratio: 9 / 16;
-      max-height: 500px;
       margin: 0 auto;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 10px 25px rgba(0,0,0,0.9);
       background-image: url('data:image/jpeg;base64,{table_mobile_b64}');
-      background-size: cover;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
       background-position: center;
     }}
 
     .table-overlay {{
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+      position: relative;
       width: 92%;
+      margin: 0 auto;
+      padding: 20px 0;
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
