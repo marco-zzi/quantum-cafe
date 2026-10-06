@@ -194,7 +194,7 @@ rng_tavern_html = f"""
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 80px;
+      gap: 8px;
       width: 100%;
     }}
 
