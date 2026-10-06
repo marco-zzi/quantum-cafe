@@ -38,6 +38,7 @@ rng_tavern_html = f"""
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
+  /* GLOBAL BASE STYLES (No layout rules) */
   * {{
     box-sizing: border-box;
   }}
@@ -53,76 +54,6 @@ rng_tavern_html = f"""
     overflow-y: auto;
   }}
 
-  .app-title {{
-    font-size: 24px;
-    margin: 6px 0 8px 0;
-    color: #f3e5ab;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-  }}
-
-  .app-subtitle {{
-    font-size: 13px;
-    font-style: italic;
-    color: #b8975a;
-    margin: 12px 0 16px 0;
-  }}
-  
-  /* Desktop Game Table Stage */
-  .tavern-stage {{
-    position: relative;
-    width: 100%;
-    max-width: 100%;
-    aspect-ratio: 16 / 9;
-    margin: 0 auto;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 15px 35px rgba(0,0,0,0.9);
-    background-image: url('data:image/jpeg;base64,{table_desktop_b64}');
-    background-size: cover;
-    background-position: center;
-  }}
-
-  /* Desktop: Coins centered both vertically and horizontally */
-  .table-overlay {{
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    max-width: 720px;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    justify-items: center;
-  }}
-
-  .coin-card {{
-    background: rgba(55, 33, 18, 0.72);
-    border: 1px solid #a87944;
-    backdrop-filter: blur(6px);
-    border-radius: 10px;
-    padding: 10px;
-    width: 100%;
-    max-width: 150px;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.6);
-  }}
-
-  .card-header {{
-    font-size: 14px;
-    color: #ffd875;
-    font-weight: bold;
-  }}
-
-  .coin-slot {{
-    --coin-radius: 40px;
-    width: 80px;
-    height: 80px;
-    margin: 8px auto;
-    perspective: 600px;
-    cursor: ew-resize;
-    touch-action: none;
-  }}
-  
   .coin-3d {{
     width: 100%;
     height: 100%;
@@ -144,12 +75,10 @@ rng_tavern_html = f"""
 
   .face-front {{
     background-image: url('data:image/png;base64,{front_b64}');
-    transform: translateZ(4px);
   }}
 
   .face-back {{
     background-image: url('data:image/png;base64,{back_b64}');
-    transform: rotateY(180deg) translateZ(4px);
   }}
 
   .coin-edge-3d {{
@@ -161,10 +90,6 @@ rng_tavern_html = f"""
 
   .edge-facet {{
     position: absolute;
-    height: 8px;
-    width: calc(var(--coin-radius) * 0.3978);
-    left: calc(50% - (var(--coin-radius) * 0.1989));
-    top: calc(50% - 4px);
     background-image: url('data:image/png;base64,{edge_b64}');
     background-size: cover;
     background-position: center;
@@ -172,64 +97,162 @@ rng_tavern_html = f"""
     transform-style: preserve-3d;
   }}
 
-  .stats {{
-    font-size: 13px;
-    margin-top: 4px;
-    color: #fce8bd;
-    font-weight: bold;
+  /* ==========================================================================
+     1. DESKTOP MODE ONLY (min-width: 681px)
+     ========================================================================== */
+  @media (min-width: 681px) {{
+    .app-title {{
+      font-size: 24px;
+      margin: 6px 0 8px 0;
+      color: #f3e5ab;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }}
+
+    .app-subtitle {{
+      font-size: 13px;
+      font-style: italic;
+      color: #b8975a;
+      margin: 12px 0 16px 0;
+    }}
+
+    .tavern-stage {{
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.9);
+      background-image: url('data:image/jpeg;base64,{table_desktop_b64}');
+      background-size: cover;
+      background-position: center;
+    }}
+
+    /* Centered both vertically and horizontally */
+    .table-overlay {{
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 90%;
+      max-width: 720px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      justify-items: center;
+    }}
+
+    .coin-card {{
+      background: rgba(55, 33, 18, 0.72);
+      border: 1px solid #a87944;
+      backdrop-filter: blur(6px);
+      border-radius: 10px;
+      padding: 10px;
+      width: 100%;
+      max-width: 150px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.6);
+    }}
+
+    .card-header {{
+      font-size: 14px;
+      color: #ffd875;
+      font-weight: bold;
+    }}
+
+    .coin-slot {{
+      --coin-radius: 40px;
+      width: 80px;
+      height: 80px;
+      margin: 8px auto;
+      perspective: 600px;
+      cursor: ew-resize;
+      touch-action: none;
+    }}
+
+    .face-front {{ transform: translateZ(4px); }}
+    .face-back {{ transform: rotateY(180deg) translateZ(4px); }}
+
+    .edge-facet {{
+      height: 8px;
+      width: calc(var(--coin-radius) * 0.3978);
+      left: calc(50% - (var(--coin-radius) * 0.1989));
+      top: calc(50% - 4px);
+    }}
+
+    .stats {{
+      font-size: 13px;
+      margin-top: 4px;
+      color: #fce8bd;
+      font-weight: bold;
+    }}
+
+    .ui-panel {{
+      position: relative;
+      margin: 18px auto 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      width: 90%;
+    }}
+
+    .measure-btn {{
+      background: linear-gradient(to bottom, #d4af37, #8a5a12);
+      color: #120a05;
+      border: 1px solid #ffe89c;
+      padding: 10px 28px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.7);
+      transition: all 0.2s;
+    }}
+
+    .measure-btn:hover {{
+      background: linear-gradient(to bottom, #f3e5ab, #d4af37);
+      transform: scale(1.04);
+    }}
+
+    .result-box {{
+      font-size: 15px;
+      letter-spacing: 1px;
+      color: #00ffcc;
+      font-family: monospace;
+      background: rgba(0,0,0,0.85);
+      padding: 6px 14px;
+      border-radius: 6px;
+      border: 1px solid #00ffcc44;
+    }}
   }}
 
-  /* Measure panel positioned outside the game table container */
-  .ui-panel {{
-    position: relative;
-    margin: 18px auto 0 auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    width: 90%;
-  }}
-
-  .measure-btn {{
-    background: linear-gradient(to bottom, #d4af37, #8a5a12);
-    color: #120a05;
-    border: 1px solid #ffe89c;
-    padding: 10px 28px;
-    font-size: 16px;
-    font-weight: bold;
-    border-radius: 8px;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.7);
-    transition: all 0.2s;
-  }}
-
-  .measure-btn:hover {{
-    background: linear-gradient(to bottom, #f3e5ab, #d4af37);
-    transform: scale(1.04);
-  }}
-
-  .result-box {{
-    font-size: 15px;
-    letter-spacing: 1px;
-    color: #00ffcc;
-    font-family: monospace;
-    background: rgba(0,0,0,0.85);
-    padding: 6px 14px;
-    border-radius: 6px;
-    border: 1px solid #00ffcc44;
-  }}
-
-  /* Mobile Adaptation Rules (< 680px) */
+  /* ==========================================================================
+     2. MOBILE MODE ONLY (max-width: 680px)
+     ========================================================================== */
   @media (max-width: 680px) {{
     .app-title {{
       display: none !important;
     }}
 
+    .app-subtitle {{
+      font-size: 11px;
+      font-style: italic;
+      color: #b8975a;
+      margin: 10px 0 12px 0;
+    }}
+
     .tavern-stage {{
-      aspect-ratio: 9 / 16;
+      position: relative;
       width: 100%;
-      max-height: 520px;
+      aspect-ratio: 9 / 16;
+      max-height: 500px;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.9);
       background-image: url('data:image/jpeg;base64,{table_mobile_b64}');
+      background-size: cover;
+      background-position: center;
     }}
 
     .table-overlay {{
@@ -238,26 +261,36 @@ rng_tavern_html = f"""
       left: 50%;
       transform: translate(-50%, -50%);
       width: 92%;
-      max-width: 100%;
-      padding: 0;
+      display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 8px;
+      justify-items: center;
     }}
 
     .coin-card {{
-      max-width: 100%;
-      padding: 8px;
+      background: rgba(40, 22, 10, 0.78);
+      border: 1px solid #8b5a2b;
+      backdrop-filter: blur(4px);
+      border-radius: 8px;
+      padding: 6px;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
     }}
 
     .card-header {{
-      font-size: 13px;
+      font-size: 12px;
+      color: #ffd875;
+      font-weight: bold;
     }}
 
     .coin-slot {{
-      --coin-radius: 32px;
-      width: 64px;
-      height: 64px;
-      margin: 6px auto;
+      --coin-radius: 28px;
+      width: 56px;
+      height: 56px;
+      margin: 4px auto;
+      perspective: 600px;
+      cursor: ew-resize;
+      touch-action: none;
     }}
 
     .face-front {{ transform: translateZ(3px); }}
@@ -265,26 +298,50 @@ rng_tavern_html = f"""
 
     .edge-facet {{
       height: 6px;
+      width: calc(var(--coin-radius) * 0.3978);
+      left: calc(50% - (var(--coin-radius) * 0.1989));
       top: calc(50% - 3px);
     }}
 
     .stats {{
-      font-size: 12px;
+      font-size: 11px;
+      margin-top: 2px;
+      color: #fce8bd;
+      font-weight: bold;
     }}
 
+    /* Measure panel placed cleanly under the game table */
     .ui-panel {{
-      margin-top: 14px;
+      position: relative;
+      margin: 12px auto 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
       width: 95%;
     }}
 
     .measure-btn {{
+      background: linear-gradient(to bottom, #d4af37, #8a5a12);
+      color: #120a05;
+      border: 1px solid #ffe89c;
       padding: 8px 22px;
-      font-size: 15px;
+      font-size: 14px;
+      font-weight: bold;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
     }}
 
     .result-box {{
       font-size: 13px;
-      padding: 5px 12px;
+      letter-spacing: 1px;
+      color: #00ffcc;
+      font-family: monospace;
+      background: rgba(0,0,0,0.85);
+      padding: 5px 10px;
+      border-radius: 6px;
+      border: 1px solid #00ffcc44;
     }}
   }}
 </style>
@@ -298,9 +355,9 @@ rng_tavern_html = f"""
     <div class="table-overlay" id="tableSurface"></div>
   </div>
 
-  <!-- Measure UI Panel (Located outside game table) -->
+  <!-- Measure UI Panel (External to table stage) -->
   <div class="ui-panel">
-    <button class="measure-btn" onclick="measureByte()">⚡ Measure ⚡</button>
+    <button class="measure-btn" onclick="measureByte()">⚡ Measure</button>
     <div class="result-box" id="byteResult">Result: [ Unmeasured ]</div>
   </div>
 
@@ -420,4 +477,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=950)
+components.html(rng_tavern_html, height=900)
