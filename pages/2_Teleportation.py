@@ -39,7 +39,7 @@ st.markdown("""
 
 st.title("🚀 Quantum Teleportation Exercise & Protocol Simulator")
 st.write(
-    r"Learn how quantum teleportation works step-by-step using a pre-shared $\vert{}\Phi^+\rangle$ Bell state."
+    r"Learn how quantum teleportation works step-by-step using a pre-shared $|\Phi^+\rangle$ Bell state."
 )
 
 # Sidebar Reference / Lookup Table
@@ -47,14 +47,14 @@ with st.sidebar:
     st.header("📖 Protocol Lookup Table")
     st.markdown(
         r"""
-        Shared Pair: $\vert{}\Phi^+\rangle = \frac{1}{\sqrt{2}}(\vert{}00\rangle + \vert{}11\rangle)$
+        Shared Pair: $|\Phi^+\rangle = \frac{1}{\sqrt{2}}(|00\rangle + |11\rangle)$
 
         | Measured Bell State | Classical Bits | Bob's Gate |
         | :--- | :---: | :---: |
-        | $\vert{}\Phi^+\rangle$ | **00** | $I$ (None) |
-        | $\vert{}\Psi^+\rangle$ | **01** | $X$ (Bit flip) |
-        | $\vert{}\Phi^-\rangle$ | **10** | $Z$ (Phase flip) |
-        | $\vert{}\Psi^-\rangle$ | **11** | $Z \cdot X$ (Both) |
+        | $|\Phi^+\rangle$ | **00** | $I$ (None) |
+        | $|\Psi^+\rangle$ | **01** | $X$ (Bit flip) |
+        | $|\Phi^-\rangle$ | **10** | $Z$ (Phase flip) |
+        | $|\Psi^-\rangle$ | **11** | $Z \cdot X$ (Both) |
         """
     )
 
@@ -68,7 +68,7 @@ col_main, col_info = st.columns([1.3, 1])
 
 with col_main:
     # STEP 1: State Preparation
-    st.markdown(r"### Step 1: Alice Prepares an Arbitrary State $\vert{}\psi\rangle$")
+    st.markdown(r"### Step 1: Alice Prepares an Arbitrary State $|\psi\rangle$")
     theta = st.slider(r"Polar Angle ($\theta$)", 0.0, 180.0, 60.0, key="t_angle")
     phi = st.slider(r"Phase Angle ($\varphi$)", 0.0, 360.0, 0.0, key="p_angle")
     
@@ -119,7 +119,7 @@ with col_main:
         )
         
         user_gate = st.selectbox(
-            r"Which correction gate must Bob apply to restore $\vert{}\psi\rangle$?",
+            r"Which correction gate must Bob apply to restore $|\psi\rangle$?",
             ["Identity (I)", "Pauli-X", "Pauli-Z", "Pauli-Z then Pauli-X"]
         )
 
@@ -145,11 +145,11 @@ with col_info:
     if st.session_state.step == 1:
         st.warning("Awaiting state preparation...")
     elif st.session_state.step == 2:
-        st.info(r"State locked. Entangled $\vert{}\Phi^+\rangle$ pair shared between VU Physics and MKIC.")
+        st.info(r"State locked. Entangled $|\Phi^+\rangle$ pair shared between VU Physics and MKIC.")
     elif st.session_state.step >= 3:
         state_str, correct_bits, correct_gate = st.session_state.bell_measured
         st.markdown("#### Live State Telemetry")
-        st.markdown(fr"- **Alice's Input State:** $\vert{}\psi\rangle = {alpha:.2f}\vert{}0\rangle + {beta:.2f}\vert{}1\rangle$")
+        st.markdown(fr"- **Alice's Input State:** $|\psi\rangle = {alpha:.2f}|0\rangle + {beta:.2f}|1\rangle$")
         st.markdown(f"- **Bell Basis Collapse:** {state_str}")
         st.markdown(f"- **Transmitted Channel Bits:** `{correct_bits}`")
         st.markdown(f"- **Bob's Applied Unitary:** {correct_gate}")
@@ -158,7 +158,7 @@ with col_info:
             st.success(
                 fr"**Reconstructed Output at Bob's Station:**"
                 "\n\n"
-                fr"$\vert{}\psi\rangle_{{\text{{Bob}}}} = {alpha:.2f}\vert{}0\rangle + e^{{i{phi:.0f}^\circ}}{beta:.2f}\vert{}1\rangle$"
+                fr"$|\psi\rangle_{{\text{{Bob}}}} = {alpha:.2f}|0\rangle + e^{{i{phi:.0f}^\circ}}{beta:.2f}|1\rangle$"
                 "\n\n"
                 fr"**Fidelity:** 100%"
             )
