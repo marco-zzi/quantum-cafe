@@ -6,8 +6,12 @@ st.set_page_config(page_title="Quantum Café - QRNG", layout="wide")
 
 st.markdown("""
     <style>
+        /* Hide default Streamlit header overlaying top controls */
+        [data-testid="stHeader"] {
+            display: none !important;
+        }
         .block-container {
-            padding-top: 0.5rem !important;
+            padding-top: 1.5rem !important;
             padding-bottom: 0.5rem !important;
             padding-left: 0.5rem !important;
             padding-right: 0.5rem !important;
@@ -44,7 +48,7 @@ rng_tavern_html = f"""
 
   body {{
     margin: 0;
-    padding: 12px 0 16px 0;
+    padding: 20px 0 16px 0;
     background-color: #0d0704;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #f3e5ab;
@@ -97,17 +101,19 @@ rng_tavern_html = f"""
     justify-content: center;
     align-items: center;
     gap: 8px;
-    margin: 0 auto 8px auto;
+    margin: 10px auto 12px auto;
     flex-wrap: wrap;
     max-width: 760px;
+    position: relative;
+    z-index: 10;
   }}
 
   .mode-btn {{
     background: #1e110a;
     color: #b8975a;
     border: 1px solid #5a3c1e;
-    padding: 5px 12px;
-    font-size: 12px;
+    padding: 6px 14px;
+    font-size: 13px;
     font-weight: bold;
     border-radius: 6px;
     cursor: pointer;
@@ -157,7 +163,7 @@ rng_tavern_html = f"""
     .app-title {{
       font-size: 18px;
       font-style: italic;
-      margin: 2px 0 6px 0;
+      margin: 4px 0 10px 0;
       color: #f3e5ab;
       text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     }}
@@ -293,7 +299,7 @@ rng_tavern_html = f"""
     .app-title {{
       font-size: 14px;
       font-style: italic;
-      margin: 2px 0 4px 0;
+      margin: 2px 0 6px 0;
       color: #f3e5ab;
     }}
 
@@ -520,7 +526,6 @@ rng_tavern_html = f"""
   function handleCardClick(index, e) {{
     if (currentMode === 'single') return;
 
-    // Disband existing group if user clicks an entangled qubit card
     if (coinData[index].groupId) {{
       const gId = coinData[index].groupId;
       groups = groups.filter(g => g.id !== gId);
@@ -558,7 +563,7 @@ rng_tavern_html = f"""
         newGroup.members.forEach(m => {{
           coinData[m].locked = true;
           coinData[m].groupId = newGroupId;
-          coinData[m].angle = 90; // Sets equal superposition (P(1) = 50%)
+          coinData[m].angle = 90;
           updateCoinVisual(m);
         }});
 
@@ -658,16 +663,13 @@ rng_tavern_html = f"""
   function measureByte() {{
     let outcomes = new Array(numCoins);
 
-    // 1. Joint Wavefunction Collapse for Entangled Groups
     groups.forEach(group => {{
-      // Correlated outcome across all members in the entangled state
       let groupOutcome = Math.random() < 0.5 ? "1" : "0";
       group.members.forEach(m => {{
         outcomes[m] = groupOutcome;
       }});
     }});
 
-    // 2. Measure Single/Unentangled Qubits
     for (let i = 0; i < numCoins; i++) {{
       if (outcomes[i] === undefined) {{
         let angle = coinData[i].angle;
@@ -677,11 +679,9 @@ rng_tavern_html = f"""
       }}
     }}
 
-    // 3. Clear Entanglements (State Collapse disbands entangled superpositions)
     groups = [];
     pendingSelection = [];
 
-    // 4. Update Qubit States, Unlock, and Trigger 3D Visual Transitions
     let binaryString = "";
     for (let i = 0; i < numCoins; i++) {{
       let outcome = outcomes[i];
@@ -689,7 +689,6 @@ rng_tavern_html = f"""
 
       let targetAngle = outcome === "1" ? 180 : 0;
       
-      // Permanently collapse qubit state and unlock dragging
       coinData[i].angle = targetAngle;
       coinData[i].locked = false;
       coinData[i].groupId = null;
@@ -712,4 +711,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=1200)
+components.html(rng_tavern_html, height=1250)
