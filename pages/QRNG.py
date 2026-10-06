@@ -194,7 +194,7 @@ rng_tavern_html = f"""
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 8px;
+      gap: 80px;
       width: 100%;
     }}
 
@@ -202,7 +202,7 @@ rng_tavern_html = f"""
       background: linear-gradient(to bottom, #d4af37, #8a5a12);
       color: #120a05;
       border: 1px solid #ffe89c;
-      padding: 100px 28px;
+      padding: 10px 28px;
       font-size: 16px;
       font-weight: bold;
       border-radius: 8px;
