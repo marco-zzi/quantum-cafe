@@ -13,7 +13,7 @@ def img_to_b64(file_path):
         return ""
 
 # Load cropped image assets
-table_b64 = img_to_b64("assets/table.jpg")
+table_b64 = img_to_b64("./assets/QRNG_table.jpg")
 front_b64 = img_to_b64("assets/coin_front.jpg")
 back_b64 = img_to_b64("assets/coin_back.jpg")
 edge_b64 = img_to_b64("assets/coin_edge.jpg")
