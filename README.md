@@ -14,11 +14,11 @@ This repository contains lightweight, interactive web applications built with Py
 
 1. Clone the repository:
    ```bash
-   git clone [https://github.com/your-username/quantum-cafe-apps.git](https://github.com/marco-zzi/quantum-cafe.git)
+   git clone https://github.com/marco-zzi/quantum-cafe.git
    cd quantum-cafe
 2. Install dependencies:
    ```bash
    pip install -r requirements.txt
 3. Run the Streamlit app:
    ```bash
-   streamlit run app.py
+   streamlit run app_name.py
