@@ -119,7 +119,7 @@ with col_main:
         )
         
         user_gate = st.selectbox(
-            "Which correction gate must Bob apply to restore $\vert{}\psi\\rangle$?",
+            r"Which correction gate must Bob apply to restore $\vert{}\psi\rangle$?",
             ["Identity (I)", "Pauli-X", "Pauli-Z", "Pauli-Z then Pauli-X"]
         )
 
@@ -140,7 +140,7 @@ with col_main:
             st.rerun()
 
 with col_info:
-    st.subheader("🖥️ Protocol Monitor")
+    st.subheader("🖥️️ Protocol Monitor")
     
     if st.session_state.step == 1:
         st.warning("Awaiting state preparation...")
