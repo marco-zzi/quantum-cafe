@@ -130,12 +130,16 @@ rng_tavern_html = f"""
 
     .table-overlay {{
       position: absolute;
-      top: 50%;
+      top: 0;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%);
       width: 90%;
       max-width: 760px;
-      padding-bottom: 20px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 30px 0 20px 0;
     }}
 
     .coins-grid {{
@@ -143,7 +147,8 @@ rng_tavern_html = f"""
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       justify-items: center;
-      margin-bottom: 20px;
+      margin-top: auto;
+      margin-bottom: auto;
     }}
 
     .coin-card {{
@@ -188,6 +193,7 @@ rng_tavern_html = f"""
       margin-top: 4px;
       color: #fce8bd;
       font-weight: bold;
+      font-variant-numeric: tabular-nums;
     }}
 
     .ui-panel {{
@@ -196,6 +202,7 @@ rng_tavern_html = f"""
       align-items: center;
       gap: 8px;
       width: 100%;
+      margin-top: auto;
     }}
 
     .measure-btn {{
@@ -239,7 +246,7 @@ rng_tavern_html = f"""
     }}
 
     .app-subtitle {{
-      font-size: 14px;
+      font-size: 13px;
       font-style: italic;
       color: #b8975a;
       margin: 0 0 10px 0;
@@ -265,37 +272,39 @@ rng_tavern_html = f"""
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 90%;
-      max-width: 320px;
-      padding-bottom: 12px;
+      width: 88%;
+      max-width: 280px;
+      padding-bottom: 8px;
     }}
 
     .coins-grid {{
       display: grid;
       grid-template-columns: 1fr;
-      gap: 5px;
+      gap: 4px;
       justify-items: center;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }}
 
     .coin-card {{
-      background: rgba(40, 22, 10, 0.82);
-      border: 1px solid #8b5a2b;
-      backdrop-filter: blur(4px);
+      background: rgba(40, 22, 10, 0.55);
+      border: 1px solid rgba(139, 90, 43, 0.6);
+      backdrop-filter: blur(3px);
       border-radius: 6px;
-      padding: 4px 10px;
+      padding: 3px 8px;
       width: 100%;
+      max-width: 260px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.4);
     }}
 
     .card-header {{
       font-size: 12px;
       color: #ffd875;
       font-weight: bold;
-      min-width: 55px;
+      width: 55px;
+      flex-shrink: 0;
       text-align: left;
     }}
 
@@ -303,10 +312,11 @@ rng_tavern_html = f"""
       --coin-radius: 24px;
       width: 48px;
       height: 48px;
-      margin: 0 auto;
+      margin: 0;
       perspective: 600px;
       cursor: ew-resize;
       touch-action: none;
+      flex-shrink: 0;
     }}
 
     .face-front {{ transform: translateZ(3px); }}
@@ -324,8 +334,11 @@ rng_tavern_html = f"""
       margin-top: 0;
       color: #fce8bd;
       font-weight: bold;
-      min-width: 60px;
+      width: 72px;
+      flex-shrink: 0;
       text-align: right;
+      font-variant-numeric: tabular-nums;
+      display: inline-block;
     }}
 
     .ui-panel {{
