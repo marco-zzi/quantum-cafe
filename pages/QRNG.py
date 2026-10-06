@@ -101,7 +101,8 @@ rng_tavern_html = f"""
      ========================================================================== */
   @media (min-width: 681px) {{
     .app-title {{
-      font-size: 24px;
+      font-size: 20px;
+      font-style: italic;
       margin: 6px 0 4px 0;
       color: #f3e5ab;
       text-shadow: 0 2px 4px rgba(0,0,0,0.8);
@@ -242,7 +243,8 @@ rng_tavern_html = f"""
      ========================================================================== */
   @media (max-width: 680px) {{
     .app-title {{
-      font-size: 18px;
+      font-size: 16px;
+      font-style: italic;
       margin: 4px 0 2px 0;
       color: #f3e5ab;
     }}
