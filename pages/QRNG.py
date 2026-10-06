@@ -44,7 +44,7 @@ rng_tavern_html = f"""
 
   body {{
     margin: 0;
-    padding: 0 0 16px 0;
+    padding: 12px 0 16px 0;
     background-color: #0d0704;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #f3e5ab;
@@ -130,25 +130,24 @@ rng_tavern_html = f"""
 
     .table-overlay {{
       position: absolute;
-      top: 0;
+      top: 50%;
       left: 50%;
-      transform: translateX(-50%);
+      transform: translate(-50%, -50%);
       width: 90%;
       max-width: 760px;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 30px 0 20px 0;
+      height: 90%;
     }}
 
     .coins-grid {{
+      position: absolute;
+      top: 42%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 12px;
       justify-items: center;
-      margin-top: auto;
-      margin-bottom: auto;
+      width: 100%;
     }}
 
     .coin-card {{
@@ -197,12 +196,15 @@ rng_tavern_html = f"""
     }}
 
     .ui-panel {{
+      position: absolute;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 8px;
       width: 100%;
-      margin-top: auto;
     }}
 
     .measure-btn {{
@@ -249,7 +251,7 @@ rng_tavern_html = f"""
       font-size: 13px;
       font-style: italic;
       color: #b8975a;
-      margin: 0 0 10px 0;
+      margin: 0 0 12px 0;
       padding: 0 8px;
     }}
 
@@ -274,15 +276,19 @@ rng_tavern_html = f"""
       transform: translate(-50%, -50%);
       width: 88%;
       max-width: 280px;
-      padding-bottom: 8px;
+      height: 94%;
     }}
 
     .coins-grid {{
+      position: absolute;
+      top: 38%;
+      left: 50%;
+      transform: translate(-50%, -50%);
       display: grid;
       grid-template-columns: 1fr;
       gap: 4px;
       justify-items: center;
-      margin-bottom: 8px;
+      width: 100%;
     }}
 
     .coin-card {{
@@ -342,6 +348,10 @@ rng_tavern_html = f"""
     }}
 
     .ui-panel {{
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
       display: flex;
       flex-direction: column;
       align-items: center;
