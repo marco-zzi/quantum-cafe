@@ -40,8 +40,8 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="main-title">☕ Quantum Café</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-title">Fireside Chats on Quantum Technologies — A Public Engagement & Capacity-Building Event Series</div>', unsafe_allow_html=True)
+st.title("☕ Quantum Café")
+st.caption("Fireside Chats on Quantum Technologies — A Public Engagement & Capacity-Building Event Series")
 
 st.divider()
 
