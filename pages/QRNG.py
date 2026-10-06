@@ -4,17 +4,18 @@ import streamlit.components.v1 as components
 
 st.set_page_config(page_title="Quantum Café - QRNG", layout="wide")
 
-# Reduce Streamlit default padding to prevent vertical scrolling on 16:9 screens
+# Reduce Streamlit default padding
 st.markdown("""
     <style>
         .block-container {
-            padding-top: 1rem !important;
+            padding-top: 0.5rem !important;
             padding-bottom: 0rem !important;
-            padding-left: 1rem !important;
-            padding-right: 1rem !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
         }
         iframe {
             display: block;
+            width: 100% !important;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -50,12 +51,12 @@ rng_tavern_html = f"""
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     color: #f3e5ab;
     text-align: center;
-    overflow: hidden;
+    overflow-x: hidden;
   }}
 
   .app-title {{
     font-size: 22px;
-    margin: 4px 0 2px 0;
+    margin: 4px 0 6px 0;
     color: #f3e5ab;
     text-shadow: 0 2px 4px rgba(0,0,0,0.8);
   }}
@@ -64,14 +65,15 @@ rng_tavern_html = f"""
     font-size: 12px;
     font-style: italic;
     color: #b8975a;
-    margin: 4px 0 0 0;
+    margin: 6px 0 0 0;
   }}
   
-  /* 2.5D Table Stage */
+  /* 2.5D Table Stage - Fluid width scaling for desktop */
   .tavern-stage {{
     position: relative;
-    width: 860px;
-    height: 500px;
+    width: 100%;
+    max-width: 900px;
+    aspect-ratio: 860 / 500;
     margin: 0 auto;
     border-radius: 12px;
     overflow: hidden;
@@ -79,17 +81,16 @@ rng_tavern_html = f"""
     background-image: url('data:image/jpeg;base64,{table_b64}');
     background-size: cover;
     background-position: center;
-    transition: all 0.3s ease;
   }}
 
   .table-overlay {{
     position: absolute;
-    top: 70px;
-    left: 80px;
-    width: 700px;
+    top: 13%;
+    left: 9%;
+    width: 82%;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 16px;
+    gap: 12px;
     justify-items: center;
   }}
 
@@ -99,14 +100,15 @@ rng_tavern_html = f"""
     backdrop-filter: blur(4px);
     border-radius: 10px;
     padding: 6px;
-    width: 125px;
+    width: 100%;
+    max-width: 125px;
     box-shadow: 0 8px 16px rgba(0,0,0,0.8);
   }}
 
   .coin-slot {{
-    width: 70px;
-    height: 70px;
-    margin: 6px auto;
+    width: 68px;
+    height: 68px;
+    margin: 4px auto;
     perspective: 600px;
     cursor: ew-resize;
     touch-action: none;
@@ -122,8 +124,8 @@ rng_tavern_html = f"""
 
   .face {{
     position: absolute;
-    width: 70px;
-    height: 70px;
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
     backface-visibility: hidden;
     background-size: cover;
@@ -148,7 +150,6 @@ rng_tavern_html = f"""
     transform-style: preserve-3d;
   }}
 
-  /* Non-repeating single edge texture stretched across cylindrical facets */
   .edge-facet {{
     position: absolute;
     height: 10px;
@@ -166,13 +167,14 @@ rng_tavern_html = f"""
 
   .ui-panel {{
     position: absolute;
-    bottom: 12px;
+    bottom: 3%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
+    width: 90%;
   }}
 
   .measure-btn {{
@@ -194,7 +196,7 @@ rng_tavern_html = f"""
   }}
 
   .result-box {{
-    font-size: 16px;
+    font-size: 15px;
     letter-spacing: 1px;
     color: #00ffcc;
     font-family: monospace;
@@ -204,47 +206,45 @@ rng_tavern_html = f"""
     border: 1px solid #00ffcc44;
   }}
 
-  /* Mobile Adaptation */
-  @media (max-width: 880px) {{
+  /* Mobile Adaptation Rules */
+  @media (max-width: 680px) {{
+    .app-title {{
+      display: none; /* Hide title on mobile */
+    }}
     .tavern-stage {{
-      width: 95vw;
-      height: 540px;
+      aspect-ratio: auto;
+      height: 510px; /* Fixed height accommodating 4 rows + UI panel */
+      width: 100%;
     }}
     .table-overlay {{
+      top: 15px;
       left: 5%;
       width: 90%;
-      top: 40px;
-      gap: 10px;
-    }}
-  }}
-
-  @media (max-width: 680px) {{
-    body {{
-      overflow-y: auto;
-    }}
-    .tavern-stage {{
-      width: 98vw;
-      height: 620px;
-    }}
-    .table-overlay {{
       grid-template-columns: repeat(2, 1fr);
-      top: 25px;
-      gap: 8px;
+      gap: 6px;
     }}
     .coin-card {{
-      width: 110px;
-      padding: 4px;
+      max-width: 110px;
+      padding: 3px;
     }}
     .coin-slot, .face {{
-      width: 56px;
-      height: 56px;
+      width: 52px;
+      height: 52px;
+    }}
+    .ui-panel {{
+      bottom: 10px;
     }}
     .measure-btn {{
       padding: 6px 18px;
       font-size: 13px;
     }}
     .result-box {{
-      font-size: 13px;
+      font-size: 12px;
+      padding: 3px 8px;
+    }}
+    .app-subtitle {{
+      font-size: 11px;
+      margin-top: 4px;
     }}
   }}
 </style>
@@ -270,9 +270,9 @@ rng_tavern_html = f"""
   const table = document.getElementById('tableSurface');
 
   const numFacets = 16;
-  const radius = 34.5; // Radius for 70px coin size
+  const radius = 33.5;
   const facetWidth = (2 * radius * Math.tan(Math.PI / numFacets)).toFixed(2);
-  const facetLeft = (35 - facetWidth / 2).toFixed(2);
+  const facetLeft = (34 - facetWidth / 2).toFixed(2);
 
   for (let i = 0; i < numCoins; i++) {{
     coinData.push({{ angle: 0 }});
@@ -280,14 +280,13 @@ rng_tavern_html = f"""
     const card = document.createElement('div');
     card.className = 'coin-card';
     
-    // Construct single continuous rim texture sliced across 16 facets
     let edgeFacetsHTML = '<div class="coin-edge-3d">';
     for (let f = 0; f < numFacets; f++) {{
       let phi = f * (360 / numFacets);
       edgeFacetsHTML += `<div class="edge-facet" style="
         width: ${{facetWidth}}px;
         left: ${{facetLeft}}px;
-        top: 30px;
+        top: 29px;
         background-size: ${{numFacets * 100}}% 100%;
         background-position: -${{f * 100}}% 0;
         transform: rotateZ(${{phi}}deg) translateY(-${{radius}}px) rotateX(90deg);
@@ -388,4 +387,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=580)
+components.html(rng_tavern_html, height=600)
