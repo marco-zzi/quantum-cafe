@@ -28,12 +28,12 @@ def img_to_b64(file_path):
     except FileNotFoundError:
         return ""
 
-# Load assets (Ensure filenames match your local asset directory)
+# Load assets
 table_desktop_b64 = img_to_b64("./assets/QRNG_table_desktop.jpg")  # 16:9
 table_mobile_b64  = img_to_b64("./assets/QRNG_table_mobile.jpg")   # 9:16
-front_b64         = img_to_b64("./assets/QRNG_0.png")
-back_b64          = img_to_b64("./assets/QRNG_1.png")
-edge_b64          = img_to_b64("./assets/QRNG_edge.png")
+front_b64         = img_to_b64("assets/QRNG_0.png")
+back_b64          = img_to_b64("assets/QRNG_1.png")
+edge_b64          = img_to_b64("assets/QRNG_edge.png")
 
 rng_tavern_html = f"""
 <!DOCTYPE html>
@@ -67,15 +67,14 @@ rng_tavern_html = f"""
     font-size: 13px;
     font-style: italic;
     color: #b8975a;
-    margin: 8px 0 12px 0;
+    margin: 12px 0 16px 0;
   }}
   
-  /* Desktop Table Stage (16:9 Aspect Ratio) */
+  /* Full-width 16:9 stage on Desktop (Uncapped width) */
   .tavern-stage {{
-    container-type: inline-size;
     position: relative;
     width: 100%;
-    max-width: 1100px;
+    max-width: 100%;
     aspect-ratio: 16 / 9;
     margin: 0 auto;
     border-radius: 12px;
@@ -88,36 +87,38 @@ rng_tavern_html = f"""
 
   .table-overlay {{
     position: absolute;
-    top: 13%;
-    left: 7%;
-    width: 86%;
+    top: 12%;
+    left: 5%;
+    width: 90%;
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1.8cqw;
+    gap: 16px;
     justify-items: center;
   }}
 
+  /* Fixed pixel dimensions for coins and cards */
   .coin-card {{
-    background: rgba(15, 8, 4, 0.78);
+    background: rgba(15, 8, 4, 0.82);
     border: 1px solid #8b5a2b;
     backdrop-filter: blur(4px);
     border-radius: 10px;
-    padding: 0.8cqw;
+    padding: 10px;
     width: 100%;
-    max-width: 18cqw;
+    max-width: 150px;
     box-shadow: 0 8px 16px rgba(0,0,0,0.8);
   }}
 
   .card-header {{
-    font-size: 1.3cqw;
+    font-size: 14px;
     color: #d4af37;
     font-weight: bold;
   }}
 
   .coin-slot {{
-    width: 9.2cqw;
-    height: 9.2cqw;
-    margin: 0.6cqw auto;
+    --coin-radius: 40px;
+    width: 80px;
+    height: 80px;
+    margin: 8px auto;
     perspective: 600px;
     cursor: ew-resize;
     touch-action: none;
@@ -144,12 +145,12 @@ rng_tavern_html = f"""
 
   .face-front {{
     background-image: url('data:image/png;base64,{front_b64}');
-    transform: translateZ(0.4cqw);
+    transform: translateZ(4px);
   }}
 
   .face-back {{
     background-image: url('data:image/png;base64,{back_b64}');
-    transform: rotateY(180deg) translateZ(0.4cqw);
+    transform: rotateY(180deg) translateZ(4px);
   }}
 
   .coin-edge-3d {{
@@ -161,7 +162,10 @@ rng_tavern_html = f"""
 
   .edge-facet {{
     position: absolute;
-    height: 0.8cqw;
+    height: 8px;
+    width: calc(var(--coin-radius) * 0.3978);
+    left: calc(50% - (var(--coin-radius) * 0.1989));
+    top: calc(50% - 4px);
     background-image: url('data:image/png;base64,{edge_b64}');
     background-size: cover;
     background-position: center;
@@ -170,21 +174,21 @@ rng_tavern_html = f"""
   }}
 
   .stats {{
-    font-size: 1.2cqw;
-    margin-top: 0.3cqw;
+    font-size: 13px;
+    margin-top: 4px;
     color: #e6c687;
     font-weight: bold;
   }}
 
   .ui-panel {{
     position: absolute;
-    bottom: 3%;
+    bottom: 4%;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.6cqw;
+    gap: 8px;
     width: 90%;
   }}
 
@@ -192,8 +196,8 @@ rng_tavern_html = f"""
     background: linear-gradient(to bottom, #d4af37, #8a5a12);
     color: #120a05;
     border: 1px solid #ffe89c;
-    padding: 0.8cqw 2.4cqw;
-    font-size: 1.6cqw;
+    padding: 10px 28px;
+    font-size: 16px;
     font-weight: bold;
     border-radius: 8px;
     cursor: pointer;
@@ -207,12 +211,12 @@ rng_tavern_html = f"""
   }}
 
   .result-box {{
-    font-size: 1.7cqw;
+    font-size: 15px;
     letter-spacing: 1px;
     color: #00ffcc;
     font-family: monospace;
     background: rgba(0,0,0,0.85);
-    padding: 0.4cqw 1.2cqw;
+    padding: 6px 14px;
     border-radius: 6px;
     border: 1px solid #00ffcc44;
   }}
@@ -223,7 +227,6 @@ rng_tavern_html = f"""
       display: none !important;
     }}
 
-    /* Mobile Table Stage (Switches to 9:16 background image) */
     .tavern-stage {{
       aspect-ratio: 9 / 16;
       max-height: 85vh;
@@ -232,7 +235,7 @@ rng_tavern_html = f"""
     }}
 
     .table-overlay {{
-      top: 10%;
+      top: 8%;
       left: 4%;
       width: 92%;
       grid-template-columns: repeat(2, 1fr);
@@ -249,6 +252,7 @@ rng_tavern_html = f"""
     }}
 
     .coin-slot {{
+      --coin-radius: 29px;
       width: 58px;
       height: 58px;
       margin: 4px auto;
@@ -259,6 +263,7 @@ rng_tavern_html = f"""
 
     .edge-facet {{
       height: 6px;
+      top: calc(50% - 3px);
     }}
 
     .stats {{
@@ -266,7 +271,7 @@ rng_tavern_html = f"""
     }}
 
     .ui-panel {{
-      bottom: 4%;
+      bottom: 3%;
       gap: 6px;
     }}
 
@@ -278,11 +283,6 @@ rng_tavern_html = f"""
     .result-box {{
       font-size: 13px;
       padding: 4px 10px;
-    }}
-
-    .app-subtitle {{
-      font-size: 11px;
-      margin: 10px 4px;
     }}
   }}
 </style>
@@ -306,12 +306,7 @@ rng_tavern_html = f"""
   const numCoins = 8;
   let coinData = [];
   const table = document.getElementById('tableSurface');
-
   const numFacets = 16;
-  const radiusCQW = 4.6;
-  const facetWidthCQW = (2 * radiusCQW * Math.tan(Math.PI / numFacets)).toFixed(3);
-  const facetLeftCQW = (4.6 - facetWidthCQW / 2).toFixed(3);
-  const facetTopCQW = (4.6 - 0.4).toFixed(3);
 
   for (let i = 0; i < numCoins; i++) {{
     coinData.push({{ angle: 0 }});
@@ -323,10 +318,7 @@ rng_tavern_html = f"""
     for (let f = 0; f < numFacets; f++) {{
       let phi = f * (360 / numFacets);
       edgeFacetsHTML += `<div class="edge-facet" style="
-        width: ${{facetWidthCQW}}cqw;
-        left: ${{facetLeftCQW}}cqw;
-        top: ${{facetTopCQW}}cqw;
-        transform: rotateZ(${{phi}}deg) translateY(-${{radiusCQW}}cqw) rotateX(90deg);
+        transform: rotateZ(${{phi}}deg) translateY(calc(-1 * var(--coin-radius))) rotateX(90deg);
       "></div>`;
     }}
     edgeFacetsHTML += '</div>';
@@ -424,4 +416,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=750)
+components.html(rng_tavern_html, height=1080)
