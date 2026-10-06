@@ -28,11 +28,12 @@ def img_to_b64(file_path):
     except FileNotFoundError:
         return ""
 
-# Load cropped image assets
-table_b64 = img_to_b64("./assets/QRNG_table.jpg")
-front_b64 = img_to_b64("assets/QRNG_0.png")
-back_b64 = img_to_b64("assets/QRNG_1.png")
-edge_b64 = img_to_b64("assets/QRNG_edge.png")
+# Load assets (Ensure filenames match your local asset directory)
+table_desktop_b64 = img_to_b64("./assets/QRNG_table_desktop.jpg")  # 16:9
+table_mobile_b64  = img_to_b64("./assets/QRNG_table_mobile.jpg")   # 9:16
+front_b64         = img_to_b64("assets/QRNG_0.png")
+back_b64          = img_to_b64("assets/QRNG_1.png")
+edge_b64          = img_to_b64("assets/QRNG_edge.png")
 
 rng_tavern_html = f"""
 <!DOCTYPE html>
@@ -69,18 +70,18 @@ rng_tavern_html = f"""
     margin: 8px 0 12px 0;
   }}
   
-  /* 2.5D Table Stage with Container Query Scaling for Desktop */
+  /* Desktop Table Stage (16:9 Aspect Ratio) */
   .tavern-stage {{
     container-type: inline-size;
     position: relative;
     width: 100%;
     max-width: 1100px;
-    aspect-ratio: 860 / 520;
+    aspect-ratio: 16 / 9;
     margin: 0 auto;
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 15px 35px rgba(0,0,0,0.9);
-    background-image: url('data:image/jpeg;base64,{table_b64}');
+    background-image: url('data:image/jpeg;base64,{table_desktop_b64}');
     background-size: cover;
     background-position: center;
   }}
@@ -96,7 +97,6 @@ rng_tavern_html = f"""
     justify-items: center;
   }}
 
-  /* Scaling cards, text, and coin slots relative to container width (cqw) */
   .coin-card {{
     background: rgba(15, 8, 4, 0.78);
     border: 1px solid #8b5a2b;
@@ -220,21 +220,23 @@ rng_tavern_html = f"""
   /* Mobile Adaptation Rules (< 680px) */
   @media (max-width: 680px) {{
     .app-title {{
-      display: none !important; /* Hide title on mobile */
+      display: none !important;
     }}
 
+    /* Mobile Table Stage (Switches to 9:16 background image) */
     .tavern-stage {{
-      aspect-ratio: auto;
-      height: 640px;
+      aspect-ratio: 9 / 16;
+      max-height: 85vh;
       width: 100%;
+      background-image: url('data:image/jpeg;base64,{table_mobile_b64}');
     }}
 
     .table-overlay {{
-      top: 15px; /* Upper qubits visible without cut-off */
+      top: 10%;
       left: 4%;
       width: 92%;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 8px;
     }}
 
     .coin-card {{
@@ -247,8 +249,8 @@ rng_tavern_html = f"""
     }}
 
     .coin-slot {{
-      width: 62px;
-      height: 62px;
+      width: 58px;
+      height: 58px;
       margin: 4px auto;
     }}
 
@@ -264,7 +266,7 @@ rng_tavern_html = f"""
     }}
 
     .ui-panel {{
-      bottom: 12px;
+      bottom: 4%;
       gap: 6px;
     }}
 
@@ -306,12 +308,10 @@ rng_tavern_html = f"""
   const table = document.getElementById('tableSurface');
 
   const numFacets = 16;
-  
-  // Proportional 3D cylindrical edge math in container query units (cqw)
-  const radiusCQW = 4.6; // Half of coin slot width (9.2cqw)
+  const radiusCQW = 4.6;
   const facetWidthCQW = (2 * radiusCQW * Math.tan(Math.PI / numFacets)).toFixed(3);
   const facetLeftCQW = (4.6 - facetWidthCQW / 2).toFixed(3);
-  const facetTopCQW = (4.6 - 0.4).toFixed(3); // Center aligned for 0.8cqw height
+  const facetTopCQW = (4.6 - 0.4).toFixed(3);
 
   for (let i = 0; i < numCoins; i++) {{
     coinData.push({{ angle: 0 }});
@@ -424,4 +424,4 @@ rng_tavern_html = f"""
 </html>
 """
 
-components.html(rng_tavern_html, height=740)
+components.html(rng_tavern_html, height=750)
