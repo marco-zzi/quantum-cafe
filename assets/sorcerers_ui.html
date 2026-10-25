@@ -130,10 +130,10 @@
   const N = 8, NF = 16, MAX_TOSSES = 256;
   const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const $ = id => document.getElementById(id);
-  // Each round: the vault pattern, the link budget (mana), how reliably each link holds, and how skilled the rival is
+  // Each round: the goal pattern, the link budget (mana), how reliably each link holds, and how skilled the rival is
   // (skill = the rival's chance per toss as a fraction of the best chance that is possible with this budget and noise).
   const ROUNDS = [
-    { name: 'The Apprentice',   target: '00000000', links: 7, hold: 1.00, skill: .12, goal: 'Duel a rival sorcerer: whoever matches the vault pattern first wins. Drag from one coin to another to link them. Linked coins always agree.',
+    { name: 'The Apprentice',   target: '00000000', links: 7, hold: 1.00, skill: .12, goal: 'Duel a rival sorcerer: whoever matches the goal pattern first wins. Drag from one coin to another to link them. Linked coins always agree.',
       fact: 'Linked coins are entangled: two form a Bell state, three or more a GHZ state. Their results always agree, though each coin alone is a fair flip. (The sign in Φ+ or Φ− does not change which faces land, only how the state behaves if measured another way.)' },
     { name: 'The Journeyman',   target: '10101010', links: 7, hold: 1.00, skill: .20, goal: 'Link the coins that need the same value. They do not have to be neighbours.',
       fact: 'Entanglement does not care about distance. But a group that needs both a 1 and a 0 can never match.' },
@@ -214,8 +214,9 @@
     drawLinks();
   }
   function center(i) {
-    if (geo.mobile) return [54 + 74 * (i % 4), 215 + 130 * Math.floor(i / 4)];
-    return [92 + 88 * i, 205];
+    // the goal chips sit above the coins, so the pair of rows is centred on the table (450 / 587 design pixels high)
+    if (geo.mobile) return [54 + 74 * (i % 4), 258 + 130 * Math.floor(i / 4)];
+    return [92 + 88 * i, 260];
   }
   new ResizeObserver(layout).observe($('stage'));
 
@@ -376,7 +377,7 @@
     $('box').className = 'box mat';
     $('box').innerHTML =
       '<div class="eyebrow">Round ' + (round + 1) + ' won</div>' +
-      '<h3>' + (tie ? 'A dead heat, and the coin was yours' : 'You cracked it first') + '</h3>' +
+      '<h3>' + (tie ? 'A dead heat, and the coin was yours' : 'You matched it first') + '</h3>' +
       '<div class="big">' + [0, 1, 2].map(i => STAR.replace('<svg', '<svg class="' + (i < stars ? 'on' : '') + '"')).join('') + '</div>' +
       '<p>Your chance per toss was <b>' + fmtOdds(mine) + '</b>. ' + (stars === 3 ? 'That is the best possible here.' : 'The best possible here was <b>' + fmtOdds(P.best) + '</b>.') + ' It took ' + tosses + ' toss' + (tosses === 1 ? '' : 'es') + '.</p>' +
       '<p class="fact">' + P.fact + '</p>' +
@@ -386,7 +387,7 @@
   }
   function lose(why) {
     over = true; saveBest(); const mine = chance();
-    const reason = why === 'budget' ? 'The vault stays shut after ' + MAX_TOSSES + ' tosses.' : why === 'tie' ? 'You both cracked it together, and the coin fell to ' + P.name.replace('The ', 'the ') + '.' : P.name + ' cracked it first.';
+    const reason = why === 'budget' ? 'Nobody matched the goal in ' + MAX_TOSSES + ' tosses.' : why === 'tie' ? 'You both matched it together, and the coin fell to ' + P.name.replace('The ', 'the ') + '.' : P.name + ' matched it first.';
     $('box').className = 'box lost mat';
     $('box').innerHTML =
       '<div class="eyebrow">Duel lost</div><h3>' + reason + '</h3>' +

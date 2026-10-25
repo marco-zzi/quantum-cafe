@@ -22,7 +22,7 @@ def b64(name):
 st.markdown('<div class="qc-eyebrow">Session 1 · Demystifying Reality</div>', unsafe_allow_html=True)
 st.title("Sorcerer's coins")
 st.markdown(
-    '<p class="qc-lede">Duel a rival sorcerer with eight quantum coins. Whoever matches the vault pattern first wins. '
+    '<p class="qc-lede">Duel a rival sorcerer with eight quantum coins. Whoever matches the goal pattern first wins. '
     'You cannot tilt the coins, but you can entangle them. How many rounds can you survive?</p>',
     unsafe_allow_html=True,
 )
