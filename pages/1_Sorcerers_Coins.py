@@ -36,7 +36,7 @@ html = (
     .replace("__TABLE_D__", b64("QRNG_table_desktop.jpg"))
     .replace("__TABLE_M__", b64("QRNG_table_mobile.jpg"))
 )
-components.html(html, height=700, scrolling=True)
+components.html(html, height=700, scrolling=False)
 
 with st.expander("What is going on?"):
     st.markdown(

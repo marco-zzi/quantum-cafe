@@ -608,9 +608,16 @@ function drawPreviews(t){
 
 // size the surrounding frame to the content, so there is no dead space under the interface (same-origin iframe)
   function fitFrame() {
-    try { const h = Math.ceil(document.getElementById('app').getBoundingClientRect().height) + 2; if (window.frameElement) { window.frameElement.style.height = h + 'px'; window.frameElement.parentElement.style.height = h + 'px'; } } catch (e) {}
+    try {
+      const fe = window.frameElement; if (!fe) return;
+      const h = Math.ceil(document.getElementById('app').getBoundingClientRect().height) + 2, v = h + 'px';
+      if (fe.style.height !== v) fe.style.setProperty('height', v, 'important');
+      const par = fe.parentElement;                                   // Streamlit's wrapper has its own fixed height and min-height
+      if (par && par.style.height !== v) { par.style.setProperty('height', v, 'important'); par.style.setProperty('min-height', v, 'important'); par.style.setProperty('flex', '0 0 ' + v, 'important'); }
+    } catch (e) {}
   }
   new ResizeObserver(fitFrame).observe(document.getElementById('app')); fitFrame();
+  addEventListener('load', fitFrame); setInterval(fitFrame, 400);     // backstop in case resize notifications are delayed
 buildCards();
 requestAnimationFrame(loop);
 </script>

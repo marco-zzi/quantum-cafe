@@ -68,7 +68,7 @@ with tab_play:
         .replace("__ENGINE__", read_asset("rite_engine.js"))
         .replace("__CFG__", json.dumps(rite_config()))
     )
-    components.html(game_html, height=700, scrolling=True)
+    components.html(game_html, height=700, scrolling=False)
     st.caption("All platform numbers are illustrative orders of magnitude chosen for teaching, "
                "not vendor specifications.")
 
