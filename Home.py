@@ -1,100 +1,75 @@
 import streamlit as st
 
+from qc_theme import apply_theme
+
 st.set_page_config(
     page_title="Quantum Café",
     page_icon="☕",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded",
 )
+apply_theme()
 
-# Custom CSS for clean layout
-st.markdown("""
-    <style>
-    /* Make top header background transparent */
-    [data-testid="stHeader"] {
-        background-color: rgba(0, 0, 0, 0) !important;
-    }
-
-    /* Hide top-right action buttons (Deploy, main menu) only */
-    [data-testid="stToolbarActions"],
-    .stAppDeployButton,
-    #MainMenu {
-        display: none !important;
-    }
-
-    /* Hide footer and 'Manage app' bottom-right widget */
-    footer,
-    [data-testid="stFooter"],
-    [data-testid="stStatusWidget"] {
-        display: none !important;
-    }
-
-    /* Explicitly preserve sidebar toggle arrow and page navigation controls */
-    [data-testid="stSidebarCollapseButton"],
-    [data-testid="stHeaderNav"],
-    [data-testid="stSidebarNav"] {
-        display: flex !important;
-        visibility: visible !important;
-        z-index: 1000000 !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-st.title("☕ Quantum Café")
-st.caption("Fireside Chats on Quantum Technologies — A Public Engagement & Capacity-Building Event Series")
-
-st.divider()
-
-# Core Concept
-st.subheader("💡 Concept & Objectives")
-st.write(
-    "Quantum Café is a four-part series of public-facing events designed to demystify "
-    "quantum computing and physics for the general public, students, and local innovators. "
-    "The series adopts an accessible fireside chat format to bridge cutting-edge research with everyday intuition."
+# Hero
+st.markdown('<div class="qc-eyebrow">A public engagement and capacity-building event series</div>', unsafe_allow_html=True)
+st.markdown('<h1 class="qc-serif">Quantum Café</h1>', unsafe_allow_html=True)
+st.markdown(
+    '<p class="qc-lede">Fireside chats on quantum technologies. Four public events that demystify quantum '
+    'computing and physics for the general public, students and local innovators, from February to May 2027.</p>',
+    unsafe_allow_html=True,
 )
+st.write("")
 
-st.divider()
 
-# Sessions Grid
-st.subheader("📅 Event Series Structure")
+def card(eyebrow, title, text, chip, href=None):
+    chip_html = f'<span class="qc-chip{"" if href else " off"}">{chip}</span>'
+    inner = (f'<div class="qc-eyebrow" style="margin:0">{eyebrow}</div><div class="t">{title}</div>'
+             f'<div class="d">{text}</div><div class="spacer"></div>{chip_html}')
+    if href:
+        return f'<a class="qc-card" href="{href}" target="_self">{inner}</a>'
+    return f'<div class="qc-card">{inner}</div>'
 
-col1, col2 = st.columns(2)
 
-with col1:
-    with st.expander("Session 1: Demystifying Reality", expanded=True):
-        st.write("**Topic:** Superposition and entanglement presented through experiments and accessible explanations.")
-        st.code("Notebook: Programmable Quantum Random Number Generator", language="text")
+# The series, with the interactive app that closes each session
+st.markdown('<div class="qc-eyebrow">The series</div>', unsafe_allow_html=True)
+st.subheader("Four sessions, four things to try")
+cards = "".join([
+    card("Session 1 · 18 February 2027", "Demystifying Reality",
+         "Quantum theories and phenomena presented through experiments and accessible explanations.",
+         "Play: Toss your magic coins", "Toss_Your_Magic_Coins"),
+    card("Session 2 · 18 March 2027", "The Hardware Frontier",
+         "Building physical quantum platforms in Lithuania and globally.",
+         "Play: Keep the Magic Alive", "Keep_the_Magic_Alive"),
+    card("Session 3 · 14 April 2027", "Cryptography, Cybersecurity &amp; Business",
+         "A business-oriented dialogue exploring post-quantum security, quantum networks and industrial transformation.",
+         "Coming: quantum key distribution"),
+    card("Session 4 · 13 May 2027", "From Theory to Practice",
+         "An interactive introductory workshop laying the foundational skills for future collaborative problem-solving challenges.",
+         "Coming: quantum machine learning"),
+])
+st.markdown(f'<div class="qc-grid">{cards}</div>', unsafe_allow_html=True)
+st.caption("Each session closes with a hands-on app, and the same ideas continue in take-home notebooks. "
+           "A quantum hackathon on 21-22 May 2027 ends the series.")
 
-    with st.expander("Session 2: The Hardware Frontier", expanded=True):
-        st.write("**Topic:** Building physical quantum platforms in Lithuania and globally.")
-        st.code("App: Keep the Magic Alive (a fantasy game about decoherence)", language="text")
+st.write("")
 
-with col2:
-    with st.expander("Session 3: Code, Cryptography & Commerce", expanded=True):
-        st.write("**Topic:** Business-oriented dialogue exploring post-quantum security, optimization, and industrial transformation.")
-        st.code("Notebook: Superdense Coding Implementation", language="text")
-
-    with st.expander("Session 4: From Theory to Practice", expanded=True):
-        st.write("**Topic:** Interactive introductory workshop laying foundational skills for future collaborative problem-solving challenges.")
-        st.code("Notebook: Simple Variational Quantum Classifier template", language="text")
-
-st.divider()
-
-# Speakers & Venues
-left_col, right_col = st.columns(2)
-
-with left_col:
-    st.subheader("👥 Speakers & Stakeholders")
-    st.markdown("""
-    * **Academic Pioneers:** Quantum physicists and computer scientists from Vilnius University and the Lithuanian Quantum Technologies Association (LKTA).
-    * **Industry Leaders:** Executives and engineers from global technology leaders (e.g., IBM, Google) and local high-tech/laser enterprises.
-    """)
-
-with right_col:
-    st.subheader("📍 Venue Strategy (Vilnius University)")
-    st.markdown("""
-    * **MKIC (Library Conference Hall):** Large public turnouts & high visibility.
-    * **Faculty of Physics (FF):** Hardware sessions near photonics labs.
-    * **Faculty of Mathematics and Informatics (MIF):** Algorithmic discussions.
-    * **Central VU Building:** Inaugural & business networking panels.
-    """)
+# Speakers and venues
+left, right = st.columns(2, gap="large")
+with left:
+    st.markdown('<div class="qc-eyebrow">Who joins the conversation</div>', unsafe_allow_html=True)
+    st.subheader("Speakers and stakeholders")
+    st.markdown(
+        "**Academic pioneers.** Quantum physicists and computer scientists from Vilnius University and the "
+        "Lithuanian Quantum Technologies Association (LKTA).\n\n"
+        "**Industry leaders.** Executives and engineers from global technology leaders and local high-tech "
+        "and laser enterprises."
+    )
+with right:
+    st.markdown('<div class="qc-eyebrow">Where it happens</div>', unsafe_allow_html=True)
+    st.subheader("Venues at Vilnius University")
+    st.markdown(
+        "**MKIC, Library Conference Hall.** Large public turnouts and high visibility.\n\n"
+        "**Faculty of Physics.** Hardware sessions near the photonics labs.\n\n"
+        "**Faculty of Mathematics and Informatics.** Algorithmic discussions.\n\n"
+        "**Central VU Building.** Inaugural and business networking panels."
+    )

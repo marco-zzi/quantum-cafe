@@ -1,0 +1,236 @@
+<style>
+  :root{--bg:#0b0b10;--label:#f5f5f7;--label2:rgba(235,235,245,.62);--label3:rgba(235,235,245,.34);
+        --fill:rgba(255,255,255,.08);--fill2:rgba(255,255,255,.14);--acc:255,214,120;--ok:#32d74b;--bad:#ff453a;
+        --sys:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+        --disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:transparent;color:var(--label);font:15px/1.4 var(--sys);-webkit-font-smoothing:antialiased}
+  #app{background:var(--bg);border-radius:28px;padding:18px 18px 20px}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+  :focus-visible{outline:2px solid rgb(var(--acc));outline-offset:3px;border-radius:12px}
+  .mat{background:rgba(26,26,34,.62);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border-top:1px solid rgba(255,255,255,.14)}
+  @media (prefers-reduced-transparency:reduce){.mat{background:#1c1c24;-webkit-backdrop-filter:none;backdrop-filter:none}}
+
+  .bar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:10px}
+  .seg{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--fill);border-radius:14px;padding:3px}
+  .seg button{padding:8px 16px;border-radius:11px;font-weight:600;font-size:14px;color:var(--label2);transition:background .2s,color .2s,transform .1s}
+  .seg button:active{transform:scale(.96)}
+  .seg button.on{background:rgba(255,255,255,.17);color:var(--label);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+  .ghost{padding:8px 14px;border-radius:999px;font-weight:600;font-size:14px;color:var(--label2);background:var(--fill);transition:transform .1s,color .2s}
+  .ghost:hover{color:var(--bad)}.ghost:active{transform:scale(.95)}
+  .hint{margin:0 2px 12px;font-size:14px;line-height:1.4;color:var(--label2);min-height:20px}
+
+  .stage{position:relative;width:100%;margin:0 auto;border-radius:24px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 18px 40px rgba(0,0,0,.45);
+         background-size:contain;background-repeat:no-repeat;background-position:center;background-color:#07070c}
+  .overlay{position:absolute;left:0;top:0;transform-origin:0 0}      /* laid out in fixed design pixels, then scaled to the table */
+  .grid{position:absolute;left:50%;transform:translate(-50%,-50%);display:grid;justify-items:center}
+  .card{border-radius:18px;transition:box-shadow .25s,transform .2s}
+  .card.pending{box-shadow:0 0 0 2px rgb(var(--acc))}
+  .card.locked .slot{cursor:not-allowed}
+  .head{font:600 11px/1 var(--sys);letter-spacing:.07em;text-transform:uppercase;color:var(--label2)}
+  .stats{font-weight:600;font-variant-numeric:tabular-nums;color:var(--label)}
+  .slot{perspective:600px;cursor:ew-resize;touch-action:none}
+  .coin{width:100%;height:100%;position:relative;transform-style:preserve-3d}
+  .face{position:absolute;width:100%;height:100%;border-radius:50%;backface-visibility:hidden;background-size:cover;background-position:center;box-shadow:inset 0 0 8px rgba(0,0,0,.6)}
+  .face-front{background-image:url('data:image/png;base64,__FRONT__')}
+  .face-back{background-image:url('data:image/png;base64,__BACK__')}
+  .edge{position:absolute;width:100%;height:100%;transform-style:preserve-3d}
+  .facet{position:absolute;background-image:url('data:image/png;base64,__EDGE__');background-size:cover;background-position:center;transform-style:preserve-3d}
+  .badge{font:600 10px/1 var(--sys);letter-spacing:.06em;text-transform:uppercase;padding:3px 6px;border-radius:6px;display:inline-block}
+  .panel{position:absolute;left:0;width:100%;display:flex;flex-direction:column;align-items:center}
+  .measure{background:rgb(var(--acc));color:#14110a;font:700 16px/1 var(--disp);letter-spacing:-.01em;border-radius:999px;transition:transform .1s,filter .2s;box-shadow:0 8px 22px rgba(0,0,0,.5)}
+  .measure:hover{filter:brightness(1.07)}.measure:active{transform:scale(.96)}
+  .result{border-radius:16px;text-align:center}
+  .bits{display:block;font:700 22px/1.1 var(--disp);letter-spacing:.14em;font-variant-numeric:tabular-nums;padding-left:.14em}
+  .bits.dim{color:var(--label3)}
+  .meta{display:block;font-size:12.5px;color:var(--label2);margin-top:3px;font-variant-numeric:tabular-nums}
+
+  @media (min-width:681px){
+    .stage{aspect-ratio:16/9;background-image:url('data:image/jpeg;base64,__TABLE_D__')}
+    .overlay{width:800px;height:450px}
+    .grid{top:44%;width:700px;grid-template-columns:repeat(4,1fr);gap:12px}
+    .card{width:100%;padding:8px 6px 7px;text-align:center}
+    .slot{--r:32px;width:64px;height:64px;margin:6px auto 4px}
+    .face-front{transform:translateZ(3.2px)}.face-back{transform:rotateY(180deg) translateZ(3.2px)}
+    .facet{height:6.4px;width:calc(var(--r)*.3978);left:calc(50% - var(--r)*.1989);top:calc(50% - 3.2px)}
+    .stats{font-size:13px}
+    .panel{bottom:22px;gap:8px}
+    .measure{padding:11px 32px}
+    .result{padding:7px 18px}
+  }
+  @media (max-width:680px){
+    #app{padding:12px 12px 14px;border-radius:24px}
+    .stage{aspect-ratio:9/16;background-image:url('data:image/jpeg;base64,__TABLE_M__')}
+    .overlay{width:330px;height:587px}
+    .grid{top:44%;width:300px;grid-template-columns:1fr;gap:5px}
+    .card{width:100%;height:52px;padding:0 12px;display:flex;align-items:center;justify-content:space-between;border-radius:14px}
+    .head{width:56px;flex-shrink:0;text-align:left}
+    .slot{--r:22px;width:44px;height:44px;flex-shrink:0}
+    .face-front{transform:translateZ(2.2px)}.face-back{transform:rotateY(180deg) translateZ(2.2px)}
+    .facet{height:4.4px;width:calc(var(--r)*.3978);left:calc(50% - var(--r)*.1989);top:calc(50% - 2.2px)}
+    .stats{font-size:12.5px;width:70px;flex-shrink:0;text-align:right}
+    .badge{display:block;margin-top:2px}
+    .panel{bottom:14px;flex-direction:row;justify-content:center;gap:10px}
+    .measure{padding:11px 20px;font-size:14.5px}
+    .result{padding:6px 12px}.bits{font-size:16px}
+    .seg button{padding:7px 11px;font-size:13px}
+  }
+  @media (prefers-reduced-motion:reduce){.card,.seg button,.measure,.ghost{transition:none}}
+</style>
+<div id="app">
+  <div class="bar">
+    <div class="seg" role="tablist" aria-label="Coin mode">
+      <button class="on" id="mSingle" role="tab" aria-selected="true">Single</button>
+      <button id="mBell" role="tab" aria-selected="false">Bell pair</button>
+      <button id="mGHZ" role="tab" aria-selected="false">GHZ triple</button>
+    </div>
+    <button class="ghost" id="clear">Clear entanglement</button>
+  </div>
+  <p class="hint" id="hint" aria-live="polite"></p>
+  <div class="stage">
+    <div class="overlay">
+      <div class="grid" id="table"></div>
+      <div class="panel">
+        <button class="measure" id="measure">Measure</button>
+        <div class="result mat" id="result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  const numCoins = 8, numFacets = 16;
+  const table = document.getElementById('table');
+  let mode = 'single', pending = [], groups = [];
+  const groupColors = ['#64d2ff', '#ff375f', '#30d158', '#ffd60a', '#bf5af2'];
+  const coinData = Array.from({length: numCoins}, () => ({angle: 0, locked: false, groupId: null}));
+  const HINTS = {
+    single: 'Drag a coin sideways to tilt its superposition, then measure to read out a random byte.',
+    bell: 'Tap any two free coins to entangle them into a Bell pair, (|00⟩ + |11⟩) / √2.',
+    ghz: 'Tap any three free coins to entangle them into a GHZ triple, (|000⟩ + |111⟩) / √2.',
+  };
+
+  for (let i = 0; i < numCoins; i++) {
+    const card = document.createElement('div');
+    card.className = 'card mat'; card.id = 'card_' + i;
+    let facets = '<div class="edge">';
+    for (let f = 0; f < numFacets; f++) {
+      facets += '<div class="facet" style="transform: rotateZ(' + f * (360 / numFacets) + 'deg) translateY(calc(-1 * var(--r))) rotateX(90deg);"></div>';
+    }
+    facets += '</div>';
+    card.innerHTML =
+      '<div class="head">Qubit ' + i + '</div>' +
+      '<div class="slot" id="slot_' + i + '"><div class="coin" id="coin_' + i + '"><div class="face face-front"></div><div class="face face-back"></div>' + facets + '</div></div>' +
+      '<div class="stats" id="stat_' + i + '">P(1) 0%</div><div id="badge_' + i + '"></div>';
+    card.addEventListener('click', () => handleCardClick(i));
+    table.appendChild(card);
+    setupDrag(i);
+  }
+
+  function setMode(m) {
+    mode = m; pending = [];
+    [['mSingle', 'single'], ['mBell', 'bell'], ['mGHZ', 'ghz']].forEach(([id, k]) => {
+      const b = document.getElementById(id); b.classList.toggle('on', m === k); b.setAttribute('aria-selected', m === k);
+    });
+    document.getElementById('hint').textContent = HINTS[m];
+    updateCards();
+  }
+  document.getElementById('mSingle').onclick = () => setMode('single');
+  document.getElementById('mBell').onclick = () => setMode('bell');
+  document.getElementById('mGHZ').onclick = () => setMode('ghz');
+  document.getElementById('clear').onclick = clearEntanglements;
+  document.getElementById('measure').onclick = measureByte;
+
+  function handleCardClick(index) {
+    if (mode === 'single') return;
+    if (coinData[index].groupId) {                       // tapping an entangled coin releases its whole group
+      const gId = coinData[index].groupId;
+      groups = groups.filter(g => g.id !== gId);
+      coinData.forEach((c, idx) => { if (c.groupId === gId) { c.locked = false; c.groupId = null; c.angle = 0; updateCoin(idx); } });
+      pending = pending.filter(id => id !== index);
+      updateCards(); return;
+    }
+    const size = mode === 'bell' ? 2 : 3, p = pending.indexOf(index);
+    if (p !== -1) pending.splice(p, 1);
+    else {
+      pending.push(index);
+      if (pending.length === size) {
+        const id = 'group_' + Date.now();
+        const g = {id, type: mode.toUpperCase(), members: [...pending], color: groupColors[groups.length % groupColors.length]};
+        groups.push(g);
+        g.members.forEach(m => { coinData[m].locked = true; coinData[m].groupId = id; coinData[m].angle = 90; updateCoin(m); });
+        pending = [];
+      }
+    }
+    updateCards();
+  }
+
+  function clearEntanglements() {
+    groups = []; pending = [];
+    coinData.forEach((c, i) => { c.locked = false; c.groupId = null; c.angle = 0; updateCoin(i); });
+    updateCards();
+  }
+
+  function updateCards() {
+    for (let i = 0; i < numCoins; i++) {
+      const card = document.getElementById('card_' + i), badge = document.getElementById('badge_' + i);
+      const group = groups.find(g => g.members.includes(i));
+      card.classList.toggle('pending', pending.includes(i));
+      card.classList.toggle('locked', coinData[i].locked);
+      if (group) {
+        card.style.boxShadow = '0 0 0 2px ' + group.color;
+        badge.innerHTML = '<span class="badge" style="background:' + group.color + '2e;color:' + group.color + '">' + group.type + '</span>';
+      } else { card.style.boxShadow = ''; badge.innerHTML = ''; }
+    }
+  }
+
+  // Direct manipulation: the coin turns 1:1 with the pointer, wherever it was grabbed.
+  function setupDrag(index) {
+    const slot = document.getElementById('slot_' + index);
+    let dragging = false, lastX = 0;
+    slot.addEventListener('pointerdown', e => {
+      if (coinData[index].locked) return;
+      dragging = true; lastX = e.clientX; slot.setPointerCapture(e.pointerId);
+      document.getElementById('coin_' + index).style.transition = 'none';
+    });
+    slot.addEventListener('pointermove', e => {
+      if (!dragging || coinData[index].locked) return;
+      coinData[index].angle += (e.clientX - lastX) * 1.5; lastX = e.clientX; updateCoin(index);
+    });
+    const end = () => { dragging = false; };
+    slot.addEventListener('pointerup', end); slot.addEventListener('pointercancel', end);
+  }
+
+  const prob1 = angle => Math.sin(((angle % 360 + 360) % 360) * Math.PI / 360) ** 2;
+  function updateCoin(index) {
+    document.getElementById('coin_' + index).style.transform = 'rotateY(' + coinData[index].angle + 'deg)';
+    document.getElementById('stat_' + index).textContent = 'P(1) ' + Math.round(prob1(coinData[index].angle) * 100) + '%';
+  }
+
+  function measureByte() {
+    const outcomes = new Array(numCoins);
+    groups.forEach(g => { const o = Math.random() < 0.5 ? '1' : '0'; g.members.forEach(m => { outcomes[m] = o; }); });
+    for (let i = 0; i < numCoins; i++) if (outcomes[i] === undefined) outcomes[i] = Math.random() < prob1(coinData[i].angle) ? '1' : '0';
+    groups = []; pending = [];
+    let bits = '';
+    for (let i = 0; i < numCoins; i++) {
+      bits += outcomes[i];
+      coinData[i].angle = outcomes[i] === '1' ? 180 : 0; coinData[i].locked = false; coinData[i].groupId = null;
+      const coin = document.getElementById('coin_' + i);
+      coin.style.transition = 'transform .5s cubic-bezier(.2,.8,.2,1)';      // settles, then drags track 1:1 again
+      coin.style.transform = 'rotateY(' + coinData[i].angle + 'deg)';
+      document.getElementById('stat_' + i).textContent = 'P(1) ' + (outcomes[i] === '1' ? '100%' : '0%');
+      setTimeout(() => { coin.style.transition = 'none'; }, 560);
+    }
+    updateCards();
+    const dec = parseInt(bits, 2);
+    showResult(bits, '0x' + dec.toString(16).toUpperCase().padStart(2, '0') + ' · ' + dec);
+  }
+  function showResult(bits, meta, dim) {
+    document.getElementById('result').innerHTML = '<span class="bits' + (dim ? ' dim' : '') + '">' + bits + '</span><span class="meta">' + meta + '</span>';
+  }
+  const stageEl = document.querySelector('.stage'), overlayEl = document.querySelector('.overlay');
+  function fit() { const dw = matchMedia('(max-width:680px)').matches ? 330 : 800; overlayEl.style.transform = 'scale(' + (stageEl.clientWidth / dw) + ')'; }
+  new ResizeObserver(fit).observe(stageEl); fit();
+  setMode('single');
+  showResult('00000000', 'Not measured yet', true);
+</script>

@@ -6,7 +6,7 @@ This repository contains lightweight, interactive web applications built with Py
 The app hosted on Streamlit can be found at the following address: [https://quantum-cafe.streamlit.app/](https://quantum-cafe.streamlit.app/).
 
 ## Applications Included
-1. **Programmable Quantum RNG**: An interactive tavern-themed table where users rotate 8 independent quantum coins to generate a random byte.
+1. **Toss your magic coins**: A programmable quantum random number generator. Tilt eight quantum coins to set their odds, entangle some into Bell pairs or GHZ triples, and measure them to read out a random byte.
 2. **Keep the Magic Alive**: A fantasy game about decoherence. Each hardware platform is a craft (superconducting circuit = frostbrewed potion, trapped ion = ritual of bound spirits, neutral atom = star-weaving, photonic = spell of winged light). Manage wards (isolation), chaos (noise) and heat (temperature) with limited mana, and optionally hire a helper (an error-correcting code) that costs mana but can keep the magic steady. A second tab is a sandbox with exact numbers. All platform numbers are illustrative.
 3. **Quantum Key Distribution**: An orbital LEO satellite link demonstrating QKD with a simulated eavesdropper.
 4. **Quantum Machine Learning task**: TBD.
@@ -22,4 +22,4 @@ The app hosted on Streamlit can be found at the following address: [https://quan
    pip install -r requirements.txt
 3. Run the Streamlit app:
    ```bash
-   streamlit run app_name.py
+   streamlit run Home.py

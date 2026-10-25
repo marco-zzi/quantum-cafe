@@ -23,7 +23,9 @@
   /* ---- choose a craft ---- */
   h1{font:700 clamp(28px,5vw,40px)/1.05 var(--disp);letter-spacing:-.025em;margin:6px 0 8px}
   .lede{font-size:17px;line-height:1.4;color:var(--label2);margin:0 0 22px;max-width:46ch}
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+  @media(min-width:940px){.cards{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  @media(max-width:520px){.cards{grid-template-columns:1fr}}
   .card{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;text-align:left;border-radius:22px;background:var(--fill);overflow:hidden;
         transition:transform .22s cubic-bezier(.2,.8,.2,1),background .22s}
   .card:hover{background:var(--fill2);transform:translateY(-2px)}
@@ -61,7 +63,7 @@
   .hud .fade{font-size:12px;line-height:1.3;color:var(--label2);max-width:92px}
   .sheet{position:absolute;inset:0;display:grid;place-items:end center;pointer-events:none;overflow:hidden;z-index:5}
   .scrim{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0}
-  .sheet .box{position:relative;pointer-events:auto;width:min(460px,calc(100% - 20px));margin:0 0 10px;padding:24px 22px 20px;border-radius:28px;text-align:center;will-change:transform}
+  .sheet .box{visibility:hidden;position:relative;pointer-events:auto;width:min(460px,calc(100% - 20px));margin:0 0 10px;padding:24px 22px 20px;border-radius:28px;text-align:center;will-change:transform}
   .sheet .eyebrow{color:rgb(var(--acc))}
   .sheet h3{font:600 28px/1.1 var(--serif);letter-spacing:-.015em;margin:8px 0 6px}
   .sheet p{margin:6px auto;max-width:40ch;font-size:14.5px;color:var(--label2)}
@@ -241,7 +243,7 @@ function start(k, fromEl){
   say('Reach step ' + target() + ' before the essence fades.');
   refresh(); goView('game', fromEl);
 }
-$('back').onclick = () => { stopAuto(); goView('pick'); };
+$('back').onclick = () => { stopAuto(); sSheet.t = 0; if (overTimer) { clearTimeout(overTimer); overTimer = null; } goView('pick'); };
 
 function buildForces(){
   const c = CFG.crafts[craft]; $('forces').innerHTML = '';
@@ -379,6 +381,9 @@ function render(t){
   pick.style.opacity = 1 - v; pick.style.transform = RM ? '' : 'scale(' + (1 + .035 * v) + ')'; pick.style.pointerEvents = v > .5 ? 'none' : '';
   game.style.opacity = v; game.style.transform = RM ? '' : 'scale(' + (.955 + .045 * v) + ')'; game.style.pointerEvents = v < .5 ? 'none' : '';
   if (!pick.hidden && v < 1) drawPreviews(t);
+  const sh = clamp01(sSheet.x); $('scrim').style.opacity = sh; $('sheetbox').style.transform = 'translateY(' + ((1 - sh) * 110) + '%)'; $('sheetbox').style.opacity = RM ? sh : 1;
+  $('sheet').style.pointerEvents = sh > .5 ? 'auto' : 'none';
+  if (sSheet.t === 0 && sh < .01) $('sheetbox').style.visibility = 'hidden'; else $('sheetbox').style.visibility = '';
   if (game.hidden || !st) return;
   $('rarc').style.strokeDashoffset = RING * (1 - clamp01(sFid.x));
   const low = sFid.t < .86;
@@ -388,9 +393,6 @@ function render(t){
   [...$('dots').children].forEach((d, i) => { d.firstChild.style.transform = 'scaleX(' + clamp01(sMana.x - i) + ')'; });
   GAUGES.forEach((gg, i) => { if (gg.el) gg.el.firstChild.style.transform = 'scaleX(' + clamp01(sForce[i].x / 100) + ')'; });
   const hl = $('hl'); if (hl) hl.style.transform = 'translateX(' + (sSeg.x * 100) + '%)';
-  const sh = clamp01(sSheet.x); $('scrim').style.opacity = sh; $('sheetbox').style.transform = 'translateY(' + ((1 - sh) * 110) + '%)'; $('sheetbox').style.opacity = RM ? sh : 1;
-  $('sheet').style.pointerEvents = sh > .5 ? 'auto' : 'none';
-  if (sSheet.t === 0 && sh < .01) $('sheetbox').style.visibility = 'hidden'; else $('sheetbox').style.visibility = '';
   shown += ((st.essence) - shown) * 0.08;
   scene(t);
 }
