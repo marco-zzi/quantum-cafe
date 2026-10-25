@@ -67,7 +67,7 @@ with col1:
 
     with st.expander("Session 2: The Hardware Frontier", expanded=True):
         st.write("**Topic:** Building physical quantum platforms in Lithuania and globally.")
-        st.code("App: Keep the Qubit Alive (decoherence sandbox)", language="text")
+        st.code("App: Keep the Magic Alive (a fantasy game about decoherence)", language="text")
 
 with col2:
     with st.expander("Session 3: Code, Cryptography & Commerce", expanded=True):

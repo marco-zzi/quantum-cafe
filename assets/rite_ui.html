@@ -1,0 +1,608 @@
+<style>
+  :root{
+    --bg:#0b0b10; --label:#f5f5f7; --label2:rgba(235,235,245,.62); --label3:rgba(235,235,245,.34);
+    --fill:rgba(255,255,255,.07); --fill2:rgba(255,255,255,.12); --sep:rgba(255,255,255,.09);
+    --ok:#32d74b; --bad:#ff453a; --acc:190,200,255;
+    --sys:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+    --disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+    --serif:ui-serif,"New York","Iowan Old Style",Georgia,serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:transparent}
+  body{font:15px/1.4 var(--sys);color:var(--label);-webkit-font-smoothing:antialiased}
+  #app{background:var(--bg);border-radius:28px;padding:22px 22px 24px;min-height:200px;overflow:hidden;position:relative}
+  #app{display:grid}
+  #pick,#game{grid-area:1/1;min-width:0}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+  :focus-visible{outline:2px solid rgba(var(--acc),.95);outline-offset:3px;border-radius:12px}
+  .num{font-variant-numeric:tabular-nums}
+  .mat{background:rgba(32,32,42,.58);-webkit-backdrop-filter:blur(26px) saturate(180%);backdrop-filter:blur(26px) saturate(180%);border-top:1px solid rgba(255,255,255,.14)}
+  @media (prefers-reduced-transparency:reduce){.mat{background:#1d1d26;-webkit-backdrop-filter:none;backdrop-filter:none}}
+  @media (prefers-contrast:more){:root{--label2:rgba(235,235,245,.85);--fill:rgba(255,255,255,.16)}}
+
+  /* ---- choose a craft ---- */
+  h1{font:700 clamp(28px,5vw,40px)/1.05 var(--disp);letter-spacing:-.025em;margin:6px 0 8px}
+  .lede{font-size:17px;line-height:1.4;color:var(--label2);margin:0 0 22px;max-width:46ch}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+  .card{display:flex;flex-direction:column;justify-content:flex-start;align-items:stretch;text-align:left;border-radius:22px;background:var(--fill);overflow:hidden;
+        transition:transform .22s cubic-bezier(.2,.8,.2,1),background .22s}
+  .card:hover{background:var(--fill2);transform:translateY(-2px)}
+  .card:active{transform:scale(.975);transition-duration:.1s}
+  .card canvas{display:block;width:100%;aspect-ratio:640/440;background:#07070c}
+  .card .tx{padding:14px 16px 18px}
+  .eyebrow{font:600 11px/1 var(--sys);letter-spacing:.08em;text-transform:uppercase;color:var(--label3)}
+  .card .nm{font:600 20px/1.15 var(--serif);letter-spacing:-.01em;margin:8px 0 6px}
+  .card .wy{font-size:13.5px;line-height:1.42;color:var(--label2)}
+
+  /* ---- the rite ---- */
+  .top{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;margin-bottom:14px}
+  .back{display:inline-flex;align-items:center;gap:2px;color:rgb(var(--acc));font-size:16px;justify-self:start;padding:6px 6px 6px 0}
+  .back svg{width:20px;height:20px}
+  .top h2{margin:0;font:600 19px/1.2 var(--serif);letter-spacing:-.01em;text-align:center}
+  .pill{justify-self:end;padding:7px 14px;border-radius:999px;background:var(--fill);font-weight:600;font-size:14px;transition:background .2s,transform .1s}
+  .pill:active{transform:scale(.95)}
+  .pill[aria-pressed=true]{background:rgb(var(--acc));color:#0b0b10}
+  .layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(280px,1fr);gap:20px;align-items:start}
+  @media(max-width:760px){.layout{grid-template-columns:1fr}}
+  .stage{position:relative;border-radius:24px;overflow:hidden;background:#07070c;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 18px 40px rgba(0,0,0,.45)}
+  .stage canvas{display:block;width:100%;aspect-ratio:640/440}
+  .hud{position:absolute;padding:10px 14px;border-radius:18px;pointer-events:none}
+  .hud.tl{left:12px;top:12px;min-width:120px}
+  .hud.tr{right:12px;top:12px;display:flex;align-items:center;gap:10px;padding:8px 14px 8px 8px}
+  .big{font:700 28px/1.05 var(--disp);letter-spacing:-.02em;margin:6px 0 8px}
+  .big .of{font-weight:500;font-size:16px;color:var(--label3);letter-spacing:0}
+  .meter{height:3px;border-radius:2px;background:rgba(255,255,255,.14);overflow:hidden}
+  .meter i{display:block;height:100%;width:100%;transform-origin:0 50%;transform:scaleX(0);background:rgb(var(--acc))}
+  .sub{font-size:12px;color:var(--label2);margin-top:6px}
+  .ring{width:58px;height:58px;position:relative;flex:none}
+  .ring svg{width:100%;height:100%}
+  .ring .tx{position:absolute;inset:0;display:grid;place-items:center;font:700 15px/1 var(--disp);letter-spacing:-.02em}
+  .ring .tx small{font-size:9px;font-weight:600;opacity:.6}
+  .hud .fade{font-size:12px;line-height:1.3;color:var(--label2);max-width:92px}
+  .sheet{position:absolute;inset:0;display:grid;place-items:end center;pointer-events:none;overflow:hidden;z-index:5}
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0}
+  .sheet .box{position:relative;pointer-events:auto;width:min(460px,calc(100% - 20px));margin:0 0 10px;padding:24px 22px 20px;border-radius:28px;text-align:center;will-change:transform}
+  .sheet .eyebrow{color:rgb(var(--acc))}
+  .sheet h3{font:600 28px/1.1 var(--serif);letter-spacing:-.015em;margin:8px 0 6px}
+  .sheet p{margin:6px auto;max-width:40ch;font-size:14.5px;color:var(--label2)}
+  .sheet .stat{font:700 44px/1 var(--disp);letter-spacing:-.03em;margin:14px 0 2px}
+  .sheet .stat small{display:block;font:500 14px/1.3 var(--sys);letter-spacing:0;color:var(--label2);margin-top:4px}
+  .sheet .tip{font-size:13px;color:var(--label3)}
+  .acts{display:flex;gap:10px;margin-top:16px}
+  .acts .btn{flex:1}
+  .btn{padding:13px 16px;border-radius:14px;background:var(--fill2);font-weight:600;font-size:16px;transition:transform .1s,background .2s}
+  .btn:active{transform:scale(.97)}
+  .btn.p{background:rgb(var(--acc));color:#0b0b10}
+
+  .side{display:flex;flex-direction:column;gap:18px}
+  .gh{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .gh span:first-child{font:600 13px/1 var(--sys);letter-spacing:.02em}
+  .gh .hint{font-size:12px;color:var(--label3)}
+  .dots{display:flex;gap:6px}
+  .dots i{flex:1;height:8px;border-radius:4px;background:var(--fill);position:relative;overflow:hidden}
+  .dots i b{position:absolute;inset:0;background:rgb(var(--acc));transform-origin:0 50%;transform:scaleX(0)}
+  .ctl{position:relative;height:58px;border-radius:18px;background:var(--fill);overflow:hidden;touch-action:none;cursor:ew-resize;margin-bottom:8px;user-select:none;-webkit-user-select:none}
+  .ctl .fill{position:absolute;left:0;top:0;bottom:0;width:100%;transform-origin:0 50%;background:rgba(var(--acc),.34);border-right:2px solid rgba(var(--acc),.9)}
+  .ctl .zone{position:absolute;top:0;bottom:0;right:0;width:20%;background:repeating-linear-gradient(135deg,rgba(255,255,255,.05) 0 6px,transparent 6px 12px)}
+  .ctl .tick{position:absolute;top:10px;bottom:10px;width:2px;border-radius:1px;background:rgba(255,255,255,.28)}
+  .ctl .row{position:absolute;inset:0;display:flex;align-items:center;justify-content:space-between;padding:0 16px;pointer-events:none}
+  .ctl .nm{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px}
+  .ctl svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+  .chip{font:600 14px/1 var(--sys);padding:6px 9px;border-radius:9px;background:rgba(0,0,0,.28)}
+  .chip.good{color:var(--ok)}.chip.bad{color:var(--bad)}
+  .ctl.off{opacity:.38;cursor:not-allowed}
+  .seg{position:relative;display:grid;grid-template-columns:repeat(3,1fr);background:var(--fill);border-radius:14px;padding:3px}
+  .seg .hl{position:absolute;left:3px;top:3px;bottom:3px;width:calc((100% - 6px)/3);border-radius:11px;background:rgba(255,255,255,.16);box-shadow:0 1px 3px rgba(0,0,0,.4)}
+  .seg button{position:relative;padding:9px 4px 8px;text-align:center;font-weight:600;font-size:13.5px;line-height:1.15;border-radius:11px}
+  .seg button small{display:block;font-weight:500;font-size:11.5px;margin-top:3px;color:var(--label3)}
+  .seg button small.good{color:var(--ok)}.seg button small.bad{color:var(--bad)}
+  .seg button:disabled{opacity:.35;cursor:not-allowed}
+  .cast{width:100%;padding:15px 18px;border-radius:18px;background:rgb(var(--acc));color:#0b0b10;font:700 17px/1.15 var(--disp);letter-spacing:-.01em;transition:transform .1s,opacity .2s,filter .2s}
+  .cast:hover:not(:disabled){filter:brightness(1.07)}
+  .cast:active:not(:disabled){transform:scale(.97)}
+  .cast:disabled{opacity:.4;cursor:default}
+  .cast small{display:block;font:500 12.5px/1.2 var(--sys);letter-spacing:0;opacity:.7;margin-top:3px}
+  .ticker{min-height:40px;margin:10px 2px 0;font-size:13.5px;line-height:1.4;color:var(--label2)}
+  .ticker.in{animation:tin .35s cubic-bezier(.2,.8,.2,1)}
+  @keyframes tin{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.ticker.in{animation:none}.card,.cast,.btn,.pill{transition:none}}
+  @media(max-width:560px){          /* small screens: status sits above the scene instead of floating over it */
+    #app{padding:16px 14px 18px}
+    .stage{display:grid;grid-template-columns:1fr 1fr;gap:8px;background:none;box-shadow:none;overflow:visible}
+    .stage canvas{grid-column:1/3;grid-row:2;border-radius:20px;background:#07070c;box-shadow:0 0 0 1px rgba(255,255,255,.06)}
+    .hud{position:static;grid-row:1}
+    .hud.tl{grid-column:1;min-width:0}
+    .hud.tr{grid-column:2;justify-self:stretch;padding:8px 10px}
+    .hud .fade{max-width:none;font-size:11.5px}
+  }
+  [hidden]{display:none!important}
+</style>
+<div id="app">
+  <section id="pick">
+    <h1>Choose your craft</h1>
+    <p class="lede">Each craft is a different kind of quantum computer. Keep it alive long enough to finish the rite.</p>
+    <div class="cards" id="cards"></div>
+  </section>
+  <section id="game" hidden>
+    <header class="top">
+      <button class="back" id="back" aria-label="Back to the crafts"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>Crafts</button>
+      <h2 id="ctitle"></h2>
+      <button class="pill" id="auto" aria-pressed="false">Auto</button>
+    </header>
+    <div class="layout">
+      <div class="stage">
+        <canvas id="cv" role="img" aria-label="The rite in progress"></canvas>
+        <div class="hud tl mat">
+          <div class="eyebrow">Step</div>
+          <div class="big num"><span id="stepn">0</span><span class="of"> / <span id="stept"></span></span></div>
+          <div class="meter"><i id="pbar"></i></div>
+          <div class="sub num" id="opsn"></div>
+        </div>
+        <div class="hud tr mat">
+          <div class="ring"><svg viewBox="0 0 64 64"><circle cx="32" cy="32" r="27" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="5"/><circle id="rarc" cx="32" cy="32" r="27" fill="none" stroke="rgb(var(--acc))" stroke-width="5" stroke-linecap="round" transform="rotate(-90 32 32)" stroke-dasharray="169.6" stroke-dashoffset="0"/><line id="rtick" x1="32" y1="2" x2="32" y2="9" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            <div class="tx num"><span><b id="fid" style="font:inherit">100</b><small>%</small></span></div></div>
+          <div class="fade num" id="fade"></div>
+        </div>
+      </div>
+      <aside class="side">
+        <div><div class="gh"><span>Mana</span><span class="hint num" id="manat"></span></div><div class="dots" id="dots"></div></div>
+        <div><div class="gh"><span>Forces</span><span class="hint">effect on fading</span></div><div id="forces"></div></div>
+        <div><div class="gh"><span>Helper</span><span class="hint" id="hnote"></span></div><div class="seg" id="seg"></div></div>
+        <div>
+          <button class="cast" id="step"><span id="castl"></span><small class="num" id="castops"></small></button>
+          <p class="ticker" id="ticker" aria-live="polite"></p>
+        </div>
+      </aside>
+    </div>
+  </section>
+  <div class="sheet" id="sheet" aria-live="polite"><div class="scrim" id="scrim"></div><div class="box mat" id="sheetbox"></div></div>
+</div>
+<script>
+const CFG = __CFG__;
+__ENGINE__
+const E = makeEngine(CFG), G = CFG.game, KEYS = Object.keys(CFG.presets);
+const $ = id => document.getElementById(id);
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI Variable Text", "Segoe UI", system-ui, sans-serif';
+const EVENT_TEXT = {
+  chaos: 'Wild magic surges. Chaos rises.',
+  heat: 'A hot draught sweeps in. Heat rises.',
+  wards: 'Your wards flicker and fray.',
+  calm: 'A quiet moment. Chaos settles.',
+};
+const GAUGES = [
+  { id: 'wards', key: 'wards', icon: '<path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/>' },
+  { id: 'chaos', key: 'chaos', icon: '<path d="M3 8h10a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h8"/>' },
+  { id: 'heat',  key: 'heat',  icon: '<path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 .3 1.2 1 2 2 2 0-3-1-5 1-8z"/>' },
+];
+let st = null, craft = null, autoTimer = null, overTimer = null, view = 'pick', tickerText = '';
+let shown = 1;                                  // smoothed essence for the scene
+let castA = null, fx = [], banner = null;       // cast animation, visual effects, event banner
+
+// ---------- springs: critically damped, velocity-aware, always animating from the live value ----------
+const springs = [];
+function Spring(x, response, damping){ const s = { x, v: 0, t: x, resp: response || .38, damp: damping == null ? 1 : damping }; springs.push(s); return s; }
+function stepSprings(dt){
+  for (const s of springs) {
+    if (RM) { s.x = s.t; s.v = 0; continue; }
+    const w = 2 * Math.PI / s.resp, k = w * w, c = 2 * s.damp * w; let r = dt;
+    while (r > 0) { const h = Math.min(r, 1/240), a = k * (s.t - s.x) - c * s.v; s.v += a * h; s.x += s.v * h; r -= h; }
+    if (Math.abs(s.t - s.x) < 1e-4 && Math.abs(s.v) < 1e-3) { s.x = s.t; s.v = 0; }
+  }
+}
+function snap(s, v){ s.x = s.t = v; s.v = 0; }
+const sView = Spring(0, .5), sFid = Spring(1, .5), sProg = Spring(0, .5), sMana = Spring(G.manaStart, .45),
+      sSeg = Spring(0, .32), sSheet = Spring(0, .5), sForce = GAUGES.map(() => Spring(50, .4));
+function rubberband(over, dim, c){ c = c || .55; return (over * dim * c) / (dim + c * Math.abs(over)); }
+
+// ---------- helpers on game state ----------
+const target = () => CFG.presets[craft].targetTurns;
+const opsPerTurn = () => CFG.presets[craft].opsPerTurn;
+const inertHeat = () => CFG.presets[craft].kind === 'loss';
+const canAssist = () => CFG.presets[craft].kind !== 'loss';
+const goodOf = (id, v) => id === 'wards' ? v : 100 - v;      // 0..100, higher is better for the player
+function effectOf(id, v){ return id === 'wards' ? 1 / E.knobFactor(v) : (id === 'heat' && inertHeat() ? 1 : E.knobFactor(v)); }
+function ratioFor(assistant){ const r = E.rates(Object.assign({}, st, { assistant })); return r.used / r.plain; }
+function fmtOps(n){ if (Number.isInteger(n)) return n.toLocaleString('en'); return n >= 100 ? Math.round(n).toString() : n.toFixed(n >= 10 ? 0 : 1); }
+function fmtT(t){ const U=[['s',1],['ms',1e-3],['µs',1e-6],['ns',1e-9],['ps',1e-12]]; for (const [n,k] of U) if (t >= k) return (t/k).toPrecision(3)+' '+n; return t.toExponential(1)+' s'; }
+function say(t){ tickerText = t; const el = $('ticker'); el.textContent = t; el.classList.remove('in'); void el.offsetWidth; el.classList.add('in'); }
+
+// ---------- craft selection, with live previews of each scene ----------
+const PREV = { wards: 62, chaos: 22, heat: 50, turn: 6, status: 'playing', essence: .95 };
+const previewCanvases = [];
+function buildCards(){
+  KEYS.forEach(k => {
+    const c = CFG.crafts[k], b = document.createElement('button'); b.className = 'card'; b.dataset.key = k;
+    b.innerHTML = '<canvas width="640" height="440" aria-hidden="true"></canvas><div class="tx"><div class="eyebrow">'+k+'</div><div class="nm">'+c.name+'</div><div class="wy">'+c.why+'</div></div>';
+    b.onclick = () => start(k, b);
+    $('cards').appendChild(b); previewCanvases.push([k, b.querySelector('canvas')]);
+  });
+}
+let origin = '50% 50%';
+function goView(v, fromEl){
+  view = v;
+  if (fromEl) { const a = $('app').getBoundingClientRect(), r = fromEl.getBoundingClientRect(); origin = (r.left + r.width/2 - a.left) + 'px ' + (r.top + r.height/2 - a.top) + 'px'; }
+  $('pick').hidden = false; $('game').hidden = false;
+  $('pick').style.transformOrigin = $('game').style.transformOrigin = origin;
+  sView.t = v === 'game' ? 1 : 0;
+}
+
+// ---------- starting, controls ----------
+function start(k, fromEl){
+  stopAuto(); craft = k; st = E.newGame(k); shown = 1; castA = null; fx = []; banner = null;
+  if (overTimer) { clearTimeout(overTimer); overTimer = null; }
+  const c = CFG.crafts[k];
+  $('app').style.setProperty('--acc', c.accent.join(','));
+  $('ctitle').textContent = c.name; $('stept').textContent = target();
+  $('castl').textContent = c.step; $('castops').textContent = opsPerTurn() + ' operations';
+  buildForces(); buildHelpers();
+  snap(sFid, 1); snap(sProg, 0); snap(sMana, st.mana); snap(sSheet, 0); snap(sSeg, 0);
+  GAUGES.forEach((g, i) => snap(sForce[i], goodOf(g.id, st[g.id])));
+  say('Reach step ' + target() + ' before the essence fades.');
+  refresh(); goView('game', fromEl);
+}
+$('back').onclick = () => { stopAuto(); goView('pick'); };
+
+function buildForces(){
+  const c = CFG.crafts[craft]; $('forces').innerHTML = '';
+  const lim = 50 + G.limit;
+  GAUGES.forEach((gg, i) => {
+    const inert = gg.id === 'heat' && inertHeat();
+    const d = document.createElement('div'); d.className = 'ctl' + (inert ? ' off' : ''); d.tabIndex = inert ? -1 : 0;
+    d.setAttribute('role', 'slider'); d.setAttribute('aria-label', c[gg.key]); d.setAttribute('aria-valuemin', 0); d.setAttribute('aria-valuemax', 100);
+    d.innerHTML = '<div class="fill"></div><div class="zone"></div><div class="tick" style="left:50%"></div><div class="tick" style="left:'+lim+'%"></div>' +
+      '<div class="row"><span class="nm"><svg viewBox="0 0 24 24">'+gg.icon+'</svg>'+(inert ? 'No effect on light' : c[gg.key])+'</span><span class="chip num"></span></div>';
+    $('forces').appendChild(d); gg.el = d; attachDrag(d, gg, i);
+  });
+}
+function attachDrag(el, gg, i){
+  let drag = null;
+  el.addEventListener('pointerdown', e => {
+    if (!st || st.status !== 'playing' || (gg.id === 'heat' && inertHeat())) return;
+    el.setPointerCapture(e.pointerId);
+    const rect = el.getBoundingClientRect(), baseGood = goodOf(gg.id, st[gg.id]);
+    drag = { rect, baseVal: st[gg.id], baseMana: st.mana, baseGood, grab: (e.clientX - rect.left) - baseGood / 100 * rect.width, x0: e.clientX, moved: false, t0: performance.now(), applied: 0 };
+  });
+  el.addEventListener('pointermove', e => {
+    if (!drag) return;
+    if (!drag.moved && Math.abs(e.clientX - drag.x0) > 6) drag.moved = true;      // small hysteresis before it counts as a drag
+    if (!drag.moved) return;
+    const goodTarget = (e.clientX - drag.rect.left - drag.grab) / drag.rect.width * 100;   // respects where it was grabbed
+    const units = goodTarget - drag.baseGood;
+    const applied = E.boostTo(st, gg.id, drag.baseVal, drag.baseMana, units);
+    drag.applied = applied;
+    const over = units - applied;                                                  // beyond the limit or the mana: resist
+    const vis = drag.baseGood + applied + (over > 0 ? rubberband(over, 100) * .35 : rubberband(Math.min(0, units), 100) * .35);
+    snap(sForce[i], vis); refresh(i);
+  });
+  const end = e => {
+    if (!drag) return; const d = drag; drag = null;
+    if (!d.moved) { const r = E.act(st, gg.id); if (r.ok) addFx(gg.id); else say(r.msg); }
+    else if (d.applied > 1) addFx(gg.id);
+    refresh();
+  };
+  el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+  el.addEventListener('keydown', e => {
+    if (!st || st.status !== 'playing') return; let u = 0;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') u = 6; else if (e.key === 'Enter' || e.key === ' ') u = 12; else return;
+    e.preventDefault(); const got = E.boostTo(st, gg.id, st[gg.id], st.mana, u); if (got > 0) addFx(gg.id); else say('Nothing more to give there.'); refresh();
+  });
+}
+function buildHelpers(){
+  const box = $('seg'); box.innerHTML = '<div class="hl" id="hl"></div>';
+  const defs = [['none', 'None']].concat(Object.keys(CFG.codes).map(k => [k, CFG.assistants[k].name]));
+  defs.forEach(([key, label]) => {
+    const b = document.createElement('button'); b.dataset.key = key;
+    b.innerHTML = label + '<small></small>';
+    b.onclick = () => { const r = E.act(st, 'assist:' + key); if (!r.ok) say(r.msg); refresh(); };
+    box.appendChild(b);
+  });
+}
+
+// ---------- reading the state into the interface ----------
+function refresh(skip){
+  const over = st.status !== 'playing', F = (1 + st.essence) / 2, r = E.rates(st);
+  const per = 1 - Math.exp(-opsPerTurn() * r.used);
+  sFid.t = clamp01((F - .5) / .5); sProg.t = st.turn / target(); sMana.t = st.mana;
+  $('stepn').textContent = st.turn; $('opsn').textContent = fmtOps(st.ops) + ' operations';
+  $('fid').textContent = (F * 100).toFixed(F > .995 ? 0 : 1);
+  $('fade').textContent = 'Fading ' + (per * 100).toFixed(per < .1 ? 1 : 0) + '% per step';
+  $('manat').textContent = (Math.round(st.mana * 10) / 10) + ' of ' + G.manaCap;
+  GAUGES.forEach((gg, i) => {
+    const f = effectOf(gg.id, st[gg.id]), inert = gg.id === 'heat' && inertHeat();
+    if (skip !== i) sForce[i].t = goodOf(gg.id, st[gg.id]);
+    const chip = gg.el.querySelector('.chip'); chip.textContent = inert ? '—' : '×' + f.toFixed(2);
+    chip.className = 'chip num ' + (inert ? '' : f < .8 ? 'good' : f > 1.25 ? 'bad' : '');
+    gg.el.setAttribute('aria-valuenow', Math.round(goodOf(gg.id, st[gg.id])));
+  });
+  const keys = ['none'].concat(Object.keys(CFG.codes));
+  [...$('seg').querySelectorAll('button')].forEach((b, i) => {
+    const k = b.dataset.key, sm = b.querySelector('small');
+    b.disabled = over || (k !== 'none' && !canAssist());
+    if (k === 'none') { sm.textContent = 'free'; sm.className = ''; }
+    else if (!canAssist()) { sm.textContent = '—'; sm.className = ''; }
+    else { const q = ratioFor(k); sm.textContent = (isFinite(q) ? '×' + q.toFixed(2) : '×∞') + ' · ' + CFG.codes[k].upkeep + ' mana'; sm.className = q < .95 ? 'good' : 'bad'; }
+  });
+  sSeg.t = keys.indexOf(st.assistant);
+  $('hnote').textContent = !canAssist() ? 'Lost light cannot be mended' : st.assistant === 'none' ? '' : (r.helping ? 'Helping' : 'Making things worse');
+  $('hnote').style.color = !canAssist() || st.assistant === 'none' ? '' : (r.helping ? 'var(--ok)' : 'var(--bad)');
+  if (over && !overTimer) overTimer = setTimeout(() => { overTimer = null; showOver(); }, castA ? CAST_DUR * 1000 + 150 : 0);
+}
+
+function cast(){
+  if (!st || st.status !== 'playing' || castA) return;
+  const r = E.rates(st), loss = 1 - Math.exp(-opsPerTurn() * r.used), prevU = st.turn / target();
+  E.nextTurn(st);
+  startCast(loss, prevU, st.turn / target());
+  (st.lastNotes || []).forEach(say);
+  if (st.status === 'playing' && st.lastEvent) {        // the world strikes right after the cast
+    say(EVENT_TEXT[st.lastEvent]);
+    addFx({chaos:'chaosEv', heat:'heatEv', wards:'wardsEv', calm:'chaos'}[st.lastEvent], CAST_DUR * .8);
+    showBanner(EVENT_TEXT[st.lastEvent], CAST_DUR * .8);
+  }
+  refresh();
+  if (st.status === 'playing') { $('step').disabled = true; setTimeout(() => { if (st.status === 'playing') $('step').disabled = false; }, CAST_DUR * 1000); }
+}
+$('step').onclick = cast;
+function stopAuto(){ if (autoTimer) { clearInterval(autoTimer); autoTimer = null; } $('auto').setAttribute('aria-pressed', 'false'); }
+$('auto').onclick = () => {
+  if (autoTimer) { stopAuto(); return; }
+  $('auto').setAttribute('aria-pressed', 'true');
+  autoTimer = setInterval(() => { if (!st || st.status !== 'playing') stopAuto(); else cast(); }, 1100);
+};
+
+function showOver(){
+  stopAuto();
+  const c = CFG.crafts[craft], won = st.status === 'won', p = CFG.presets[craft];
+  const timeTxt = p.kind === 'loss' ? '' : ' · about ' + fmtT(st.ops * p.t_gate) + ' of real time';
+  $('sheetbox').innerHTML =
+    '<div class="eyebrow">' + (won ? 'Rite complete' : 'Magic lost') + '</div>' +
+    '<h3>' + (won ? 'The rite is complete' : c.fail) + '</h3>' +
+    '<p>' + (won ? c.win : c.loseText) + '</p>' +
+    '<div class="stat num">' + fmtOps(st.ops) + '<small>operations' + timeTxt + '</small></div>' +
+    '<p>Left alone in typical conditions, this craft lasts about <b>' + fmtOps(E.untendedOps(craft)) + '</b>.' +
+    (st.turnsHelped ? ' Your helper worked for ' + st.turnsHelped + ' of ' + st.turn + ' steps.' : '') + '</p>' +
+    '<p class="tip">' + c.tip + '</p>' +
+    '<div class="acts"><button class="btn" id="other">Another craft</button><button class="btn p" id="again">Try again</button></div>';
+  $('again').onclick = () => start(craft);
+  $('other').onclick = () => $('back').click();
+  sSheet.t = 1;
+}
+
+// ---------- per-frame rendering of the spring-driven parts ----------
+const RING = 169.6;
+function render(t){
+  const v = sView.x;
+  const pick = $('pick'), game = $('game');
+  if (v > .985 && view === 'game') pick.hidden = true;
+  if (v < .015 && view === 'pick') game.hidden = true;
+  pick.style.opacity = 1 - v; pick.style.transform = RM ? '' : 'scale(' + (1 + .035 * v) + ')'; pick.style.pointerEvents = v > .5 ? 'none' : '';
+  game.style.opacity = v; game.style.transform = RM ? '' : 'scale(' + (.955 + .045 * v) + ')'; game.style.pointerEvents = v < .5 ? 'none' : '';
+  if (!pick.hidden && v < 1) drawPreviews(t);
+  if (game.hidden || !st) return;
+  $('rarc').style.strokeDashoffset = RING * (1 - clamp01(sFid.x));
+  const low = sFid.t < .86;
+  $('rarc').style.stroke = low ? 'var(--bad)' : '';
+  $('rtick').setAttribute('transform', 'rotate(' + (360 * .8) + ' 32 32)');
+  $('pbar').style.transform = 'scaleX(' + clamp01(sProg.x) + ')';
+  [...$('dots').children].forEach((d, i) => { d.firstChild.style.transform = 'scaleX(' + clamp01(sMana.x - i) + ')'; });
+  GAUGES.forEach((gg, i) => { if (gg.el) gg.el.firstChild.style.transform = 'scaleX(' + clamp01(sForce[i].x / 100) + ')'; });
+  const hl = $('hl'); if (hl) hl.style.transform = 'translateX(' + (sSeg.x * 100) + '%)';
+  const sh = clamp01(sSheet.x); $('scrim').style.opacity = sh; $('sheetbox').style.transform = 'translateY(' + ((1 - sh) * 110) + '%)'; $('sheetbox').style.opacity = RM ? sh : 1;
+  $('sheet').style.pointerEvents = sh > .5 ? 'auto' : 'none';
+  if (sSheet.t === 0 && sh < .01) $('sheetbox').style.visibility = 'hidden'; else $('sheetbox').style.visibility = '';
+  shown += ((st.essence) - shown) * 0.08;
+  scene(t);
+}
+let last = performance.now(), frameN = 0;
+function loop(ms){
+  const dt = Math.min(.05, (ms - last) / 1000); last = ms; frameN++;
+  stepSprings(dt); render(ms / 1000);
+  requestAnimationFrame(loop);
+}
+// build dots once
+for (let i = 0; i < G.manaCap; i++) { const d = document.createElement('i'); d.innerHTML = '<b></b>'; $('dots').appendChild(d); }
+// ---------- scene drawing ----------
+const cv = $('cv'); let g = cv.getContext('2d'); const W = 640, H = 440; cv.width = W * 2; cv.height = H * 2; g.setTransform(2, 0, 0, 2, 0, 0);
+const CAST_DUR = 1.0;
+const now = () => performance.now() / 1000;
+const clamp01 = x => Math.max(0, Math.min(1, x));
+const ease = x => x < .5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2) / 2;
+function rnd(i){ const s = Math.sin(i * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); }
+function glow(x, y, r, col, a){ const gr = g.createRadialGradient(x,y,0,x,y,r); gr.addColorStop(0, col.replace('A',a)); gr.addColorStop(1, col.replace('A',0)); g.fillStyle = gr; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); }
+function mix(a,b,t){ return a.map((v,i)=>Math.round(v+(b[i]-v)*t)); }
+function rgb(c){ return 'rgb('+c.join(',')+')'; }
+function rgba(c,a){ return 'rgba('+c.join(',')+','+a+')'; }
+
+function startCast(loss, prevU, nowU){ castA = { t0: now(), dur: CAST_DUR, loss, ops: opsPerTurn(), prevU, nowU }; }
+function addFx(kind, delay){ fx.push({ kind, t0: now() + (delay || 0), dur: kind.endsWith('Ev') ? 1.4 : 1.0 }); }
+function showBanner(text, delay){ banner = { text, t0: now() + (delay || 0) }; }
+function castP(){ if (!castA) return -1; const p = (now() - castA.t0) / castA.dur; if (p >= 1) { castA = null; return -1; } return p; }
+
+function scene(t){
+  const e = clamp01(shown), chaos = st.chaos/100, heat = st.heat/100;
+  const dead = st.status === 'lost';
+  const p = castP(), loss = castA ? castA.loss : 0;
+  g.clearRect(0,0,W,H);
+  const bgG = g.createLinearGradient(0,0,0,H);
+  const warm = inertHeat() ? 0 : Math.max(0, heat - .5);
+  bgG.addColorStop(0, rgb(mix([22,24,42],[60,16,12],warm*2))); bgG.addColorStop(1, '#07070c');
+  g.fillStyle = bgG; g.fillRect(0,0,W,H);
+  const jit = RM ? 0 : chaos > .5 ? (chaos-.5) * 10 : 0;     // chaos shakes the scene
+  g.save(); g.translate((rnd(Math.floor(t*14))-.5)*jit, (rnd(Math.floor(t*14)+9)-.5)*jit);
+  const col = dead ? [96,96,104] : mix([132,134,150], CFG.crafts[craft].accent, e);
+  ({'Superconducting circuit':potion,'Trapped ion':ritual,'Neutral atom':stars,'Photonic':light})[craft](t, e, chaos, heat, col, dead, p, loss);
+  g.restore();
+  dome(t); overlays(t); popups(p, loss);
+}
+
+// protective dome: brighter the stronger the wards
+function dome(t){
+  const w = clamp01((st.wards - 15) / 75), cx = W/2, cy = H/2 + 10, tn = now();
+  let a = .07 + .4 * w, cracked = 0;
+  fx.forEach(f => { if (f.kind === 'wardsEv') { const k = (tn - f.t0) / f.dur; if (k >= 0 && k < 1) { cracked = 1 - k; a *= .45 + .55 * Math.abs(Math.sin(tn * 38)); } } });
+  const gr = g.createRadialGradient(cx, cy, 120, cx, cy, 250); gr.addColorStop(0, 'rgba(120,190,255,0)'); gr.addColorStop(1, 'rgba(120,190,255,' + (a * .35) + ')');
+  g.fillStyle = gr; g.beginPath(); g.ellipse(cx, cy, 300, 208, 0, 0, 7); g.fill();
+  g.strokeStyle = 'rgba(150,205,255,' + a + ')'; g.lineWidth = 2 + 2 * w; g.beginPath(); g.ellipse(cx, cy, 300, 208, 0, 0, 7); g.stroke();
+  if (cracked > 0) { g.strokeStyle = 'rgba(255,255,255,' + cracked + ')'; g.lineWidth = 2; for (let i = 0; i < 4; i++) { let x = cx + (rnd(i + 3) - .5) * 520, y = cy - 200 + rnd(i) * 40; g.beginPath(); g.moveTo(x, y); for (let j = 0; j < 4; j++) { x += (rnd(i*9+j) - .5) * 40; y += 28; g.lineTo(x, y); } g.stroke(); } }
+}
+
+// boost effects (what you did) and world events (what happened to you)
+function overlays(t){
+  const tn = now();
+  fx = fx.filter(f => tn - f.t0 < f.dur);
+  fx.forEach(f => {
+    const k = (tn - f.t0) / f.dur; if (k < 0) return; const a = 1 - k;
+    if (f.kind === 'wards') {            // shield pulse
+      g.strokeStyle = 'rgba(160,215,255,' + a + ')'; g.lineWidth = 6 * a + 1;
+      g.beginPath(); g.ellipse(W/2, H/2 + 10, 40 + k * 262, 28 + k * 182, 0, 0, 7); g.stroke();
+      glow(W/2, H/2, 330, 'rgba(120,190,255,A)', .25 * a);
+    } else if (f.kind === 'chaos') {     // calming ripples
+      for (let i = 0; i < 3; i++) { const r = k * 340 - i * 70; if (r > 0) { g.strokeStyle = 'rgba(190,230,255,' + a * .8 + ')'; g.lineWidth = 3; g.beginPath(); g.arc(W/2, H/2, r, 0, 7); g.stroke(); } }
+    } else if (f.kind === 'heat') {      // frost wave
+      const gr = g.createRadialGradient(W/2, H/2, 120, W/2, H/2, 360); gr.addColorStop(0, 'rgba(200,240,255,0)'); gr.addColorStop(1, 'rgba(200,240,255,' + .45 * a + ')');
+      g.fillStyle = gr; g.fillRect(0, 0, W, H);
+      g.fillStyle = 'rgba(230,248,255,' + a + ')'; for (let i = 0; i < 40; i++) g.fillRect(rnd(i) * W, (rnd(i+60) * H + k * 160 * (.5 + rnd(i+9))) % H, 3, 3);
+    } else if (f.kind === 'chaosEv') {   // wild magic: purple lightning
+      g.fillStyle = 'rgba(120,40,200,' + .22 * a + ')'; g.fillRect(0, 0, W, H);
+      const seed = Math.floor(tn * 12); g.strokeStyle = 'rgba(230,200,255,' + a + ')'; g.lineWidth = 3; g.shadowColor = '#b06cff'; g.shadowBlur = 14;
+      for (let b = 0; b < 3; b++) { let x = 80 + rnd(seed + b) * 480, y = 0; g.beginPath(); g.moveTo(x, y); while (y < H * .55) { x += (rnd(seed * 7 + b * 13 + y) - .5) * 70; y += 34; g.lineTo(x, y); } g.stroke(); }
+      g.shadowBlur = 0;
+    } else if (f.kind === 'heatEv') {    // hot draught: red glow and rising shimmer
+      const gr = g.createLinearGradient(0, H, 0, 0); gr.addColorStop(0, 'rgba(255,90,30,' + .5 * a + ')'); gr.addColorStop(1, 'rgba(255,90,30,0)');
+      g.fillStyle = gr; g.fillRect(0, 0, W, H);
+      g.strokeStyle = 'rgba(255,190,120,' + .5 * a + ')'; g.lineWidth = 3; for (let i = 0; i < 6; i++) { g.beginPath(); for (let y = H; y > 0; y -= 12) { const x = 60 + i * 105 + Math.sin(y / 18 + tn * 6 + i) * 9; y === H ? g.moveTo(x, y) : g.lineTo(x, y); } g.stroke(); }
+    }
+  });
+  if (banner) {
+    const k = (tn - banner.t0) / 2.6;
+    if (k > 1) banner = null;
+    else if (k >= 0) { const a = Math.min(1, k * 6, (1 - k) * 3);
+      g.font = '600 21px ' + FONT; g.textAlign = 'center';
+      const w = g.measureText(banner.text).width + 30; g.fillStyle = 'rgba(28,28,36,' + .82 * a + ')'; g.beginPath(); g.roundRect(W/2 - w/2, 74, w, 40, 20); g.fill();
+      g.fillStyle = 'rgba(245,245,247,' + a + ')'; g.fillText(banner.text, W/2, 100); }
+  }
+}
+// floating numbers during a cast
+function popups(p, loss){
+  if (p < 0) return;
+  g.font = '600 22px ' + FONT; g.textAlign = 'center';
+  const k = clamp01((p - .45) / .55), a = Math.sin(k * Math.PI);
+  g.fillStyle = 'rgba(245,245,247,' + a + ')'; g.fillText('+' + castA.ops + ' operations', W/2 - 120, H - 28 - k * 36);
+  g.fillStyle = 'rgba(255,105,97,' + a + ')'; g.fillText('−' + (loss * 100).toFixed(loss < .1 ? 1 : 0) + '% essence', W/2 + 120, H - 28 - k * 36);
+}
+
+function potion(t,e,chaos,heat,col,dead,p,loss){
+  const cx=W/2, top=230, rx=150, ry=34, casting = p >= 0, ax = cx + 40;
+  g.fillStyle='#1b1b22'; g.beginPath(); g.moveTo(cx-rx,top); g.quadraticCurveTo(cx-rx-30,top+170,cx-70,top+190); g.lineTo(cx+70,top+190); g.quadraticCurveTo(cx+rx+30,top+170,cx+rx,top); g.fill();
+  g.strokeStyle='#3a3a48'; g.lineWidth=5; g.beginPath(); g.ellipse(cx,top,rx,ry,0,0,7); g.stroke();
+  const pulse = casting ? Math.sin(p * Math.PI) : 0;
+  g.fillStyle=rgb(mix(col,[255,255,230],pulse*.5)); g.globalAlpha=.9; g.beginPath(); g.ellipse(cx,top,rx-6,ry-4,0,0,7); g.fill(); g.globalAlpha=1;
+  glow(cx,top-10,170,'rgba('+col.join(',')+',A)',dead?0:.35*e+.1+.3*pulse);
+  const n = dead ? 0 : 6 + Math.round(chaos*22) + (casting ? 14 : 0);
+  for(let i=0;i<n;i++){ const ph=(t*0.5+rnd(i))%1, x=cx+(rnd(i+50)-.5)*2*(rx-30), y=top-ph*120; g.fillStyle=rgba(col,(1-ph)*.8); g.beginPath(); g.arc(x,y,3+rnd(i+9)*5*(1-ph),0,7); g.fill(); }
+  if (heat < .5) { g.strokeStyle='rgba(200,235,255,'+(.5-heat)*1.6+')'; g.lineWidth=2; for(let i=0;i<14;i++){ const a=Math.PI*(1+i/13); const x=cx+Math.cos(a)*rx, y=top+Math.sin(a)*ry; g.beginPath(); g.moveTo(x,y); g.lineTo(x+Math.cos(a)*(10+rnd(i)*14),y+Math.sin(a)*8-6-rnd(i+3)*10); g.stroke(); } }
+  else { for(let i=0;i<8;i++){ const ph=(t*.3+rnd(i+70))%1; g.fillStyle='rgba(255,170,120,'+(1-ph)*(heat-.5)*.6+')'; g.beginPath(); g.arc(cx+(rnd(i+80)-.5)*200+Math.sin(t+i)*10, top-30-ph*170, 14+ph*24,0,7); g.fill(); } }
+  if (!casting) return;
+  // 1) an ingredient drops in and splashes
+  if (p < .3) { const k = p / .3, y = -20 + (top + 6) * k * k; glow(ax, y, 34, 'rgba(255,255,255,A)', .7); g.fillStyle = '#fff'; g.beginPath(); g.arc(ax, y, 7, 0, 7); g.fill(); g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 3; g.beginPath(); g.moveTo(ax, y - 60 * k); g.lineTo(ax, y); g.stroke(); }
+  else { const k = (p - .3) / .7;
+    for (let i = 0; i < 3; i++) { const r = k * 1.4 - i * .25; if (r > 0 && r < 1) { g.strokeStyle = rgba(col, (1 - r) * .9); g.lineWidth = 3; g.beginPath(); g.ellipse(ax, top, r * 130, r * 28, 0, 0, 7); g.stroke(); } }
+    if (k < .5) for (let i = 0; i < 9; i++) { const a = (rnd(i) - .5) * 2.4, v = 60 + rnd(i + 5) * 70, tt = k * 1.2; g.fillStyle = rgba(col, 1 - k * 2); g.beginPath(); g.arc(ax + Math.sin(a) * v * tt * 1.6, top - (Math.cos(a) * v * tt - 150 * tt * tt), 3.5, 0, 7); g.fill(); } }
+  // 2) the spoon stirs a swirl
+  if (p > .2) { const k = clamp01((p - .2) / .8), ang = k * Math.PI * 4, tx = cx + Math.cos(ang) * 78, ty = top + Math.sin(ang) * 17;
+    for (let j = 1; j <= 9; j++) { const a2 = ang - j * .32; g.fillStyle = rgba([255,255,255], .5 * (1 - j / 10)); g.beginPath(); g.arc(cx + Math.cos(a2) * 78, top + Math.sin(a2) * 17, 4, 0, 7); g.fill(); }
+    g.strokeStyle = '#6b4423'; g.lineWidth = 9; g.lineCap = 'round'; g.beginPath(); g.moveTo(tx, ty); g.lineTo(tx + 70, ty - 200); g.stroke(); g.lineCap = 'butt';
+    g.fillStyle = '#8a5a2a'; g.beginPath(); g.ellipse(tx, ty, 13, 6, 0, 0, 7); g.fill(); }
+  // 3) essence escapes as dull motes: more of them the more was lost
+  const m = Math.round(loss * 260) + 3;
+  for (let i = 0; i < m; i++) { const k = clamp01(p * 1.3 - rnd(i + 20) * .4); if (k <= 0 || k >= 1) continue; g.fillStyle = 'rgba(170,150,140,' + (1 - k) * .9 + ')'; g.beginPath(); g.arc(cx + (rnd(i + 31) - .5) * 220 + Math.sin(k * 6 + i) * 12, top - 10 - k * (110 + rnd(i) * 90), 3, 0, 7); g.fill(); }
+}
+function ritual(t,e,chaos,heat,col,dead,p,loss){
+  const cx=W/2, cy=H/2+6, R=165, casting = p >= 0;
+  g.strokeStyle=rgb(mix([90,70,40],col,.6)); g.lineWidth=3; g.beginPath(); g.arc(cx,cy,R,0,7); g.stroke(); g.beginPath(); g.arc(cx,cy,R-24,0,7); g.stroke();
+  const runes='ᚠᚢᚦᚨᚱᚲᚷᚹᚺᚾᛁᛃ'; g.textAlign='center';
+  for(let i=0;i<12;i++){ const a=i/12*Math.PI*2 + t*.12; const lit = casting ? clamp01(1 - Math.abs(p * 1.6 - i / 12 * 1.6 - .1) * 5) : 0;
+    g.save(); g.translate(cx+Math.cos(a)*(R-12),cy+Math.sin(a)*(R-12)); g.rotate(a+Math.PI/2); g.globalAlpha=.4+.6*e;
+    g.font=(22 + 14 * lit) + 'px serif'; g.fillStyle=lit > 0 ? rgb(mix(col,[255,255,255],lit)) : rgb(col); if (lit > 0) { g.shadowColor = rgb(col); g.shadowBlur = 18 * lit; }
+    g.fillText(runes[i],0,7); g.restore(); }
+  g.globalAlpha=1; g.shadowBlur = 0;
+  const N=5, pts=[];
+  for(let i=0;i<N;i++){ const a=-Math.PI/2+i/N*Math.PI*2, wob=chaos*14; pts.push([cx+Math.cos(a)*100+Math.sin(t*3+i)*wob, cy+Math.sin(a)*100+Math.cos(t*2.7+i)*wob]); }
+  g.strokeStyle='rgba('+col.join(',')+','+(.25+.6*e)+')'; g.lineWidth=2;
+  pts.forEach((q,i)=>{ g.beginPath(); g.moveTo(q[0],q[1]); g.lineTo(cx,cy); g.stroke(); const r=pts[(i+2)%N]; g.beginPath(); g.moveTo(q[0],q[1]); g.lineTo(r[0],r[1]); g.stroke(); });
+  pts.forEach((q,i)=>{
+    const flare = casting ? clamp01(1 - Math.abs(p - (.35 + .08 * i)) * 6) : 0;
+    glow(q[0],q[1],34 + 40 * flare,'rgba('+col.join(',')+',A)',.3+.6*e+.5*flare); g.fillStyle=rgb(mix(col,[255,255,255],flare*.8)); g.beginPath(); g.arc(q[0],q[1],8 + 5 * flare,0,7); g.fill();
+    if (casting) { // a pulse of power travels from the centre to each spirit
+      const k = clamp01((p - .1) / .4); g.fillStyle = 'rgba(255,255,255,' + (1 - k) + ')'; g.beginPath(); g.arc(cx + (q[0]-cx)*k, cy + (q[1]-cy)*k, 5, 0, 7); g.fill(); } });
+  glow(cx,cy,60+20*Math.sin(t*2),'rgba('+(heat>.6?'255,120,60':col.join(','))+',A)',.2+.5*e);
+  g.fillStyle=rgb(col); g.beginPath(); g.arc(cx,cy,12,0,7); g.fill();
+  if (!casting) return;
+  // the chant: rings of sound spread out
+  for (let i = 0; i < 2; i++) { const k = p * 1.2 - i * .25; if (k > 0 && k < 1) { g.strokeStyle = rgba([255,240,200], (1 - k) * .8); g.lineWidth = 4; g.beginPath(); g.arc(cx, cy, k * (R + 40), 0, 7); g.stroke(); } }
+  // whatever was lost drifts away from the spirits as wisps
+  const m = Math.round(loss * 300) + 3;
+  for (let i = 0; i < m; i++) { const k = clamp01(p * 1.3 - rnd(i + 5) * .4); if (k <= 0 || k >= 1) continue; const q = pts[i % N]; g.fillStyle = 'rgba(170,150,140,' + (1 - k) + ')'; g.beginPath(); g.arc(q[0] + (rnd(i + 11) - .5) * 40, q[1] - k * (70 + rnd(i) * 80), 3, 0, 7); g.fill(); }
+}
+function stars(t,e,chaos,heat,col,dead,p,loss){
+  const cols=7, rows=4, x0=90, y0=105, dx=76, dy=75, pts=[], casting = p >= 0;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){ const i=r*cols+c, j=chaos*7; pts.push([x0+c*dx+(rnd(i+t*6|0)-.5)*j, y0+r*dy+(rnd(i+33+(t*6|0))-.5)*j+(c%2?14:0)]); }
+  g.strokeStyle='rgba('+col.join(',')+','+(.12+.5*e)+')'; g.lineWidth=1.5;
+  for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){ const a=pts[r*cols+c]; if(c<cols-1){const b=pts[r*cols+c+1]; g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]); g.stroke();} if(r<rows-1){const b=pts[(r+1)*cols+c]; g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b[0],b[1]); g.stroke();} }
+  // the thread's route is a snake through every star
+  const route = []; for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) route.push(pts[r * cols + (r % 2 ? cols - 1 - c : c)]);
+  const head = casting ? p * (route.length - 1) : -1;
+  pts.forEach((q,i)=>{ const idx = route.indexOf(q), flash = casting && head >= idx ? clamp01(1 - (head - idx) / 4) : 0;
+    const tw=.6+.4*Math.sin(t*2+i*1.7), lit=dead?.15:(rnd(i+5)<e+.1?1:.25);
+    glow(q[0],q[1],26 + 22 * flash,'rgba('+col.join(',')+',A)',.5*tw*lit*(.3+e)+.6*flash); g.fillStyle=rgba(mix(col,[255,255,255],flash),.35+.65*Math.max(lit,flash)); g.beginPath(); g.arc(q[0],q[1],5.5 + 4 * flash,0,7); g.fill(); });
+  g.strokeStyle='rgba(255,120,120,'+(.08+.12*chaos)+')'; g.lineWidth=1.5; for(let c=0;c<cols;c+=2){ g.beginPath(); g.moveTo(x0+c*dx,0); g.lineTo(pts[c][0],pts[c][1]); g.stroke(); }
+  if (!casting) return;
+  // a bright thread is drawn from star to star
+  const full = Math.floor(head), frac = head - full;
+  g.save(); g.strokeStyle = '#fff'; g.lineWidth = 3; g.shadowColor = rgb(col); g.shadowBlur = 16; g.globalAlpha = .9 * (1 - Math.max(0, p - .85) / .15);
+  g.beginPath(); g.moveTo(route[0][0], route[0][1]); for (let i = 1; i <= full; i++) g.lineTo(route[i][0], route[i][1]);
+  let hx = route[full][0], hy = route[full][1]; if (full < route.length - 1) { hx += (route[full+1][0] - hx) * frac; hy += (route[full+1][1] - hy) * frac; g.lineTo(hx, hy); }
+  g.stroke(); g.restore();
+  glow(hx, hy, 40, 'rgba(255,255,255,A)', .9); g.fillStyle = '#fff'; g.beginPath(); g.arc(hx, hy, 6, 0, 7); g.fill();
+  // lost light falls from the stars
+  const m = Math.round(loss * 300) + 3;
+  for (let i = 0; i < m; i++) { const k = clamp01(p * 1.3 - rnd(i + 5) * .4); if (k <= 0 || k >= 1) continue; const q = pts[(i * 7) % pts.length]; g.fillStyle = 'rgba(170,150,140,' + (1 - k) + ')'; g.beginPath(); g.arc(q[0] + (rnd(i + 11) - .5) * 14, q[1] + k * (50 + rnd(i) * 70), 2.5, 0, 7); g.fill(); }
+}
+function light(t,e,chaos,heat,col,dead,p,loss){
+  const stops=[.18,.4,.62,.84]; const path=u=>[40+u*560, 230+Math.sin(u*Math.PI*2+t*.4)*(30+chaos*40)-u*20];
+  // the wisp sits at its progress along the road; during a cast it flies on to the next stretch
+  const casting = p >= 0;
+  const u = .05 + .9 * (casting ? castA.prevU + (castA.nowU - castA.prevU) * ease(clamp01(p / .85)) : st.turn / target());
+  g.strokeStyle='rgba(160,170,200,.28)'; g.lineWidth=2; g.beginPath(); for(let v=0;v<=1;v+=.01){const q=path(v); v?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]);} g.stroke();
+  g.strokeStyle='rgba('+col.join(',')+',.6)'; g.lineWidth=3; g.beginPath(); for(let v=0.05;v<=u;v+=.01){const q=path(v); v>.05?g.lineTo(q[0],q[1]):g.moveTo(q[0],q[1]);} g.stroke();
+  stops.forEach(s=>{ const q=path(s), passed = u > s, near = casting ? clamp01(1 - Math.abs(u - s) * 12) : 0;
+    g.strokeStyle = passed ? rgb(mix([92,98,120],col,.8)) : '#5b6074'; g.lineWidth=5 + 3 * near; g.beginPath(); g.arc(q[0],q[1]+10,40,Math.PI,0); g.stroke();
+    if (near > 0) glow(q[0], q[1] - 10, 60, 'rgba(255,255,255,A)', .7 * near); });
+  const bob = casting ? 0 : Math.sin(t * 3) * 5, q = path(u);
+  const leak=Math.round(4+(1-e)*30);
+  for(let i=0;i<leak;i++){ const ph=(t*.8+rnd(i))%1, r=path(Math.max(0,u-.03*i/8)); g.fillStyle=rgba(col,(1-ph)*.7); g.beginPath(); g.arc(r[0]+(rnd(i+4)-.5)*20, r[1]+ph*110*(1-e+.15), 2.5,0,7); g.fill(); }
+  if (casting) { const m = Math.round(loss * 320) + 3; // a burst of sparks lost on this leg
+    for (let i = 0; i < m; i++) { const k = clamp01(p * 1.2 - rnd(i + 5) * .4); if (k <= 0 || k >= 1) continue; const r = path(Math.max(.05, u - rnd(i) * .06)); g.fillStyle = 'rgba(' + col.join(',') + ',' + (1 - k) + ')'; g.beginPath(); g.arc(r[0] + (rnd(i + 11) - .5) * 24, r[1] + k * (60 + rnd(i + 2) * 120), 2.5, 0, 7); g.fill(); } }
+  glow(q[0],q[1]+bob,70,'rgba('+col.join(',')+',A)',dead?.05:.2+.6*e);
+  g.fillStyle=rgb(col); g.beginPath(); g.arc(q[0],q[1]+bob,10+6*e,0,7); g.fill();
+  const flap = Math.sin(t * (casting ? 22 : 9)) * 7;
+  g.fillStyle='rgba('+col.join(',')+',.5)'; g.beginPath(); g.ellipse(q[0]-18,q[1]+bob-6-flap,18,7,-.5,0,7); g.ellipse(q[0]-18,q[1]+bob+6+flap,18,7,.5,0,7); g.fill();
+}
+
+// card previews reuse the scene code at a gentle pace
+function drawPreviews(t){
+  if ((frameN & 1) && !RM) return;
+  const keep = { g, craft, st, shown, castA };
+  previewCanvases.forEach(([k, c]) => {
+    const ctx = c.getContext('2d'); g = ctx; craft = k; st = PREV; shown = .95; castA = null;
+    ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, 640, 440);
+    const bgG = ctx.createLinearGradient(0, 0, 0, 440); bgG.addColorStop(0, 'rgb(22,24,42)'); bgG.addColorStop(1, '#07070c'); ctx.fillStyle = bgG; ctx.fillRect(0, 0, 640, 440);
+    const col = mix([132,134,150], CFG.crafts[k].accent, .95);
+    ({'Superconducting circuit':potion,'Trapped ion':ritual,'Neutral atom':stars,'Photonic':light})[k](t, .95, .2, .5, col, false, -1, 0);
+  });
+  Object.assign(window, {}); g = keep.g; craft = keep.craft; st = keep.st; shown = keep.shown; castA = keep.castA;
+}
+buildCards();
+requestAnimationFrame(loop);
+</script>
