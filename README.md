@@ -3,12 +3,12 @@
 Welcome to the open-source repository for the **Quantum Café** interactive visualization suite, developed for Vilnius University (VU) and the Lithuanian Quantum Technologies Association (LKTA).
 
 This repository contains lightweight, interactive web applications built with Python and Streamlit, designed to present quantum concepts during public engagement events and hackathons.
-The app hosted on Streamlit can be found at the following address: [https://quantum-cafe.streamlit.app/](https://quantum-cafe.streamlit.app/).
+The app hosted on Streamlit can be found at the following address: [https://quantumcafe.streamlit.app/](https://quantumcafe.streamlit.app/). The Messenger Wisps lives at [https://quantumcafe.streamlit.app/The_Messenger_Wisps](https://quantumcafe.streamlit.app/The_Messenger_Wisps).
 
 ## Applications Included
 1. **Sorcerer's coins**: A duel against a rival sorcerer about entanglement. Eight fair quantum coins race to match a goal pattern of heads and tails; you cannot tilt them, but you can link them into Bell pairs and GHZ states of up to eight coins. Links cost mana, each one can fail, and the rival gets sharper every round. The run ends when you lose a duel, and you keep your score.
 2. **Keep the Magic Alive**: A fantasy game about decoherence. Each hardware platform is a craft (superconducting circuit = frostbrewed potion, trapped ion = ritual of bound spirits, neutral atom = star-weaving, photonic = spell of winged light). Manage wards (isolation), chaos (noise) and heat (temperature) with limited mana, and optionally hire a helper (an error-correcting code) that costs mana but can keep the magic steady. A second tab is a sandbox with exact numbers. All platform numbers are illustrative.
-3. **Quantum Key Distribution**: An orbital LEO satellite link demonstrating QKD with a simulated eavesdropper.
+3. **The Messenger Wisps**: A fantasy game about quantum key distribution (BB84). The Spell of Winged Light releases wisps; each carries a rune through a Sun or Moon lens. Play solo as Bob (choose lenses, then keep the key or abort) or as Eve (tap wisps without being caught), or host a game: the host screen shows up to three QR codes, one per role (Alice, Bob, Eve), and the roles without a phone are played by bots. Study tab: error correction and privacy amplification on your own key. Round settings are illustrative.
 4. **Quantum Machine Learning task**: TBD.
 
 ## Setup and Local Development

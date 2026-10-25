@@ -42,7 +42,7 @@ cards = "".join([
          "Play: Keep the Magic Alive", "Keep_the_Magic_Alive"),
     card("Session 3 · 14 April 2027", "Cryptography, Cybersecurity &amp; Business",
          "A business-oriented dialogue exploring post-quantum security, quantum networks and industrial transformation.",
-         "Coming: quantum key distribution"),
+         "Play: The Messenger Wisps", "The_Messenger_Wisps"),
     card("Session 4 · 13 May 2027", "From Theory to Practice",
          "An interactive introductory workshop laying the foundational skills for future collaborative problem-solving challenges.",
          "Coming: quantum machine learning"),

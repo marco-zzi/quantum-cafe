@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{--bg:#0b0b10;--label:#f5f5f7;--label2:rgba(235,235,245,.62);--label3:rgba(235,235,245,.34);
+        --fill:rgba(255,255,255,.07);--fill2:rgba(255,255,255,.13);--sep:rgba(255,255,255,.09);--acc:196,226,255;
+        --sun:255,214,120;--moon:150,170,255;--ok:#32d74b;--bad:#ff453a;
+        --sys:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+        --disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+        --serif:ui-serif,"New York","Iowan Old Style",Georgia,serif}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:transparent;color:var(--label);font:15px/1.45 var(--sys);-webkit-font-smoothing:antialiased}
+  #root{background:var(--bg);border-radius:28px;padding:18px 18px 22px;overflow:hidden;max-width:720px;margin:0 auto}
+  #root.wide{max-width:1000px}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+  button:disabled{cursor:default}
+  :focus-visible{outline:2px solid rgb(var(--acc));outline-offset:3px;border-radius:10px}
+  .eyebrow{font:600 11px/1 var(--sys);letter-spacing:.08em;text-transform:uppercase;color:var(--label3)}
+  .num{font-variant-numeric:tabular-nums}
+  .mat{background:rgba(26,26,34,.66);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border-top:1px solid rgba(255,255,255,.14)}
+  @media (prefers-reduced-transparency:reduce){.mat{background:#1c1c24;-webkit-backdrop-filter:none;backdrop-filter:none}}
+
+  .top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+  .top h2{font:600 24px/1.1 var(--serif);letter-spacing:-.01em;margin:6px 0 0}
+  .right{display:flex;gap:18px;text-align:right}
+  .right b{display:block;font:700 22px/1 var(--disp);letter-spacing:-.02em;margin-top:5px}
+  .who{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(var(--acc),.14);color:rgb(var(--acc));font:600 12px/1 var(--sys);letter-spacing:.02em;margin-left:8px;vertical-align:middle}
+
+  #scene{margin:10px 0 2px;height:128px;position:relative}
+  #scene svg{width:100%;height:100%;display:block}
+  .goal{margin:8px 0 2px;color:var(--label2);font-size:14.5px}
+  .note{margin:6px 0 12px;min-height:20px;color:rgb(var(--acc));font-size:14.5px}
+  .strip{display:flex;flex-wrap:wrap;gap:8px 26px;margin:10px 2px 14px}
+  .strip .v{font:600 17px/1.2 var(--disp);letter-spacing:-.01em;margin-top:6px}
+  .panel{background:var(--fill);border-radius:22px;padding:16px 16px 18px;margin-bottom:12px}
+  .panel h3{font:600 19px/1.2 var(--serif);letter-spacing:-.01em;margin:0 0 4px}
+  .panel p{margin:4px 0 10px;color:var(--label2);font-size:14.5px}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+  .seg{display:inline-flex;background:var(--fill);border-radius:12px;padding:3px;gap:2px}
+  .seg button{padding:8px 14px;border-radius:9px;font-weight:600;font-size:14px;color:var(--label2);transition:background .2s,color .2s,transform .1s}
+  .seg button:active{transform:scale(.96)}
+  .seg button[aria-pressed="true"]{background:rgba(255,255,255,.16);color:var(--label)}
+  .ghost{padding:9px 14px;border-radius:999px;background:var(--fill2);font-weight:600;font-size:14px;color:var(--label);transition:transform .1s,opacity .2s}
+  .ghost:active:not(:disabled){transform:scale(.95)}.ghost:disabled{opacity:.35}
+  .go{background:rgb(var(--acc));color:#0b1018;font:700 16px/1 var(--disp);letter-spacing:-.01em;padding:14px 26px;border-radius:999px;transition:transform .1s,filter .2s,opacity .2s}
+  .go:hover:not(:disabled){filter:brightness(1.06)}.go:active:not(:disabled){transform:scale(.96)}.go:disabled{opacity:.35}
+  .go.bad{background:var(--bad);color:#fff}.go.ok{background:var(--ok);color:#06210d}
+  .acts{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}.acts .go{flex:1;min-width:140px}
+  input[type=range]{width:100%;accent-color:rgb(var(--acc));margin:6px 0}
+  .big{font:700 34px/1 var(--disp);letter-spacing:-.025em}
+
+  /* wisps */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(38px,38px));gap:8px 6px;margin:12px 0 4px;justify-content:start}
+  .w{display:flex;flex-direction:column;align-items:center;gap:4px;padding:5px 0 6px;border-radius:12px;background:rgba(255,255,255,.05);min-height:38px}
+  .w .i{font:600 10px/1 var(--sys);color:var(--label3);font-variant-numeric:tabular-nums}
+  .w.dim{opacity:.32}
+  .w.smp{background:rgba(var(--acc),.12);box-shadow:inset 0 0 0 1px rgba(var(--acc),.35)}
+  .w.key{background:rgba(50,215,75,.10);box-shadow:inset 0 0 0 1px rgba(50,215,75,.28)}
+  .w.known{background:rgba(255,69,58,.14);box-shadow:inset 0 0 0 1px rgba(255,69,58,.5)}
+  .w.err{box-shadow:inset 0 0 0 1.5px var(--bad)}
+  .c{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font:700 14px/1 var(--disp);font-variant-numeric:tabular-nums;background:rgba(255,255,255,.07);color:var(--label2);transition:transform .1s,background .2s}
+  button.c:active{transform:scale(.9)}
+  .c svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+  .c.s{color:rgb(var(--sun));background:rgba(var(--sun),.14)}.c.m{color:rgb(var(--moon));background:rgba(var(--moon),.16)}
+  .c.b0,.c.b1{color:var(--label);background:rgba(255,255,255,.12)}
+  .c.empty{color:var(--label3);background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+  .c.eq{box-shadow:0 0 0 1.5px var(--ok)}
+  .c.ne{box-shadow:0 0 0 1.5px var(--bad)}
+  .c.sm{width:22px;height:22px;font-size:12px;border-radius:7px}.c.sm svg{width:15px;height:15px}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin:8px 0 2px;color:var(--label2);font-size:12.5px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .legend .c{width:20px;height:20px;border-radius:6px}.legend .c svg{width:14px;height:14px}
+  .legend i{width:14px;height:14px;border-radius:5px;display:inline-block}
+
+  .meter{position:relative;height:12px;border-radius:6px;background:rgba(255,255,255,.1);margin:22px 0 26px}
+  .meter .f{position:absolute;left:0;top:0;bottom:0;border-radius:6px;transition:width .5s cubic-bezier(.2,.8,.2,1),background .3s}
+  .meter .t{position:absolute;top:-6px;bottom:-6px;width:2px;background:rgba(255,255,255,.7)}
+  .meter .t em{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font:600 10.5px/1 var(--sys);color:var(--label2);font-style:normal;white-space:nowrap}
+  .meter .t.s{background:rgba(var(--acc),.8)}.meter .t.s em{top:auto;bottom:-17px;color:rgb(var(--acc))}
+
+  .verdict{text-align:center;padding:22px 18px 20px}
+  .verdict h3{font:600 28px/1.1 var(--serif);letter-spacing:-.015em;margin:8px 0 2px}
+  .verdict .stat{font:700 44px/1 var(--disp);letter-spacing:-.03em;margin:12px 0 2px}
+  .verdict .stat small{display:block;font:500 14px/1.3 var(--sys);letter-spacing:0;color:var(--label2);margin-top:4px}
+  .verdict p{margin:8px auto;max-width:46ch;color:var(--label2);font-size:14.5px}
+  .verdict .fact{font-size:13px;color:var(--label3)}
+  .verdict.good .eyebrow{color:var(--ok)}.verdict.badc .eyebrow{color:var(--bad)}
+  .msg{padding:30px 18px;text-align:center;color:var(--label2)}
+  .msg h3{font:600 24px/1.15 var(--serif);color:var(--label);margin:0 0 6px}
+  .score3{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+  .score3 div{background:var(--fill);border-radius:18px;padding:14px;text-align:center}
+  .score3 b{display:block;font:700 30px/1.1 var(--disp);letter-spacing:-.02em;margin-top:6px}
+  .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--label3);margin-right:6px}
+  .dot.on{background:var(--ok)}.pulse{animation:pulse 1.6s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  @media (max-width:520px){
+    #root{padding:14px 12px 18px;border-radius:24px}
+    .top h2{font-size:21px}.right{gap:12px}.right b{font-size:19px}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(32px,32px));gap:6px 4px}
+    .c{width:25px;height:25px}.c svg{width:17px;height:17px}
+    #scene{height:104px}
+  }
+  @media (prefers-reduced-motion:reduce){.pulse{animation:none}.meter .f,.seg button,.go,.ghost,.c{transition:none}}
+</style></head>
+<body>
+<div id="root"><div id="scene" aria-hidden="true"></div><div id="main"></div></div>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const post = (type, data) => parent.postMessage(Object.assign({ isStreamlitMessage: true, type }, data), '*');
+  const rnd = () => Array.from(crypto.getRandomValues(new Uint8Array(8)), b => b.toString(16).padStart(2, '0')).join('');
+  let CLIENT = '';
+  try { CLIENT = localStorage.getItem('qc_wisp_client') || ''; if (!CLIENT) { CLIENT = rnd(); localStorage.setItem('qc_wisp_client', CLIENT); } } catch (e) { CLIENT = rnd(); }
+  let seq = 0, P = null, lastSig = '', busy = false, busyTimer = 0, draft = null, draftKey = '', flightKey = '', best = 0;
+  try { best = +localStorage.getItem('qc_wisp_best') || 0; } catch (e) {}
+
+  const setValue = value => post('streamlit:setComponentValue', { value, dataType: 'json' });
+  const sendAct = (kind, payload) => {
+    busy = true; clearTimeout(busyTimer); busyTimer = setTimeout(() => { busy = false; draw(); }, 5000);
+    setValue({ type: 'act', kind, payload: payload || {}, nonce: CLIENT + ':' + Date.now() + ':' + (++seq), client: CLIENT });
+    draw();
+  };
+  const fit = () => post('streamlit:setFrameHeight', { height: Math.ceil(document.documentElement.getBoundingClientRect().height) + 4 });
+
+  const ICON = {
+    sun: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M5.3 18.7l2.1-2.1M16.6 7.4l2.1-2.1"/></svg>',
+    moon: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 14.2A8.3 8.3 0 0 1 9.8 4 8.3 8.3 0 1 0 20 14.2z"/></svg>',
+    none: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 12h10"/></svg>',
+  };
+  const lensCls = l => l === 0 ? 's' : l === 1 ? 'm' : 'empty';
+  const lensIcon = l => l === 0 ? ICON.sun : l === 1 ? ICON.moon : ICON.none;
+  const lensName = l => l === 0 ? 'Sun' : l === 1 ? 'Moon' : 'none';
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const pct = x => Math.round(x * 100) + '%';
+  const rb = () => crypto.getRandomValues(new Uint8Array(1))[0] & 1;
+
+  // ---------- the scene: two towers, the road between them, wisps in flight ----------
+  function buildScene() {
+    const tower = (x, label) => `<g transform="translate(${x},34)"><path d="M0 92V22h6v-8h8v8h8v-8h8v8h8v-8h8v8h6v70z" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>
+      <rect x="21" y="40" width="10" height="16" rx="5" fill="rgba(196,226,255,.5)"/><text x="26" y="112" text-anchor="middle" fill="rgba(235,235,245,.6)" font-size="11" font-weight="600" font-family="system-ui" letter-spacing=".06em">${label}</text></g>`;
+    $('scene').innerHTML = `<svg viewBox="0 0 600 150" preserveAspectRatio="xMidYMid meet">
+      <defs><radialGradient id="gl"><stop offset="0" stop-color="#e8f3ff"/><stop offset="1" stop-color="#bfe0ff" stop-opacity="0"/></radialGradient>
+      <path id="road" d="M64 90 C 180 30, 420 30, 536 90" fill="none"/></defs>
+      <use href="#road" stroke="rgba(255,255,255,.14)" stroke-width="1.5" stroke-dasharray="2 7" stroke-linecap="round" fill="none"/>
+      ${tower(38, 'ALICE')}${tower(510, 'BOB')}
+      <g id="orb" opacity="0"><circle cx="300" cy="46" r="13" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.28)" stroke-width="1.2"/><circle cx="300" cy="46" r="4.5" fill="rgba(255,255,255,.55)"/><text x="300" y="76" text-anchor="middle" fill="rgba(235,235,245,.5)" font-size="10" font-weight="600" font-family="system-ui" letter-spacing=".06em">EVE</text></g>
+      <g id="amb"></g><g id="burst"></g></svg>`;
+    if (!RM) {
+      let a = '';
+      for (let k = 0; k < 3; k++) a += `<circle r="6" fill="url(#gl)" opacity=".7"><animateMotion dur="${7 + k * 2.5}s" begin="${-k * 2.7}s" repeatCount="indefinite"><mpath href="#road"/></animateMotion></circle>`;
+      $('amb').innerHTML = a;
+    }
+  }
+  function flight(n, tapped) {
+    if (RM || !$('burst')) return;
+    let s = '';
+    const m = Math.min(n, 24);
+    for (let k = 0; k < m; k++) s += `<circle r="${tapped ? 4.5 : 4}" fill="url(#gl)"><animateMotion dur="1.5s" begin="${(k * 0.06).toFixed(2)}s" repeatCount="1" fill="freeze"><mpath href="#road"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="1.5s" begin="${(k * 0.06).toFixed(2)}s" fill="freeze"/></circle>`;
+    $('burst').innerHTML = s;
+    try { $('burst').ownerSVGElement.setCurrentTime(0); } catch (e) {}
+    setTimeout(() => { if ($('burst')) $('burst').innerHTML = ''; }, 3600);
+  }
+
+  // ---------- drafts: what this player has picked but not yet sent ----------
+  function ensureDraft(v) {
+    const key = [v.round, v.phase, v.role].join(':');
+    if (key !== draftKey) { draftKey = key; draft = { n: Math.min(v.maxN, Math.max(v.minN, v.mode === 'room' ? 16 : 24)) }; }
+    const n = v.phase === 'alice' ? draft.n : v.n;
+    const fix = (name, fill) => { if (!draft[name] || draft[name].length !== n) { const o = draft[name] || []; draft[name] = Array.from({ length: n }, (_, i) => i < o.length ? o[i] : fill); } };
+    if (v.phase === 'alice') { fix('lens', null); fix('bits', null); }
+    if (v.phase === 'bob') fix('lens', null);
+    if (v.phase === 'eve') fix('tap', -1);
+    return n;
+  }
+
+  // ---------- shared pieces ----------
+  function head(v) {
+    const roleName = { alice: 'Alice', bob: 'Bob', eve: 'Eve', table: 'The table' }[v.role];
+    const who = v.solo ? `<span class="who">You are ${roleName}</span>` : `<span class="who">${roleName}</span>`;
+    let right = '';
+    if (v.solo) {
+      right += `<div><div class="eyebrow">Score</div><b class="num">${v.score}</b></div>`;
+      if (v.mode === 'bob') right += `<div><div class="eyebrow">Mana</div><b class="num">${v.mana}</b></div>`;
+    }
+    return `<div class="top"><div><div class="eyebrow">${v.solo ? 'Round ' + v.round : esc(v.name)}</div><h2>${v.solo ? esc(v.name) : 'The Messenger Wisps'}${who}</h2></div><div class="right">${right}</div></div>`;
+  }
+  function strip(v) {
+    const items = [['Storm', pct(v.storm)], ['Wisps', v.n || '—']];
+    if (v.solo && best) items.push(['Best', best]);
+    if (!v.solo) items.push(['Towers', v.towers], ['Eve', v.eveTotal]);
+    return `<div class="strip">${items.map(([a, b]) => `<div><div class="eyebrow">${a}</div><div class="v num">${b}</div></div>`).join('')}</div>`;
+  }
+  const legend = items => `<div class="legend">${items.join('')}</div>`;
+  const LG = {
+    sun: `<span><i class="c s">${ICON.sun}</i>Sun lens</span>`, moon: `<span><i class="c m">${ICON.moon}</i>Moon lens</span>`,
+    sift: `<span><i style="background:rgba(255,255,255,.2)"></i>lenses match</span>`,
+    smp: `<span><i style="background:rgba(var(--acc),.5)"></i>compared aloud</span>`,
+    key: `<span><i style="background:rgba(50,215,75,.45)"></i>key</span>`,
+    known: `<span><i style="background:rgba(255,69,58,.6)"></i>Eve knows</span>`,
+  };
+  const cell = (cls, inner, extra = '') => `<span class="c ${cls}" ${extra}>${inner}</span>`;
+  const bitCell = b => cell('b' + b, b);
+  const wait = (v, text) => `<div class="panel"><p style="margin:0"><span class="dot pulse"></span>${text}</p></div>`;
+  const who = r => ({ alice: 'Alice', bob: 'Bob', eve: 'Eve' }[r]);
+
+  // ---------- editors ----------
+  function editorAlice(v) {
+    const n = ensureDraft(v), d = draft;
+    const cols = Array.from({ length: n }, (_, i) => `<div class="w"><span class="i">${i + 1}</span>
+      <button class="c ${lensCls(d.lens[i])}" data-a="lens" data-i="${i}" data-f="l${i}" aria-label="Wisp ${i + 1} lens: ${lensName(d.lens[i])}">${lensIcon(d.lens[i])}</button>
+      <button class="c ${d.bits[i] === null ? 'empty' : 'b' + d.bits[i]}" data-a="bit" data-i="${i}" data-f="b${i}" aria-label="Wisp ${i + 1} rune: ${d.bits[i] === null ? 'none' : d.bits[i]}">${d.bits[i] === null ? '·' : d.bits[i]}</button></div>`).join('');
+    const done = d.lens.every(x => x !== null) && d.bits.every(x => x !== null);
+    return `<div class="panel"><h3>Prepare the wisps</h3>
+      <p>Give each wisp a rune (0 or 1) and a lens. Bob will not know your lenses until the wisps have been caught.</p>
+      <label class="eyebrow" for="nn">Wisps: <span class="num" style="color:var(--label)">${n}</span></label>
+      <input id="nn" type="range" min="${v.minN}" max="${v.maxN}" step="2" value="${n}" data-a="n">
+      <div class="row"><button class="ghost" data-a="fillA" data-f="fill">Let the coins choose</button></div>
+      ${legend([LG.sun, LG.moon, '<span>top: lens · below: rune</span>'])}
+      <div class="grid">${cols}</div>
+      <div class="acts"><button class="go" data-a="lockA" ${done && !busy ? '' : 'disabled'}>Release the wisps</button></div></div>`;
+  }
+  function editorBob(v) {
+    const n = ensureDraft(v), d = draft;
+    const cols = Array.from({ length: n }, (_, i) => `<div class="w"><span class="i">${i + 1}</span>
+      <button class="c ${lensCls(d.lens[i])}" data-a="lens" data-i="${i}" data-f="l${i}" aria-label="Wisp ${i + 1} lens: ${lensName(d.lens[i])}">${lensIcon(d.lens[i])}</button></div>`).join('');
+    const set = d.lens.filter(x => x !== null).length;
+    return `<div class="panel"><h3>Choose a lens for every wisp</h3>
+      <p>${n} wisps are on the road. Tap a wisp to cycle its lens. When your lens matches Alice's you read her rune; when it does not, the rune you read is a coin flip.</p>
+      <div class="row"><button class="ghost" data-a="fillB" data-f="fill">Let the coins choose</button><span class="eyebrow num">${set} of ${n} chosen</span></div>
+      ${legend([LG.sun, LG.moon])}
+      <div class="grid">${cols}</div>
+      <div class="acts"><button class="go" data-a="lockB" ${set === n && !busy ? '' : 'disabled'}>Catch the wisps</button></div></div>`;
+  }
+  function editorEve(v) {
+    const n = ensureDraft(v), d = draft;
+    const cols = Array.from({ length: n }, (_, i) => `<div class="w"><span class="i">${i + 1}</span>
+      <button class="c ${d.tap[i] === -1 ? 'empty' : lensCls(d.tap[i])}" data-a="tap" data-i="${i}" data-f="t${i}" aria-label="Wisp ${i + 1}: ${d.tap[i] === -1 ? 'let pass' : 'tap with the ' + lensName(d.tap[i]) + ' lens'}">${lensIcon(d.tap[i])}</button></div>`).join('');
+    const k = d.tap.filter(x => x !== -1).length;
+    const shares = [[0, 'None'], [.25, '¼'], [.5, '½'], [.75, '¾'], [1, 'All']];
+    const solo = v.solo ? `<p>Fewer taps leave fewer scars, but you learn less. The guards stop the exchange if they find too many errors.</p>` : '';
+    return `<div class="panel"><h3>Which wisps will you tap?</h3>
+      <p>${n} wisps are about to fly. Tap a wisp to cycle: let it pass, or measure it with the Sun or the Moon lens. You must guess Alice's lens.</p>${solo}
+      <div class="row"><span class="eyebrow">Tap at random</span><span class="seg" role="group" aria-label="Share of wisps to tap">${shares.map(([f, t]) => `<button data-a="share" data-f2="${f}" aria-pressed="${k === Math.round(f * n)}">${t}</button>`).join('')}</span></div>
+      ${legend([LG.sun, LG.moon, '<span>dash: let pass</span>'])}
+      <div class="grid">${cols}</div>
+      <div class="acts"><button class="go" data-a="lockE" ${busy ? 'disabled' : ''}>Send the wisps on <span class="num">(${k} tapped)</span></button></div></div>`;
+  }
+  function setupBob(v) {
+    const max = v.maxN;
+    if (draftKey !== 'setup:' + v.round) { draftKey = 'setup:' + v.round; draft = { n: Math.min(max, 24) }; }
+    const cur = Math.min(max, Math.max(v.minN, draft.n)); draft.n = cur;
+    const cost = v.mode === 'bob' ? `<p class="num">Costs ${cur} mana. You have ${v.mana}; you receive ${24} more each round, up to ${v.manaMax}.</p>` : '';
+    return `<div class="panel"><h3>How many wisps will Alice send?</h3>
+      <p>${esc(v.goal)}</p>
+      <p>${v.mode === 'bob' ? 'More wisps give you a longer key and a better chance to notice a spy. Fewer wisps save mana for harder roads.' : 'More wisps make a longer key and a sharper spy check.'}</p>
+      <div style="margin-top:6px"><span class="big num" id="bigN">${cur}</span> <span class="eyebrow">wisps</span></div>
+      <input id="nn" type="range" min="${v.minN}" max="${max}" step="2" value="${cur}" data-a="n0" aria-label="Number of wisps">${cost}
+      <div class="acts"><button class="go" data-a="setN" ${busy ? 'disabled' : ''}>Call the wisps</button></div></div>`;
+  }
+
+  // ---------- reveal grids ----------
+  function reveal(v, level) {
+    const n = v.n, sift = new Set(v.sifted || []), smp = new Set(v.sample || []), res = v.result;
+    const key = new Set(res ? res.key : []), known = new Set(res ? res.eve_known : []);
+    let html = '';
+    for (let i = 0; i < n; i++) {
+      let cls = 'w';
+      if (!sift.has(i)) cls += ' dim';
+      else if (level === 'lens') cls += '';
+      if (level !== 'lens' && smp.has(i)) cls += ' smp';
+      if (level === 'full' && key.has(i)) cls += known.has(i) ? ' known' : ' key';
+      const a = v.aLens ? v.aLens[i] : null, b = v.bLens ? v.bLens[i] : null;
+      let inner = `<span class="i">${i + 1}</span>${cell('sm ' + lensCls(a), lensIcon(a))}${cell('sm ' + lensCls(b), lensIcon(b))}`;
+      const k = (v.sample || []).indexOf(i);
+      if (level !== 'lens' && k >= 0) {
+        const ba = v.sampleA[k], bb = v.sampleB[k]; if (ba !== bb) cls += ' err';
+        inner += cell('sm b' + ba, ba) + cell('sm b' + bb + (ba === bb ? ' eq' : ' ne'), bb);
+      } else if (level === 'full' && key.has(i) && v.aBits) {
+        inner += cell('sm b' + v.aBits[i], v.aBits[i]) + cell('sm b' + v.bRes[i] + (v.aBits[i] === v.bRes[i] ? ' eq' : ' ne'), v.bRes[i]);
+      }
+      if (level === 'full' && v.eChoice) {
+        const e = v.eChoice[i];
+        inner += e === -1 ? cell('sm empty', ICON.none) : cell('sm ' + lensCls(e), lensIcon(e));
+      }
+      html += `<div class="${cls}">${inner}</div>`;
+    }
+    const lg = [LG.sun, LG.moon];
+    let rows = '<span>rows: Alice\'s lens · Bob\'s lens';
+    if (level !== 'lens') rows += ' · Alice\'s rune · Bob\'s rune (compared columns)';
+    if (level === 'full') rows += ' · Eve\'s lens';
+    rows += '</span>';
+    lg.push(LG.sift); if (level !== 'lens') lg.push(LG.smp); if (level === 'full') lg.push(LG.key, LG.known);
+    return `${legend(lg)}${legend([rows])}<div class="grid">${html}</div>`;
+  }
+  function meter(v) {
+    const max = .30, q = v.qber || 0;
+    const left = x => Math.min(100, x / max * 100) + '%';
+    return `<div class="meter" role="img" aria-label="Error rate ${pct(q)}, threshold 11 percent">
+      <div class="f" style="width:${left(q)};background:${q > v.threshold ? 'var(--bad)' : 'var(--ok)'}"></div>
+      <div class="t" style="left:${left(v.threshold)}"><em>11% line</em></div>
+      ${v.storm > 0 ? `<div class="t s" style="left:${left(v.storm)}"><em>storm ${pct(v.storm)}</em></div>` : ''}</div>`;
+  }
+
+  // ---------- phases ----------
+  function screenSample(v) {
+    const m = (v.sifted || []).length, mine = v.waiting.includes(v.role);
+    let controls;
+    if (mine) {
+      const k = f => Math.min(m, Math.max(1, Math.round(f * m)));
+      const f = draftKey === 'sample:' + v.round ? draft.f : .5; if (draftKey !== 'sample:' + v.round) { draftKey = 'sample:' + v.round; draft = { f: .5 }; }
+      controls = `<div class="panel"><h3>How many bits will you sacrifice?</h3>
+        <p>The matching columns are your sifted key. You and ${v.role === 'bob' ? 'Alice' : 'Bob'} will read some of them aloud and compare. Those bits are spent. More bits make the test sharper and the key shorter.</p>
+        <div class="row"><span class="seg" role="group" aria-label="Share of bits to compare">${v.fractions.map(x => `<button data-a="frac" data-f2="${x}" aria-pressed="${x === draft.f}">${x === .25 ? '¼' : x === .5 ? '½' : '¾'}</button>`).join('')}</span>
+        <span class="num" style="color:var(--label2)">Compare ${k(draft.f)} of ${m}, keep ${m - k(draft.f)}</span></div>
+        <div class="acts"><button class="go" data-a="doSample" ${busy || !m ? 'disabled' : ''}>Compare in public</button></div></div>`;
+    } else controls = wait(v, `${who(v.waiting[0])} is choosing how many bits to compare…`);
+    return `<div class="panel"><h3>The lenses are announced</h3><p class="num">${m} of ${v.n} wisps were read through the same lens by both towers. Those bits are the sifted key. The runes stay secret.</p>${reveal(v, 'lens')}</div>${controls}`;
+  }
+  function screenVerdict(v) {
+    const mine = v.waiting.includes(v.role), k = v.sample.length;
+    const m = v.sifted.length, keep = m - k;
+    const dec = mine ? `<div class="acts"><button class="go ok" data-a="keep" ${busy || keep < 1 ? 'disabled' : ''}>Keep the key</button><button class="go bad" data-a="abort" ${busy ? 'disabled' : ''}>Abort</button></div>`
+      : (v.waiting.length ? wait(v, `${v.waiting.map(who).join(' and ')} ${v.waiting.length > 1 ? 'are' : 'is'} deciding…`) : '');
+    return `<div class="panel"><h3>The bits are read aloud</h3>
+      <p class="num"><b style="color:var(--label)">${v.errors} of ${k}</b> compared bits disagree: <b style="color:${v.qber > v.threshold ? 'var(--bad)' : 'var(--ok)'}">${(v.qber * 100).toFixed(1)}%</b>. The storm alone would explain about ${pct(v.storm)}. Above 11% no secret can be made.</p>
+      ${meter(v)}${reveal(v, 'verdict')}${dec}</div>`;
+  }
+  function screenResult(v) {
+    const r = v.result, mode = v.mode, oc = r.outcome, K = r.key.length, E = r.eve_known.length;
+    const qb = (r.qber * 100).toFixed(1) + '%';
+    let eye, title, stat, sub, tone, text;
+    const solo = v.solo, isEve = mode === 'eve';
+    if (oc === 'caught') {
+      tone = isEve ? 'badc' : 'good'; eye = isEve ? 'Caught' : 'Spy caught'; title = isEve ? 'The towers found you' : 'The Crow was found';
+      stat = isEve ? '+0' : '+' + r.ab; sub = `${r.tapped} wisps were tapped; ${r.errors} of ${r.sample.length} compared bits disagreed (${qb})`;
+      text = isEve ? 'The towers stopped the exchange. Your run ends here.' : 'You aborted and nothing leaked.';
+    } else if (oc === 'safe') {
+      tone = isEve ? 'badc' : 'good'; eye = 'Key secured'; title = isEve ? 'You learned nothing' : 'A secret key';
+      stat = isEve ? '+0' : '+' + K; sub = isEve ? 'You tapped too little to learn any bit of the key' : `${K} secret bits shared; Eve holds none of them`;
+      text = isEve ? 'Unseen, but empty-handed.' : r.tapped ? 'She tapped some wisps but learned nothing that ended up in your key.' : 'Nobody was listening.';
+    } else if (oc === 'breach') {
+      tone = isEve ? 'good' : 'badc'; eye = isEve ? 'Unseen' : 'The key leaked'; title = isEve ? 'You hold part of the key' : 'Eve was listening';
+      stat = isEve ? '+' + E : '+' + (K - E); sub = `Eve holds ${E} of the ${K} key bits for certain`; text = isEve ? 'The towers did not notice you.' : 'You kept a key that was not secret.';
+    } else if (oc === 'false_alarm') {
+      tone = 'badc'; eye = 'False alarm'; title = 'Nobody was there'; stat = '+0'; sub = `${r.errors} of ${r.sample.length} compared bits disagreed (${qb}), and the storm was ${pct(v.storm)}`;
+      text = isEve ? 'The storm alarmed the towers. The round is void.' : 'The key was thrown away for nothing.';
+    } else { tone = 'badc'; eye = 'No key'; title = 'Nothing to keep'; stat = '+0'; sub = 'Not enough bits survived'; text = ''; }
+    let tail = '';
+    if (!solo) tail = `<div class="score3"><div><div class="eyebrow">Towers</div><b class="num">${v.towers}</b></div><div><div class="eyebrow">Eve</div><b class="num">${v.eveTotal}</b></div></div>`;
+    const over = solo && !v.alive;
+    if (solo && v.score > best) { best = v.score; try { localStorage.setItem('qc_wisp_best', String(best)); } catch (e) {} }
+    const btn = over ? 'Start again' : 'Next round';
+    return `<div class="panel verdict mat ${tone}"><div class="eyebrow">${eye}${over ? ' · run over' : ''}</div><h3>${title}</h3>
+      <div class="stat num">${stat}<small>${sub}</small></div><p>${text}</p>${tail}
+      ${over ? `<p class="num">Final score <b style="color:var(--label)">${v.score}</b>${best ? ` · best ${best}` : ''}</p>` : ''}
+      <p class="fact">${esc(v.fact || '')}</p>
+      <div class="acts"><button class="go" data-a="next" ${busy ? 'disabled' : ''}>${btn}</button></div></div>
+      <div class="panel"><h3>The whole story</h3>
+      <p>Red columns are key bits Eve holds for certain. Green columns are key bits that stayed secret.</p>${reveal(v, 'full')}</div>`;
+  }
+
+  // ---------- the table (projector view) ----------
+  function screenTable(v) {
+    const names = { alice: 'Alice', bob: 'Bob', eve: 'Eve' };
+    const players = (v.humans || []).map(r => names[r]);
+    const status = {
+      alice: 'Alice is preparing the wisps', eve: 'Eve is deciding which wisps to tap', bob: 'Bob is choosing lenses',
+      setup: 'Bob is choosing how many wisps to release', sample: 'The towers are choosing how many bits to compare', verdict: 'The towers are deciding: keep or abort',
+    }[v.phase] || '';
+    let body = '';
+    if (v.phase === 'result' && v.result) body = screenResult(v);
+    else {
+      body = `<div class="panel"><p style="margin:0"><span class="dot pulse"></span>${status}</p></div>`;
+      if (v.phase === 'sample') body += `<div class="panel"><h3>The lenses are announced</h3>${reveal(v, 'lens')}</div>`;
+      if (v.phase === 'verdict') body += `<div class="panel"><h3>The bits are read aloud</h3><p class="num">${v.errors} of ${v.sample.length} disagree (${(v.qber * 100).toFixed(1)}%)</p>${meter(v)}${reveal(v, 'verdict')}</div>`;
+    }
+    return `${head(v)}${strip(v)}${body}`;
+  }
+
+  // ---------- top level ----------
+  function screenGame(v) {
+    $('root').classList.toggle('wide', v.role === 'table');
+    if (v.role === 'table') return screenTable(v);
+    let body = '';
+    const mine = v.waiting.includes(v.role);
+    switch (v.phase) {
+      case 'setup': body = mine ? setupBob(v) : wait(v, 'Bob is choosing how many wisps the spell will release…'); break;
+      case 'alice': body = mine ? editorAlice(v) : wait(v, 'Alice is preparing the wisps…'); break;
+      case 'eve': body = mine ? editorEve(v) : wait(v, 'Eve is deciding which wisps to tap…'); break;
+      case 'bob': body = mine ? editorBob(v) : wait(v, 'Bob is choosing lenses…'); break;
+      case 'sample': body = screenSample(v); break;
+      case 'verdict': body = screenVerdict(v); break;
+      case 'result': body = screenResult(v); break;
+      case 'over': body = `<div class="panel verdict mat badc"><div class="eyebrow">Run over</div><h3>The mana is gone</h3><p>You cannot afford the smallest message.</p>
+        <p class="num">Final score <b style="color:var(--label)">${v.score}</b></p><div class="acts"><button class="go" data-a="next">Start again</button></div></div>`; break;
+    }
+    let wait2 = '';
+    if (v.role === 'alice' && v.phase !== 'alice' && v.aBits && (v.phase === 'eve' || v.phase === 'bob'))
+      wait2 = wait(v, v.phase === 'eve' ? 'Your wisps are on the road. Eve is deciding…' : 'Bob is catching your wisps…');
+    if (v.role === 'eve' && v.eRes && v.phase === 'bob') wait2 = wait(v, 'You measured the wisps and sent them on. Bob is catching them…');
+    if (v.role === 'bob' && v.bRes && v.phase === 'verdict' && !mine) wait2 = '';
+    return `${head(v)}${strip(v)}${wait2}${body}`;
+  }
+  function screenMsg(title, text) { return `<div class="panel msg"><h3>${title}</h3><p>${text}</p></div>`; }
+
+  function draw() {
+    if (!P) return;
+    const act = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.f : null;
+    const scrollY = window.scrollY;
+    let html = '';
+    if (P.kind === 'game') html = screenGame(P.view);
+    else if (P.kind === 'lobby') {
+      const r = { alice: 'Alice', bob: 'Bob', eve: 'Eve' }[P.role];
+      html = `<div class="top"><div><div class="eyebrow">Room ${esc(P.code || '')}</div><h2>You are ${r}</h2></div></div>` +
+        `<div class="panel msg"><h3>You are in</h3><p><span class="dot on pulse"></span>Waiting for the table to press Play. Keep this screen open.</p></div>`;
+    }
+    else if (P.kind === 'taken') html = screenMsg('This seat is taken', 'Another phone already joined with this code. Ask the table for another code.');
+    else if (P.kind === 'started') html = screenMsg('The game has already started', 'Late arrivals cannot join a game in progress.');
+    else if (P.kind === 'missing') html = screenMsg('This room has closed', 'The code is wrong, or the room expired. Ask the table to open a new game.');
+    else html = screenMsg('Joining…', 'Finding your seat.');
+    $('main').innerHTML = html;
+    if ($('orb')) $('orb').setAttribute('opacity', P.kind === 'game' && (P.view.humans || []).includes('eve') ? '1' : '0');
+    if (act) { const el = document.querySelector('[data-f="' + act + '"]'); if (el) el.focus({ preventScroll: true }); }
+    fit();
+  }
+
+  // ---------- events ----------
+  const rndFill = n => Array.from({ length: n }, rb);
+  document.addEventListener('input', e => {
+    const a = e.target.dataset && e.target.dataset.a; if (!a || !P) return;
+    if (a === 'n') { draft.n = +e.target.value; draft.lens = draft.bits = null; draw(); const el = $('nn'); if (el) el.focus({ preventScroll: true }); }
+    if (a === 'n0') { draft.n = +e.target.value; $('bigN').textContent = draft.n; const c = document.querySelector('#main .panel p.num'); if (c && P.view.mode === 'bob') c.textContent = `Costs ${draft.n} mana. You have ${P.view.mana}; you receive 24 more each round, up to ${P.view.manaMax}.`; }
+  });
+  document.addEventListener('click', e => {
+    const b = e.target.closest('[data-a]'); if (!b || b.disabled || busy || !P) return;
+    const a = b.dataset.a, i = +b.dataset.i, v = P.view; if (b.tagName === 'INPUT') return;
+    if (a === 'lens') { draft.lens[i] = draft.lens[i] === null ? 0 : draft.lens[i] === 0 ? 1 : 0; draw(); }
+    else if (a === 'bit') { draft.bits[i] = draft.bits[i] === null ? 0 : 1 - draft.bits[i]; draw(); }
+    else if (a === 'tap') { draft.tap[i] = draft.tap[i] === -1 ? 0 : draft.tap[i] === 0 ? 1 : -1; draw(); }
+    else if (a === 'fillA') { draft.lens = rndFill(draft.n); draft.bits = rndFill(draft.n); draw(); }
+    else if (a === 'fillB') { draft.lens = rndFill(v.n); draw(); }
+    else if (a === 'share') {
+      const f = +b.dataset.f2, k = Math.round(f * v.n), idx = Array.from({ length: v.n }, (_, j) => j);
+      for (let j = idx.length - 1; j > 0; j--) { const r = crypto.getRandomValues(new Uint32Array(1))[0] % (j + 1); [idx[j], idx[r]] = [idx[r], idx[j]]; }
+      draft.tap = Array(v.n).fill(-1); idx.slice(0, k).forEach(j => draft.tap[j] = rb()); draw();
+    }
+    else if (a === 'frac') { draft.f = +b.dataset.f2; draw(); }
+    else if (a === 'setN') sendAct('set_n', { n: draft.n });
+    else if (a === 'lockA') sendAct('alice_lock', { n: draft.n, bits: draft.bits, lens: draft.lens });
+    else if (a === 'lockE') sendAct('eve_lock', { choice: draft.tap });
+    else if (a === 'lockB') { flight(v.n, false); sendAct('bob_lock', { lens: draft.lens }); }
+    else if (a === 'doSample') sendAct('set_sample', { fraction: draft.f });
+    else if (a === 'keep') sendAct('verdict', { choice: 'keep' });
+    else if (a === 'abort') sendAct('verdict', { choice: 'abort' });
+    else if (a === 'next') sendAct('next', {});
+  });
+
+  window.addEventListener('message', e => {
+    const d = e.data; if (!d || d.type !== 'streamlit:render') return;
+    const np = d.args && d.args.payload; if (!np) return;
+    const sig = JSON.stringify(np);
+    if (sig === lastSig) return;
+    lastSig = sig;
+    const prev = P; P = np; busy = false; clearTimeout(busyTimer);
+    if (np.kind === 'game') {
+      const v = np.view;
+      if (prev && prev.kind === 'game' && prev.view.round === v.round && prev.view.phase !== v.phase && ['sample', 'result'].includes(v.phase) && v.n && ['eve', 'bob'].includes(prev.view.phase))
+        flight(v.n, v.phase === 'result' && v.result && v.result.tapped > 0);
+      else if (prev && prev.kind === 'game' && v.phase === 'result' && prev.view.phase !== 'result' && v.n) flight(v.n, v.result && v.result.tapped > 0);
+      if (v.solo && v.score > best) { best = v.score; try { localStorage.setItem('qc_wisp_best', String(best)); } catch (er) {} }
+    }
+    draw();
+  });
+  buildScene();
+  new ResizeObserver(fit).observe(document.body);
+  post('streamlit:componentReady', { apiVersion: 1 });
+  setValue({ type: 'hello', client: CLIENT, nonce: CLIENT + ':hello' });
+  fit();
+})();
+</script></body></html>
