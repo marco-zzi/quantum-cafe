@@ -36,7 +36,7 @@ st.subheader("Four sessions, four things to try")
 cards = "".join([
     card("Session 1 · 18 February 2027", "Demystifying Reality",
          "Quantum theories and phenomena presented through experiments and accessible explanations.",
-         "Play: Toss your magic coins", "Toss_Your_Magic_Coins"),
+         "Play: Sorcerer's coins", "Sorcerers_Coins"),
     card("Session 2 · 18 March 2027", "The Hardware Frontier",
          "Building physical quantum platforms in Lithuania and globally.",
          "Play: Keep the Magic Alive", "Keep_the_Magic_Alive"),

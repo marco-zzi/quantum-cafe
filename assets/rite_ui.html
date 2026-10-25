@@ -605,6 +605,12 @@ function drawPreviews(t){
   });
   Object.assign(window, {}); g = keep.g; craft = keep.craft; st = keep.st; shown = keep.shown; castA = keep.castA;
 }
+
+// size the surrounding frame to the content, so there is no dead space under the interface (same-origin iframe)
+  function fitFrame() {
+    try { const h = Math.ceil(document.getElementById('app').getBoundingClientRect().height) + 2; if (window.frameElement) { window.frameElement.style.height = h + 'px'; window.frameElement.parentElement.style.height = h + 'px'; } } catch (e) {}
+  }
+  new ResizeObserver(fitFrame).observe(document.getElementById('app')); fitFrame();
 buildCards();
 requestAnimationFrame(loop);
 </script>

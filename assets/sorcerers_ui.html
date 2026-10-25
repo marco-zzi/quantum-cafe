@@ -1,0 +1,423 @@
+<style>
+  :root{--bg:#0b0b10;--label:#f5f5f7;--label2:rgba(235,235,245,.62);--label3:rgba(235,235,245,.34);
+        --fill:rgba(255,255,255,.08);--fill2:rgba(255,255,255,.14);--acc:255,214,120;--ok:#32d74b;--bad:#ff453a;
+        --sys:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+        --disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+        --serif:ui-serif,"New York","Iowan Old Style",Georgia,serif}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:transparent;color:var(--label);font:15px/1.4 var(--sys);-webkit-font-smoothing:antialiased}
+  #app{position:relative;background:var(--bg);border-radius:28px;padding:18px 18px 20px;overflow:hidden}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+  :focus-visible{outline:2px solid rgb(var(--acc));outline-offset:3px;border-radius:12px}
+  .mat{background:rgba(26,26,34,.66);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border-top:1px solid rgba(255,255,255,.14)}
+  @media (prefers-reduced-transparency:reduce){.mat{background:#1c1c24;-webkit-backdrop-filter:none;backdrop-filter:none}}
+  .eyebrow{font:600 11px/1 var(--sys);letter-spacing:.08em;text-transform:uppercase;color:var(--label3)}
+  .num{font-variant-numeric:tabular-nums}
+
+  .top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:4px}
+  .top .lv{font:600 24px/1.1 var(--serif);letter-spacing:-.01em;margin-top:6px}
+  .right{display:flex;align-items:flex-end;gap:14px}
+  .score{text-align:right}.score b{display:block;font:700 22px/1 var(--disp);letter-spacing:-.02em;margin-top:5px}
+  .ghost{padding:8px 14px;border-radius:999px;font-weight:600;font-size:14px;color:var(--label2);background:var(--fill);transition:transform .1s,color .2s,opacity .2s}
+  .ghost:hover:not(:disabled){color:var(--label)}.ghost:active:not(:disabled){transform:scale(.95)}.ghost:disabled{opacity:.35;cursor:default}
+  .goal{margin:6px 0 4px;font-size:14px;line-height:1.4;color:var(--label2)}
+  .note{margin:0 0 12px;min-height:20px;font-size:14px;line-height:1.4;color:rgb(var(--acc))}
+
+  .strip{display:flex;flex-wrap:wrap;gap:10px 28px;margin:0 2px 14px}
+  .strip .v{font:600 17px/1.2 var(--disp);letter-spacing:-.01em;margin-top:6px;font-variant-numeric:tabular-nums;display:flex;align-items:center;gap:8px}
+  .dots{display:flex;gap:5px;margin-top:8px;height:14px;align-items:center}
+  .dots i{width:11px;height:11px;border-radius:50%;background:rgba(255,255,255,.14);transition:background .25s,box-shadow .25s,transform .25s}
+  .dots i.on{background:rgb(var(--acc));box-shadow:0 0 8px rgba(var(--acc),.55)}
+  .rdots{display:inline-flex;gap:3px}.rdots i{width:7px;height:7px;border-radius:50%;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.28);transition:background .2s}
+  .rdots i.m{background:var(--ok);box-shadow:none}
+
+  .stage{position:relative;width:100%;border-radius:24px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 18px 40px rgba(0,0,0,.45);
+         background-size:contain;background-repeat:no-repeat;background-position:center;background-color:#07070c;touch-action:none}
+  .overlay{position:absolute;left:0;top:0;transform-origin:0 0}
+  #links{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+  .unit{position:absolute;width:84px;height:156px;margin-left:-42px;touch-action:none;outline-offset:2px;cursor:grab}
+  .unit:active{cursor:grabbing}
+  .chip{position:absolute;left:50%;top:0;transform:translateX(-50%);width:42px;height:42px;border-radius:50%;background-size:cover;background-position:center;
+        box-shadow:0 0 0 2px rgba(255,255,255,.18),0 2px 6px rgba(0,0,0,.5);transition:box-shadow .25s,transform .25s}
+  .chip.t0{background-image:url('data:image/png;base64,__FRONT__')}.chip.t1{background-image:url('data:image/png;base64,__BACK__')}
+  .unit.ok .chip{box-shadow:0 0 0 3px var(--ok),0 0 14px rgba(50,215,75,.6);transform:translateX(-50%) scale(1.12)}
+  .slot{position:absolute;left:50%;top:60px;perspective:600px;pointer-events:none}
+  .ring{position:absolute;left:50%;top:60px;border-radius:50%;pointer-events:none;transition:box-shadow .25s}
+  .coin{width:100%;height:100%;position:relative;transform-style:preserve-3d}
+  .face{position:absolute;width:100%;height:100%;border-radius:50%;backface-visibility:hidden;background-size:cover;background-position:center;box-shadow:inset 0 0 8px rgba(0,0,0,.6)}
+  .face-front{background-image:url('data:image/png;base64,__FRONT__')}.face-back{background-image:url('data:image/png;base64,__BACK__')}
+  .edge{position:absolute;width:100%;height:100%;transform-style:preserve-3d}
+  .facet{position:absolute;background-image:url('data:image/png;base64,__EDGE__');background-size:cover;background-position:center;transform-style:preserve-3d}
+  .unit.shake{animation:shake .35s}
+  @keyframes shake{20%{transform:translateX(-5px)}45%{transform:translateX(5px)}70%{transform:translateX(-3px)}}
+
+  .bar{position:absolute;display:flex;align-items:center;justify-content:space-between;gap:14px;border-radius:22px;padding:14px 18px}
+  .odds .n{display:block;font:700 30px/1.05 var(--disp);letter-spacing:-.025em;margin-top:5px;font-variant-numeric:tabular-nums;transition:color .2s}
+  .odds .n.never{color:var(--bad)}
+  .odds .n.pop{animation:pop .35s cubic-bezier(.2,.8,.2,1)}
+  @keyframes pop{from{transform:scale(1.12)}to{transform:none}}
+  .btns{display:flex;gap:8px;align-items:center}
+  .toss{background:rgb(var(--acc));color:#14110a;font:700 17px/1 var(--disp);letter-spacing:-.01em;padding:14px 34px;border-radius:999px;transition:transform .1s,filter .2s,opacity .2s}
+  .toss:hover:not(:disabled){filter:brightness(1.07)}.toss:active:not(:disabled){transform:scale(.96)}.toss:disabled{opacity:.4;cursor:default}
+
+  .sheet{position:absolute;inset:0;display:grid;place-items:end center;pointer-events:none;overflow:hidden;z-index:5}
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.55);opacity:0}
+  .box{visibility:hidden;position:relative;pointer-events:auto;width:min(450px,calc(100% - 20px));margin:0 0 10px;padding:24px 22px 20px;border-radius:28px;text-align:center;will-change:transform}
+  .box .eyebrow{color:rgb(var(--acc))}.box.lost .eyebrow{color:var(--bad)}
+  .box h3{font:600 28px/1.1 var(--serif);letter-spacing:-.015em;margin:8px 0 4px}
+  .box .big{display:flex;justify-content:center;gap:6px;margin:12px 0 4px}
+  .box .big svg{width:30px;height:30px;fill:rgba(255,255,255,.14)}.box .big svg.on{fill:rgb(var(--acc))}
+  .box .stat{font:700 44px/1 var(--disp);letter-spacing:-.03em;margin:12px 0 2px}
+  .box .stat small{display:block;font:500 14px/1.3 var(--sys);letter-spacing:0;color:var(--label2);margin-top:4px}
+  .box p{margin:6px auto;max-width:42ch;font-size:14.5px;color:var(--label2)}
+  .box b{color:var(--label);font-variant-numeric:tabular-nums}
+  .box .fact{font-size:13px;color:var(--label3)}
+  .acts{display:flex;gap:10px;margin-top:16px}
+  .btn{flex:1;padding:13px 16px;border-radius:14px;background:var(--fill2);font-weight:600;font-size:16px;transition:transform .1s}
+  .btn:active{transform:scale(.97)}.btn.p{background:rgb(var(--acc));color:#14110a}
+
+  @media (min-width:681px){
+    .stage{aspect-ratio:16/9;background-image:url('data:image/jpeg;base64,__TABLE_D__')}
+    .overlay{width:800px;height:450px}
+    .slot,.ring{width:64px;height:64px;margin-left:-32px;--r:32px}
+    .face-front{transform:translateZ(3.2px)}.face-back{transform:rotateY(180deg) translateZ(3.2px)}
+    .facet{height:6.4px;width:calc(var(--r)*.3978);left:calc(50% - var(--r)*.1989);top:calc(50% - 3.2px)}
+    .bar{left:150px;width:500px;bottom:24px}
+  }
+  @media (max-width:680px){
+    #app{padding:12px 12px 14px;border-radius:24px}
+    .top .lv{font-size:21px}
+    .strip{gap:8px 20px}
+    .stage{aspect-ratio:9/16;background-image:url('data:image/jpeg;base64,__TABLE_M__')}
+    .overlay{width:330px;height:587px}
+    .unit{width:68px;margin-left:-34px;height:132px}
+    .chip{width:34px;height:34px}.slot{top:50px}.ring{top:50px}
+    .slot,.ring{width:52px;height:52px;margin-left:-26px;--r:26px}
+    .face-front{transform:translateZ(2.6px)}.face-back{transform:rotateY(180deg) translateZ(2.6px)}
+    .facet{height:5.2px;width:calc(var(--r)*.3978);left:calc(50% - var(--r)*.1989);top:calc(50% - 2.6px)}
+    .bar{left:15px;width:300px;bottom:14px;flex-wrap:wrap;padding:12px 14px}
+    .odds{width:100%;display:flex;align-items:baseline;justify-content:space-between}.odds .n{margin:0;font-size:26px}
+    .btns{width:100%}.toss{flex:1;padding:13px 20px}
+  }
+  @media (prefers-reduced-motion:reduce){.chip,.toss,.ghost,.btn,.odds .n,.dots i{transition:none}.odds .n.pop,.unit.shake{animation:none}}
+</style>
+<div id="app">
+  <div class="top">
+    <div><div class="eyebrow" id="eyebrow">Round 1</div><div class="lv" id="title">The Apprentice</div></div>
+    <div class="right"><div class="score"><div class="eyebrow">Score</div><b class="num" id="score">0</b></div><button class="ghost" id="reset" disabled>Reset links</button></div>
+  </div>
+  <p class="goal" id="goal"></p>
+  <p class="note" id="note" aria-live="polite"></p>
+  <div class="strip">
+    <div><div class="eyebrow">Links left</div><div class="dots" id="dots"></div></div>
+    <div><div class="eyebrow">Each link holds</div><div class="v" id="hold">100%</div></div>
+    <div><div class="eyebrow">Tosses</div><div class="v" id="tcount">0 / 256</div></div>
+    <div><div class="eyebrow">Rival</div><div class="v"><span id="rodds">1 in 8</span><span class="rdots" id="rdots"></span></div></div>
+  </div>
+  <div class="stage" id="stage">
+    <div class="overlay" id="ov">
+      <svg id="links" aria-hidden="true"></svg>
+      <div id="units"></div>
+      <div class="bar mat">
+        <div class="odds"><div class="eyebrow">Your chance per toss</div><b class="n" id="odds">1 in 256</b></div>
+        <div class="btns"><button class="ghost" id="fast" title="Toss up to ten times, stopping when someone matches">×10</button><button class="toss" id="toss">Toss</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="sheet" id="sheet"><div class="scrim" id="scrim"></div><div class="box mat" id="box" role="dialog" aria-live="polite"></div></div>
+</div>
+<script>
+  const N = 8, NF = 16, MAX_TOSSES = 256;
+  const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const $ = id => document.getElementById(id);
+  // Each round: the vault pattern, the link budget (mana), how reliably each link holds, and how skilled the rival is
+  // (skill = the rival's chance per toss as a fraction of the best chance that is possible with this budget and noise).
+  const ROUNDS = [
+    { name: 'The Apprentice',   target: '00000000', links: 7, hold: 1.00, skill: .12, goal: 'Duel a rival sorcerer: whoever matches the vault pattern first wins. Drag from one coin to another to link them. Linked coins always agree.',
+      fact: 'Linked coins are entangled: two form a Bell state, three or more a GHZ state. Their results always agree, though each coin alone is a fair flip. (The sign in Φ+ or Φ− does not change which faces land, only how the state behaves if measured another way.)' },
+    { name: 'The Journeyman',   target: '10101010', links: 7, hold: 1.00, skill: .20, goal: 'Link the coins that need the same value. They do not have to be neighbours.',
+      fact: 'Entanglement does not care about distance. But a group that needs both a 1 and a 0 can never match.' },
+    { name: 'The Hedge Wizard', random: true, links: 6, hold: .97, skill: .30, goal: 'Now every link costs mana, and each one can fail. A new pattern every round.',
+      fact: 'A group of k coins needs k−1 links to hold together. If any link fails, the coins stop agreeing and land independently. Bigger groups are more fragile.' },
+    { name: 'The Illusionist',  random: true, links: 5, hold: .95, skill: .40, goal: 'Fewer links than coins: you cannot join everything, so choose your groups.',
+      fact: 'With few links you must decide which groups to build. Entanglement is a limited resource, in the lab as in this game.' },
+    { name: 'The Conjurer',     random: true, links: 5, hold: .92, skill: .50, goal: 'The air is noisier. Links fail more often.',
+      fact: 'Real devices lose entanglement to noise, and bigger entangled states are harder to keep intact. That is why quality hardware matters.' },
+    { name: 'The Enchanter',    random: true, links: 4, hold: .90, skill: .60, goal: 'Four links. Make each one count.',
+      fact: 'Sometimes two medium groups beat one big fragile one. The best split depends on how noisy it is.' },
+    { name: 'The Archmage',     random: true, links: 4, hold: .88, skill: .70, goal: 'Your rival is nearly as good as it gets.',
+      fact: 'Skill decides the odds, luck decides each toss. Over many rounds the better arrangement wins.' },
+    { name: 'Sorcerer Supreme', random: true, links: 3, hold: .85, skill: .80, goal: 'Three links and noisy air. How long can you last?',
+      fact: 'From here on every round is as hard as this one, with an ever sharper rival.' },
+  ];
+  const COLORS = ['#64d2ff', '#bf5af2', '#30d158', '#ffd60a', '#ff9f0a'];   // red is reserved for groups that can never match
+  const STAR = '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.1 6.6.9-4.8 4.6 1.2 6.6L12 17.5l-5.9 3.2 1.2-6.6L2.5 9.5l6.6-.9z"/></svg>';
+
+  let round = 0, score = 0, best = 0, tosses = 0, busy = false, over = false, nextId = N, gOf = [], P = null, curTarget = '', selected = null, lastBroken = [];
+  try { best = +localStorage.getItem('qc_sorcerer_best') || 0; } catch (e) {}
+  const coins = [];
+  const geo = { mobile: false, k: 1 };
+  const now = () => performance.now() / 1000;
+  const clamp01 = x => Math.max(0, Math.min(1, x));
+  const easeOut = x => 1 - Math.pow(1 - x, 3);
+
+  // ---------- the eight coins ----------
+  const units = [];
+  for (let i = 0; i < N; i++) {
+    const u = document.createElement('div');
+    u.className = 'unit'; u.tabIndex = 0; u.setAttribute('role', 'button');
+    let facets = '<div class="edge">';
+    for (let f = 0; f < NF; f++) facets += '<div class="facet" style="transform: rotateZ(' + f * (360 / NF) + 'deg) translateY(calc(-1 * var(--r))) rotateX(90deg);"></div>';
+    facets += '</div>';
+    u.innerHTML = '<div class="chip"></div><div class="ring"></div><div class="slot"><div class="coin"><div class="face face-front"></div><div class="face face-back"></div>' + facets + '</div></div>';
+    $('units').appendChild(u); units.push(u);
+    coins.push({ mode: 'spin', phase: 0, speed: 0, a0: 0, a1: 0, t0: 0, dur: 1, angle: 0, outcome: null });
+    attachDrag(u, i);
+  }
+
+  // ---------- groups, odds and the best possible arrangement ----------
+  const target = () => curTarget;
+  const members = g => gOf.map((v, i) => v === g ? i : -1).filter(i => i >= 0);
+  const groupIds = () => [...new Set(gOf)];
+  const linksUsed = () => N - groupIds().length;                    // a group of k coins costs k-1 links
+  const holdOf = k => Math.pow(P.hold, k - 1);                       // chance that a group of k coins stays entangled
+  const groupP = (k, mono) => { const F = holdOf(k); return k === 1 ? .5 : (mono ? F * .5 : 0) + (1 - F) * Math.pow(.5, k); };
+  function chance() {                                                // your chance per toss with the current arrangement
+    let p = 1;
+    groupIds().forEach(g => { const m = members(g); p *= groupP(m.length, m.every(i => target()[i] === target()[m[0]])); });
+    return p;
+  }
+  function partitions(n, max) { max = max || n; if (n === 0) return [[]]; const out = []; for (let k = Math.min(n, max); k >= 1; k--) partitions(n - k, k).forEach(r => out.push([k, ...r])); return out; }
+  function bestChance(t, links) {                                    // exhaustive search over groups of equal-valued coins
+    const ones = [...t].filter(c => c === '1').length, zeros = N - ones; let best = 0;
+    partitions(ones).forEach(a => partitions(zeros).forEach(b => {
+      if (N - (a.length + b.length) > links) return;
+      let p = 1; a.concat(b).forEach(k => { p *= groupP(k, true); }); best = Math.max(best, p);
+    }));
+    return best;
+  }
+  const fmtOdds = p => { if (p <= 1e-9) return 'Never'; const n = 1 / p; return '1 in ' + (n < 10 ? n.toFixed(1).replace('.0', '') : Math.round(n).toLocaleString('en')); };
+  function resetLinks() { gOf = Array.from({ length: N }, (_, i) => i); nextId = N; }
+  function link(a, b) {
+    const ga = gOf[a], gb = gOf[b]; if (ga === gb) return 'same';
+    if (linksUsed() >= P.links) return 'budget';
+    members(gb).forEach(i => { gOf[i] = ga; }); return 'ok';
+  }
+  function detach(i) { if (members(gOf[i]).length > 1) { gOf[i] = nextId++; return true; } return false; }
+
+  // ---------- layout in fixed design pixels, scaled to the table art ----------
+  function layout() {
+    geo.mobile = matchMedia('(max-width:680px)').matches;
+    const dw = geo.mobile ? 330 : 800;
+    geo.k = $('stage').clientWidth / dw; $('ov').style.transform = 'scale(' + geo.k + ')';
+    units.forEach((u, i) => { const p = center(i); u.style.left = p[0] + 'px'; u.style.top = (p[1] - (geo.mobile ? 76 : 92)) + 'px'; });
+    drawLinks();
+  }
+  function center(i) {
+    if (geo.mobile) return [54 + 74 * (i % 4), 215 + 130 * Math.floor(i / 4)];
+    return [92 + 88 * i, 205];
+  }
+  new ResizeObserver(layout).observe($('stage'));
+
+  // ---------- links: straight coloured lines behind the coins ----------
+  let tmp = null;
+  function drawLinks() {
+    let svg = '';
+    const ids = groupIds().filter(g => members(g).length > 1).sort((a, b) => Math.min(...members(a)) - Math.min(...members(b)));
+    ids.forEach((g, n) => {
+      const m = members(g), col = COLORS[n % COLORS.length], mixed = m.some(i => target()[i] !== target()[m[0]]);
+      const broken = lastBroken.includes(g), c = broken ? '#8e8e93' : (mixed ? '#ff453a' : col);
+      const off = (n - (ids.length - 1) / 2) * 9;                       // groups that share a row are drawn side by side
+      for (let j = 0; j < m.length - 1; j++) {
+        const a = center(m[j]), b = center(m[j + 1]);
+        svg += '<line x1="' + a[0] + '" y1="' + (a[1] + off) + '" x2="' + b[0] + '" y2="' + (b[1] + off) + '" stroke="' + c + '" stroke-width="7" stroke-linecap="round"' + (mixed || broken ? ' stroke-dasharray="2 12"' : '') + ' opacity=".9"/>';
+      }
+      m.forEach(i => { units[i].querySelector('.ring').style.boxShadow = '0 0 0 3px ' + c + ', 0 0 18px ' + c + '88'; });
+    });
+    units.forEach((u, i) => { if (members(gOf[i]).length === 1) u.querySelector('.ring').style.boxShadow = 'none'; });
+    if (tmp) svg += '<line x1="' + tmp[0] + '" y1="' + tmp[1] + '" x2="' + tmp[2] + '" y2="' + tmp[3] + '" stroke="rgb(255,214,120)" stroke-width="5" stroke-linecap="round" stroke-dasharray="1 10" opacity=".9"/>';
+    $('links').innerHTML = svg;
+    $('links').setAttribute('viewBox', '0 0 ' + (geo.mobile ? 330 : 800) + ' ' + (geo.mobile ? 587 : 450));
+    updateStatus();
+  }
+  function updateStatus() {
+    const el = $('odds'), p = chance(), txt = fmtOdds(p);
+    if (el.textContent !== txt) { el.textContent = txt; el.classList.remove('pop'); void el.offsetWidth; if (!RM) el.classList.add('pop'); }
+    el.classList.toggle('never', p <= 1e-9);
+    const left = P.links - linksUsed();
+    [...$('dots').children].forEach((d, i) => d.classList.toggle('on', i < left));
+    $('reset').disabled = linksUsed() === 0 || busy || over;
+  }
+  function say(t) { $('note').textContent = t; }
+
+  // ---------- drag from one coin to another to link; tap to detach ----------
+  function toDesign(e) { const r = $('stage').getBoundingClientRect(); return [(e.clientX - r.left) / geo.k, (e.clientY - r.top) / geo.k]; }
+  function tryLink(a, b, shakeUnit) {
+    const r = link(a, b);
+    if (r === 'budget') { shake(shakeUnit); say('No links left. Detach a coin (tap it) or reset to rearrange.'); }
+    else if (r === 'ok') say('');
+  }
+  function attachDrag(u, i) {
+    let from = null, moved = false, x0 = 0, y0 = 0;
+    u.addEventListener('pointerdown', e => { if (busy || over) return; u.setPointerCapture(e.pointerId); from = i; moved = false; x0 = e.clientX; y0 = e.clientY; });
+    u.addEventListener('pointermove', e => {
+      if (from === null) return;
+      if (!moved && Math.hypot(e.clientX - x0, e.clientY - y0) > 8) moved = true;     // small hysteresis before it counts as a drag
+      if (!moved) return;
+      const p = toDesign(e), c = center(i); tmp = [c[0], c[1], p[0], p[1]]; drawLinks();
+    });
+    const end = e => {
+      if (from === null) return; const was = from; from = null; tmp = null;
+      if (moved) {
+        const el = document.elementFromPoint(e.clientX, e.clientY), tu = el && el.closest ? el.closest('.unit') : null, j = tu ? units.indexOf(tu) : -1;
+        if (j >= 0 && j !== was) tryLink(was, j, units[j]);
+      } else { detach(was); lastBroken = []; }
+      drawLinks();
+    };
+    u.addEventListener('pointerup', end); u.addEventListener('pointercancel', end);
+    u.addEventListener('keydown', e => {                       // keyboard: Enter selects a coin, Enter on another links them
+      if (e.key !== 'Enter' && e.key !== ' ') return; e.preventDefault(); if (busy || over) return;
+      if (selected === null) { selected = i; u.style.outline = '2px solid rgb(255,214,120)'; }
+      else { if (selected !== i) tryLink(selected, i, u); else detach(i); units[selected].style.outline = ''; selected = null; drawLinks(); }
+    });
+  }
+  function shake(u) { if (RM) return; u.classList.remove('shake'); void u.offsetWidth; u.classList.add('shake'); setTimeout(() => u.classList.remove('shake'), 400); }
+  $('reset').onclick = () => { if (busy || over) return; resetLinks(); lastBroken = []; say(''); drawLinks(); };
+
+  // ---------- coins spin while undecided; linked coins spin in lockstep ----------
+  function startSpin(t) {
+    const speedOf = {}, phaseOf = {};
+    groupIds().forEach(g => { speedOf[g] = 140 + Math.random() * 90; phaseOf[g] = Math.random() * 360; });
+    coins.forEach((c, i) => { const g = gOf[i]; c.mode = 'spin'; c.speed = speedOf[g]; c.phase = phaseOf[g] - c.speed * t; c.outcome = null; });
+    units.forEach(u => u.classList.remove('ok'));
+  }
+  function angleOf(c, t) {
+    if (c.mode === 'spin') return RM ? 90 : c.phase + c.speed * t;
+    if (c.mode === 'anim') { const p = clamp01((t - c.t0) / c.dur); if (p >= 1) { c.mode = 'rest'; c.angle = c.a1; return c.a1; } return c.a0 + (c.a1 - c.a0) * (RM ? 1 : easeOut(p)); }
+    return c.angle;
+  }
+  function frame(ms) {
+    const t = ms / 1000;
+    coins.forEach((c, i) => { units[i].querySelector('.coin').style.transform = 'rotateY(' + angleOf(c, t) + 'deg)'; });
+    requestAnimationFrame(frame);
+  }
+
+  // ---------- one toss: you and the rival toss together ----------
+  function toss(quick) {
+    return new Promise(resolve => {
+      busy = true; $('toss').disabled = true; $('fast').disabled = true; $('reset').disabled = true;
+      const t = now(), dur = quick ? .5 : 1.0, bits = new Array(N), broken = [];
+      groupIds().forEach(g => {
+        const m = members(g);
+        if (m.length > 1 && Math.random() > holdOf(m.length)) { broken.push(g); m.forEach(i => { bits[i] = Math.random() < .5 ? 1 : 0; }); }   // a link failed: the coins land independently
+        else { const b = Math.random() < .5 ? 1 : 0; m.forEach(i => { bits[i] = b; }); }
+      });
+      coins.forEach((c, i) => {
+        const a = angleOf(c, t), o = bits[i];
+        c.mode = 'anim'; c.t0 = t; c.dur = dur + (quick ? 0 : (i % 3) * .08); c.a0 = a; c.a1 = Math.ceil(a / 360) * 360 + (quick ? 360 : 720) + (o ? 180 : 0); c.outcome = o;
+      });
+      const youMatch = bits.every((b, i) => String(b) === target()[i]);
+      const rivalMatch = Math.random() < P.rivalP;
+      let rbits = [...target()].map(Number);
+      if (!rivalMatch) do { rbits = Array.from({ length: N }, () => (Math.random() < .5 ? 1 : 0)); } while (rbits.every((b, i) => String(b) === target()[i]));
+      tosses++;
+      setTimeout(() => {
+        units.forEach((u, i) => u.classList.toggle('ok', String(bits[i]) === target()[i]));
+        [...$('rdots').children].forEach((d, i) => d.classList.toggle('m', String(rbits[i]) === target()[i]));
+        lastBroken = broken; drawLinks();
+        $('tcount').textContent = tosses + ' / ' + MAX_TOSSES;
+        const matches = bits.filter((b, i) => String(b) === target()[i]).length;
+        say(broken.length ? 'A link failed and its coins landed independently. ' + matches + ' of 8 match.' : matches + ' of 8 match.');
+        resolve({ youMatch, rivalMatch });
+      }, (dur + .3) * 1000);
+    });
+  }
+  async function runTosses(max) {
+    if (busy || over) return;
+    for (let n = 0; n < max; n++) {
+      const r = await toss(max > 1);
+      if (r.youMatch || r.rivalMatch) {
+        const tie = r.youMatch && r.rivalMatch, youWin = r.youMatch && (!tie || Math.random() < .5);
+        setTimeout(() => (youWin ? win(tie) : lose(tie ? 'tie' : 'rival')), 650); return;
+      }
+      if (tosses >= MAX_TOSSES) { setTimeout(() => lose('budget'), 650); return; }
+      await new Promise(r => setTimeout(r, max > 1 ? 180 : 700));
+      lastBroken = []; startSpin(now()); drawLinks();
+      if (n < max - 1) await new Promise(r => setTimeout(r, 60));
+    }
+    busy = false; $('toss').disabled = false; $('fast').disabled = false; updateStatus();
+  }
+  $('toss').onclick = () => runTosses(1);
+  $('fast').onclick = () => runTosses(10);
+
+  // ---------- rounds, score and the result sheet ----------
+  function paramsFor(r) {
+    if (r < ROUNDS.length) return Object.assign({}, ROUNDS[r]);
+    const last = ROUNDS[ROUNDS.length - 1], extra = r - ROUNDS.length + 1;
+    return Object.assign({}, last, { skill: Math.min(.95, last.skill + .03 * extra), goal: 'Round ' + (r + 1) + '. Your rival keeps getting sharper.', fact: ROUNDS[ROUNDS.length - 1].fact });
+  }
+  function randomTarget() { let t; do { t = Array.from({ length: N }, () => (Math.random() < .5 ? '1' : '0')).join(''); } while (/^(.)\1*$/.test(t)); return t; }
+  function loadRound() {
+    over = false; busy = false; tosses = 0; selected = null; lastBroken = []; resetLinks();
+    P = paramsFor(round); curTarget = P.random ? randomTarget() : P.target;
+    P.best = bestChance(curTarget, P.links); P.rivalP = P.best * P.skill;
+    $('eyebrow').textContent = 'Round ' + (round + 1); $('title').textContent = P.name;
+    $('goal').textContent = P.goal; say('');
+    $('score').textContent = score; $('hold').textContent = Math.round(P.hold * 100) + '%'; $('tcount').textContent = '0 / ' + MAX_TOSSES;
+    $('rodds').textContent = fmtOdds(P.rivalP);
+    $('dots').innerHTML = Array.from({ length: P.links }, () => '<i></i>').join('');
+    $('rdots').innerHTML = Array.from({ length: N }, () => '<i></i>').join('');
+    units.forEach((u, i) => { u.querySelector('.chip').className = 'chip t' + curTarget[i]; u.setAttribute('aria-label', 'Coin ' + (i + 1) + ', needs ' + (curTarget[i] === '1' ? 'tails' : 'heads')); });
+    $('toss').disabled = false; $('fast').disabled = false; hideSheet(); startSpin(now()); layout();
+  }
+  function win(tie) {
+    over = true; const mine = chance(), ratio = mine / P.best, stars = ratio >= .99 ? 3 : ratio >= .5 ? 2 : 1;
+    score += stars; $('score').textContent = score; saveBest();
+    $('box').className = 'box mat';
+    $('box').innerHTML =
+      '<div class="eyebrow">Round ' + (round + 1) + ' won</div>' +
+      '<h3>' + (tie ? 'A dead heat, and the coin was yours' : 'You cracked it first') + '</h3>' +
+      '<div class="big">' + [0, 1, 2].map(i => STAR.replace('<svg', '<svg class="' + (i < stars ? 'on' : '') + '"')).join('') + '</div>' +
+      '<p>Your chance per toss was <b>' + fmtOdds(mine) + '</b>. ' + (stars === 3 ? 'That is the best possible here.' : 'The best possible here was <b>' + fmtOdds(P.best) + '</b>.') + ' It took ' + tosses + ' toss' + (tosses === 1 ? '' : 'es') + '.</p>' +
+      '<p class="fact">' + P.fact + '</p>' +
+      '<div class="acts"><button class="btn p" id="next">Next round</button></div>';
+    $('next').onclick = () => { round++; loadRound(); };
+    sheet.t = 1;
+  }
+  function lose(why) {
+    over = true; saveBest(); const mine = chance();
+    const reason = why === 'budget' ? 'The vault stays shut after ' + MAX_TOSSES + ' tosses.' : why === 'tie' ? 'You both cracked it together, and the coin fell to ' + P.name.replace('The ', 'the ') + '.' : P.name + ' cracked it first.';
+    $('box').className = 'box lost mat';
+    $('box').innerHTML =
+      '<div class="eyebrow">Duel lost</div><h3>' + reason + '</h3>' +
+      '<div class="stat">' + score + '<small>score · ' + round + ' round' + (round === 1 ? '' : 's') + ' won' + (best ? ' · best ' + best : '') + '</small></div>' +
+      '<p>Your chance per toss was <b>' + fmtOdds(mine) + '</b>. The best possible with ' + P.links + ' links was <b>' + fmtOdds(P.best) + '</b>.</p>' +
+      '<p class="fact">' + P.fact + '</p>' +
+      '<div class="acts"><button class="btn p" id="again">Play again</button></div>';
+    $('again').onclick = () => { round = 0; score = 0; loadRound(); };
+    sheet.t = 1;
+  }
+  function saveBest() { if (score > best) { best = score; try { localStorage.setItem('qc_sorcerer_best', String(best)); } catch (e) {} } }
+
+  // the result sheet is a spring, so it can be interrupted
+  const sheet = { x: 0, v: 0, t: 0 };
+  function hideSheet() { sheet.t = 0; }
+  let lastMs = performance.now();
+  function springStep(ms) {
+    const dt = Math.min(.05, (ms - lastMs) / 1000); lastMs = ms;
+    if (RM) { sheet.x = sheet.t; sheet.v = 0; } else { const w = 2 * Math.PI / .5, k = w * w, c = 2 * w; let r = dt; while (r > 0) { const h = Math.min(r, 1/240), a = k * (sheet.t - sheet.x) - c * sheet.v; sheet.v += a * h; sheet.x += sheet.v * h; r -= h; } }
+    const s = clamp01(sheet.x);
+    $('scrim').style.opacity = s; $('box').style.transform = 'translateY(' + ((1 - s) * 110) + '%)';
+    $('box').style.visibility = (sheet.t === 0 && s < .01) ? 'hidden' : 'visible';
+    $('sheet').style.pointerEvents = s > .5 ? 'auto' : 'none';
+    requestAnimationFrame(springStep);
+  }
+
+  resetLinks(); loadRound();
+  // size the surrounding frame to the content, so there is no dead space under the interface (same-origin iframe)
+  function fitFrame() {
+    try { const h = Math.ceil(document.getElementById('app').getBoundingClientRect().height) + 2; if (window.frameElement) { window.frameElement.style.height = h + 'px'; window.frameElement.parentElement.style.height = h + 'px'; } } catch (e) {}
+  }
+  new ResizeObserver(fitFrame).observe(document.getElementById('app')); fitFrame();
+  requestAnimationFrame(frame); requestAnimationFrame(springStep);
+</script>
