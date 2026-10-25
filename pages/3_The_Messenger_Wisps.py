@@ -43,9 +43,6 @@ def lan_ip():
 
 def base_url():
     """Address phones can reach. On the hosted app it comes from the request headers; locally it is this machine's LAN address."""
-    override = st.session_state.get("qkd_base", "").strip().rstrip("/")
-    if override:
-        return override
     h = st.context.headers
     host = h.get("X-Forwarded-Host") or h.get("Host")
     if not host:
@@ -170,6 +167,39 @@ def table_fragment(code, host):
         st.rerun(scope="fragment")
 
 
+def card_art(kind):
+    """Small night-sky vignette for each way to play, in the same palette as the game scene."""
+    sky = ('<defs><linearGradient id="sk%s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0c0e22"/><stop offset="1" stop-color="#24224a"/></linearGradient>'
+           '<radialGradient id="gw%s"><stop offset="0" stop-color="#e8f3ff"/><stop offset="1" stop-color="#e8f3ff" stop-opacity="0"/></radialGradient></defs>'
+           '<rect width="320" height="120" fill="url(#sk%s)"/>') % (kind, kind, kind)
+    stars = "".join(f'<circle cx="{x}" cy="{y}" r="{r}" fill="#fff" opacity=".6"/>' for x, y, r in
+                    ((30, 20, 1), (90, 34, 1.2), (150, 14, 1), (220, 28, 1.2), (280, 16, 1), (60, 60, .8), (250, 56, .8)))
+    hills = '<path d="M0 120V92c40-14 70-10 110 0s80 8 120-4 60-4 90 2v30z" fill="#0d0d16"/>'
+    tower = lambda x, c: (f'<rect x="{x - 14}" y="52" width="28" height="68" fill="#12121c" stroke="rgba(255,255,255,.1)"/>'
+                          f'<path d="M{x - 14} 52v-7h6v7zm10 0v-7h8v7zm12 0v-7h6v7z" fill="#12121c"/>'
+                          f'<path d="M{x - 4} 82v-8a4 4 0 0 1 8 0v8z" fill="{c}" opacity=".8"/>'
+                          f'<circle cx="{x}" cy="34" r="16" fill="url(#gw{kind})" opacity=".55"/><circle cx="{x}" cy="40" r="2.6" fill="#fff"/>')
+    road = '<path d="M60 56C110 4 210 4 260 56" fill="none" stroke="rgba(190,210,255,.25)" stroke-width="1.5" stroke-dasharray="2 6" stroke-linecap="round"/>'
+    wisps = "".join(f'<circle cx="{x}" cy="{y}" r="{r}" fill="url(#gw{kind})"/><circle cx="{x}" cy="{y}" r="1.8" fill="#fff"/>'
+                    for x, y, r in ((110, 22, 9), (160, 12, 10), (212, 24, 9)))
+    if kind == "bob":
+        body = tower(50, "#ffd678") + tower(270, "#96aaff") + road + wisps
+    elif kind == "eve":
+        body = (tower(50, "#ffd678") + tower(270, "#96aaff") + road + wisps +
+                '<path d="M152 120L156 40h8l4 80z" fill="#10101a" stroke="rgba(255,255,255,.12)"/>'
+                '<circle cx="160" cy="30" r="11" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.4)" stroke-width="1.3"/>'
+                '<circle cx="160" cy="30" r="3.4" fill="#ff5a50"/><circle cx="160" cy="30" r="20" fill="url(#gw%s)" opacity=".2"/>'
+                '<ellipse cx="176" cy="40" rx="8" ry="4.6" fill="#050509" stroke="rgba(255,255,255,.2)"/><circle cx="183" cy="36" r="3.2" fill="#050509"/>'
+                '<path d="M185 35l5 2-5 1z" fill="#050509"/>') % kind
+    else:
+        phone = lambda x, c: (f'<rect x="{x}" y="34" width="34" height="62" rx="7" fill="#14141f" stroke="rgba(255,255,255,.28)" stroke-width="1.3"/>'
+                              f'<rect x="{x + 7}" y="44" width="20" height="20" rx="3" fill="none" stroke="{c}" stroke-width="1.6" stroke-dasharray="3 2"/>'
+                              f'<circle cx="{x + 17}" cy="80" r="4" fill="{c}" opacity=".85"/>')
+        body = ('<path d="M20 108h280" stroke="rgba(255,255,255,.18)" stroke-width="2" stroke-linecap="round"/>'
+                + phone(70, "#ffd678") + phone(143, "#bec8ff") + phone(216, "#ff6b60") + wisps)
+    return f'<svg viewBox="0 0 320 120" style="width:100%;height:auto;border-radius:14px;display:block;margin-bottom:10px" aria-hidden="true">{sky}{stars}{hills}{body}</svg>'
+
+
 def play_tab():
     room_code, seat, host = qp.get("room"), qp.get("seat"), qp.get("host")
     if room_code and seat:
@@ -197,7 +227,7 @@ def play_tab():
     ]
     for col, eyebrow, title, text, key in cards:
         with col:
-            st.markdown(f'<div class="qc-card"><div class="qc-eyebrow" style="margin:0">{eyebrow}</div><div class="t">{title}</div><div class="d">{text}</div></div>',
+            st.markdown(f'<div class="qc-card">{card_art(key)}<div class="qc-eyebrow" style="margin:0">{eyebrow}</div><div class="t">{title}</div><div class="d">{text}</div></div>',
                         unsafe_allow_html=True)
             if st.button(title, key=f"start_{key}", use_container_width=True):
                 if key == "host":
@@ -206,9 +236,6 @@ def play_tab():
                 else:
                     st.session_state.qkd_mode = key
                 st.rerun()
-    with st.expander("Phones cannot reach this address?"):
-        st.text_input("Address phones should use", key="qkd_base", placeholder=base_url(),
-                      help="Used in the QR codes. On a local run, phones must be on the same network.")
 
 
 # ---------- Study ----------

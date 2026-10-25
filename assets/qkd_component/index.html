@@ -25,8 +25,8 @@
   .right b{display:block;font:700 22px/1 var(--disp);letter-spacing:-.02em;margin-top:5px}
   .who{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;background:rgba(var(--acc),.14);color:rgb(var(--acc));font:600 12px/1 var(--sys);letter-spacing:.02em;margin-left:8px;vertical-align:middle}
 
-  #scene{margin:10px 0 2px;height:128px;position:relative}
-  #scene svg{width:100%;height:100%;display:block}
+  #scene{margin:0 -2px 8px;position:relative;border-radius:20px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.06)}
+  #scene canvas{width:100%;aspect-ratio:640/250;display:block}
   .goal{margin:8px 0 2px;color:var(--label2);font-size:14.5px}
   .note{margin:6px 0 12px;min-height:20px;color:rgb(var(--acc));font-size:14.5px}
   .strip{display:flex;flex-wrap:wrap;gap:8px 26px;margin:10px 2px 14px}
@@ -97,7 +97,6 @@
     .top h2{font-size:21px}.right{gap:12px}.right b{font-size:19px}
     .grid{grid-template-columns:repeat(auto-fill,minmax(32px,32px));gap:6px 4px}
     .c{width:25px;height:25px}.c svg{width:17px;height:17px}
-    #scene{height:104px}
   }
   @media (prefers-reduced-motion:reduce){.pulse{animation:none}.meter .f,.seg button,.go,.ghost,.c{transition:none}}
 </style></head>
@@ -134,31 +133,183 @@
   const pct = x => Math.round(x * 100) + '%';
   const rb = () => crypto.getRandomValues(new Uint8Array(1))[0] & 1;
 
-  // ---------- the scene: two towers, the road between them, wisps in flight ----------
-  function buildScene() {
-    const tower = (x, label) => `<g transform="translate(${x},34)"><path d="M0 92V22h6v-8h8v8h8v-8h8v8h8v-8h8v8h6v70z" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.2)" stroke-width="1.2"/>
-      <rect x="21" y="40" width="10" height="16" rx="5" fill="rgba(196,226,255,.5)"/><text x="26" y="112" text-anchor="middle" fill="rgba(235,235,245,.6)" font-size="11" font-weight="600" font-family="system-ui" letter-spacing=".06em">${label}</text></g>`;
-    $('scene').innerHTML = `<svg viewBox="0 0 600 150" preserveAspectRatio="xMidYMid meet">
-      <defs><radialGradient id="gl"><stop offset="0" stop-color="#e8f3ff"/><stop offset="1" stop-color="#bfe0ff" stop-opacity="0"/></radialGradient>
-      <path id="road" d="M64 90 C 180 30, 420 30, 536 90" fill="none"/></defs>
-      <use href="#road" stroke="rgba(255,255,255,.14)" stroke-width="1.5" stroke-dasharray="2 7" stroke-linecap="round" fill="none"/>
-      ${tower(38, 'ALICE')}${tower(510, 'BOB')}
-      <g id="orb" opacity="0"><circle cx="300" cy="46" r="13" fill="rgba(255,255,255,.07)" stroke="rgba(255,255,255,.28)" stroke-width="1.2"/><circle cx="300" cy="46" r="4.5" fill="rgba(255,255,255,.55)"/><text x="300" y="76" text-anchor="middle" fill="rgba(235,235,245,.5)" font-size="10" font-weight="600" font-family="system-ui" letter-spacing=".06em">EVE</text></g>
-      <g id="amb"></g><g id="burst"></g></svg>`;
-    if (!RM) {
-      let a = '';
-      for (let k = 0; k < 3; k++) a += `<circle r="6" fill="url(#gl)" opacity=".7"><animateMotion dur="${7 + k * 2.5}s" begin="${-k * 2.7}s" repeatCount="indefinite"><mpath href="#road"/></animateMotion></circle>`;
-      $('amb').innerHTML = a;
-    }
+  // ---------- the scene: a night road between two towers, drawn on a canvas ----------
+  const SW = 640, SH = 250;
+  const cv = document.createElement('canvas');
+  cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', 'Two towers joined by a road of light, with wisps in flight');
+  $('scene').appendChild(cv);
+  const g = cv.getContext('2d');
+  const S = { storm: 0, eve: false, phase: '', fx: null, flights: [], t0: performance.now() };
+  const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+  const mixc = (a, b, k) => a.map((v, i) => Math.round(v + (b[i] - v) * k));
+  const rgba = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
+  const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const SUN_C = [255, 214, 120], MOON_C = [150, 170, 255], RED_C = [255, 90, 80], WHITE = [235, 245, 255];
+  const R0 = [96, 120], R1 = [210, 14], R2 = [430, 14], R3 = [544, 120], GROUND = 214;
+  const bez = u => { const v = 1 - u; return [v * v * v * R0[0] + 3 * v * v * u * R1[0] + 3 * v * u * u * R2[0] + u * u * u * R3[0], v * v * v * R0[1] + 3 * v * v * u * R1[1] + 3 * v * u * u * R2[1] + u * u * u * R3[1]]; };
+  const ease = k => k * k * (3 - 2 * k);
+  function glow(x, y, r, c, a) { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, rgba(c, a)); gr.addColorStop(1, rgba(c, 0)); g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r); }
+  function sizeCanvas() { const d = Math.min(2, window.devicePixelRatio || 1); cv.width = Math.round(SW * d); cv.height = Math.round(SH * d); g.setTransform(d, 0, 0, d, 0, 0); if (RM) drawScene(2.5); }
+
+  function tower(x, label, c, lit, t) {
+    const w = 46, h = 110, top = GROUND - h;
+    g.fillStyle = '#12121c'; g.beginPath(); g.rect(x - w / 2, top, w, h); for (let i = 0; i < 4; i++) g.rect(x - w / 2 + i * (w / 4) + 2, top - 9, w / 4 - 4, 9); g.fill();
+    g.strokeStyle = 'rgba(255,255,255,.09)'; g.lineWidth = 1; g.beginPath(); g.moveTo(x - w / 2, top); g.lineTo(x - w / 2, GROUND); g.moveTo(x + w / 2, top); g.lineTo(x + w / 2, GROUND); g.stroke();
+    for (let r = 0; r < 5; r++) { g.beginPath(); g.moveTo(x - w / 2, top + 20 + r * 20); g.lineTo(x + w / 2, top + 20 + r * 20); g.stroke(); }
+    const flick = RM ? 1 : .85 + .15 * Math.sin(t * 7 + x);
+    g.fillStyle = rgba(c, .55 * flick + .3 * lit); g.beginPath(); g.moveTo(x - 6, top + 52); g.lineTo(x - 6, top + 40); g.arc(x, top + 40, 6, Math.PI, 0); g.lineTo(x + 6, top + 52); g.fill();
+    g.fillStyle = rgba(c, .35 * flick); g.fillRect(x - 3, top + 74, 6, 11);
+    glow(x, top + 42, 34 + 18 * lit, c, .22 + .35 * lit);
+    const by = top - 22;                                              // the beacon
+    glow(x, by, 30 + 26 * lit, c, (.35 + .55 * lit) * flick);
+    g.fillStyle = rgba(mixc(c, WHITE, .6), .9); g.beginPath(); g.arc(x, by, 3.4 + 2 * lit, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(255,255,255,.22)'; g.lineWidth = 1.4; g.beginPath(); g.moveTo(x, top - 9); g.lineTo(x, by); g.stroke();
   }
-  function flight(n, tapped) {
-    if (RM || !$('burst')) return;
-    let s = '';
-    const m = Math.min(n, 24);
-    for (let k = 0; k < m; k++) s += `<circle r="${tapped ? 4.5 : 4}" fill="url(#gl)"><animateMotion dur="1.5s" begin="${(k * 0.06).toFixed(2)}s" repeatCount="1" fill="freeze"><mpath href="#road"/></animateMotion><animate attributeName="opacity" values="0;1;1;0" keyTimes="0;.1;.85;1" dur="1.5s" begin="${(k * 0.06).toFixed(2)}s" fill="freeze"/></circle>`;
-    $('burst').innerHTML = s;
-    try { $('burst').ownerSVGElement.setCurrentTime(0); } catch (e) {}
-    setTimeout(() => { if ($('burst')) $('burst').innerHTML = ''; }, 3600);
+  function label(text, x) {
+    g.fillStyle = 'rgba(235,235,245,.6)'; g.font = '600 10px system-ui, sans-serif'; g.textAlign = 'center';
+    if (g.letterSpacing !== undefined) g.letterSpacing = '1.5px';
+    g.fillText(text, x, GROUND + 18);
+    if (g.letterSpacing !== undefined) g.letterSpacing = '0px';
+  }
+
+  function crow(x, y, flee) {
+    const k = flee ? clamp(flee) : 0, ox = k * 160, oy = -k * 90 - Math.sin(k * 9) * 6 * k;
+    g.save(); g.globalAlpha = 1 - k * .9; g.translate(x + ox, y + oy);
+    g.fillStyle = '#07070c'; g.strokeStyle = 'rgba(255,255,255,.18)'; g.lineWidth = 1;
+    g.beginPath(); g.ellipse(0, 0, 11, 6.5, -.25, 0, 7); g.fill(); g.stroke();
+    g.beginPath(); g.arc(10, -5, 4.6, 0, 7); g.fill(); g.stroke();
+    g.beginPath(); g.moveTo(14, -6); g.lineTo(21, -4); g.lineTo(14, -3); g.closePath(); g.fill();
+    g.beginPath(); g.moveTo(-9, 2); g.lineTo(-20, 8); g.lineTo(-8, 5); g.closePath(); g.fill();
+    if (k > 0) { g.beginPath(); g.moveTo(-3, -3); g.quadraticCurveTo(-8, -20 - Math.sin(k * 40) * 5, 4, -9); g.closePath(); g.fill(); }
+    g.fillStyle = rgba(RED_C, .9); g.beginPath(); g.arc(11, -6, 1.2, 0, 7); g.fill();
+    g.restore();
+  }
+
+  function drawScene(t) {
+    const s = clamp(S.storm / .08), tn = performance.now() / 1000;
+    g.save(); g.clearRect(0, 0, SW, SH);
+    let shake = 0;
+    if (S.fx && S.fx.kind === 'bad' && !RM) { const k = (tn - S.fx.t0) / .5; if (k >= 0 && k < 1) shake = (1 - k) * 4; }
+    if (shake) g.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
+    const sky = g.createLinearGradient(0, 0, 0, GROUND);
+    sky.addColorStop(0, rgba(mixc([12, 14, 34], [20, 22, 28], s), 1)); sky.addColorStop(1, rgba(mixc([36, 34, 70], [38, 40, 48], s), 1));
+    g.fillStyle = sky; g.fillRect(-10, -10, SW + 20, SH + 20);
+    for (let i = 0; i < 70; i++) {                                    // stars, fewer behind a storm
+      const tw = RM ? .8 : .55 + .45 * Math.sin(t * (1 + hash(i + 3) * 2) + i);
+      g.fillStyle = 'rgba(235,240,255,' + (.75 * tw * (1 - s * .85) * (.3 + hash(i + 9) * .7)) + ')';
+      const r = hash(i + 5) > .9 ? 1.6 : 1; g.fillRect(hash(i) * SW, hash(i + 1) * (GROUND - 40), r, r);
+    }
+    glow(560, 40, 70 - s * 30, [190, 200, 255], .28 * (1 - s * .7));  // the moon
+    g.fillStyle = rgba([226, 232, 255], .95 - s * .5); g.beginPath(); g.arc(560, 40, 15, 0, 7); g.fill();
+    g.fillStyle = rgba(mixc([36, 34, 70], [38, 40, 48], s), 1); g.beginPath(); g.arc(566, 36, 13, 0, 7); g.fill();
+    for (let l = 0; l < 2; l++) {                                     // far hills
+      g.fillStyle = l ? '#0d0d16' : '#15152a'; g.beginPath(); g.moveTo(0, GROUND);
+      for (let x = 0; x <= SW; x += 16) g.lineTo(x, GROUND - 26 - l * 12 - Math.sin(x / (70 + l * 40) + l * 2) * 14 - Math.sin(x / 31 + l) * 5);
+      g.lineTo(SW, GROUND); g.fill();
+    }
+    if (s > .02) {                                                    // storm clouds, rain and lightning
+      const nc = 4 + Math.round(s * 5);
+      for (let i = 0; i < nc; i++) {
+        const cx = ((hash(i + 40) * (SW + 200) + t * (6 + hash(i) * 8)) % (SW + 200)) - 100, cy = 18 + hash(i + 60) * 36;
+        for (let j = 0; j < 4; j++) glow(cx + j * 28 - 40, cy + Math.sin(j * 2 + i) * 6, 46, [34, 36, 46], .5 * s);
+      }
+      g.strokeStyle = 'rgba(190,205,235,' + (.1 + .2 * s) + ')'; g.lineWidth = 1; g.beginPath();
+      for (let i = 0; i < 20 + s * 90; i++) {
+        const x = (hash(i + 7) * (SW + 60) + (RM ? 0 : t * 30)) % SW, y = (hash(i + 8) * GROUND + (RM ? 0 : t * 300)) % GROUND;
+        g.moveTo(x, y); g.lineTo(x - 5, y + 12);
+      }
+      g.stroke();
+      const cyc = Math.floor(t / 3.4), ph = t - cyc * 3.4;
+      if (!RM && s > .35 && hash(cyc + 3) < s && ph < .22) {
+        const a = 1 - ph / .22; g.fillStyle = 'rgba(210,220,255,' + .16 * a + ')'; g.fillRect(0, 0, SW, SH);
+        g.strokeStyle = 'rgba(235,240,255,' + a + ')'; g.lineWidth = 2; let x = 100 + hash(cyc) * 440, y = 10; g.beginPath(); g.moveTo(x, y);
+        while (y < 110) { x += (hash(cyc * 7 + y) - .5) * 34; y += 18; g.lineTo(x, y); }
+        g.stroke();
+      }
+    }
+    // the road of light
+    g.strokeStyle = 'rgba(190,210,255,.16)'; g.lineWidth = 1.6; g.setLineDash([2, 7]); g.lineCap = 'round';
+    g.beginPath(); g.moveTo(R0[0], R0[1]); g.bezierCurveTo(R1[0], R1[1], R2[0], R2[1], R3[0], R3[1]); g.stroke(); g.setLineDash([]); g.lineCap = 'butt';
+    const lit = who => (S.phase === who ? 1 : 0) + (who === 'bob' && (S.phase === 'sample' || S.phase === 'verdict') ? .6 : 0);
+    tower(R0[0] - 26, 'ALICE', SUN_C, clamp(lit('alice')), t); tower(R3[0] + 26, 'BOB', MOON_C, clamp(lit('bob')), t);
+    // Eve: a standing stone with a scrying orb, and a crow
+    let flee = 0;
+    if (S.fx && S.fx.crow) flee = clamp((tn - S.fx.t0 - .15) / 1.6);
+    if (S.eve) {
+      g.fillStyle = '#10101a'; g.beginPath(); g.moveTo(308, GROUND); g.lineTo(314, 66); g.lineTo(326, 66); g.lineTo(332, GROUND); g.fill();
+      g.strokeStyle = 'rgba(255,255,255,.1)'; g.stroke();
+      const hot = S.flights.some(f => f.known && (t - f.t0) > .5);
+      const pulse = RM ? .5 : .5 + .5 * Math.sin(t * 2.2);
+      glow(320, 52, 34, hot ? RED_C : [210, 220, 255], .25 + .25 * pulse);
+      g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 1.4; g.fillStyle = 'rgba(255,255,255,.07)'; g.beginPath(); g.arc(320, 52, 13, 0, 7); g.fill(); g.stroke();
+      g.fillStyle = rgba(hot ? RED_C : WHITE, .85); g.beginPath(); g.ellipse(320 + Math.sin(t * .8) * 3, 52, 4.5, 6, 0, 0, 7); g.fill();
+      crow(334, 63, flee);
+    }
+    // ambient wisps along the road
+    if (!RM) for (let k = 0; k < 3; k++) {
+      const u = ((t / (9 + k * 3)) + k * .33) % 1, p = bez(u), c = k % 2 ? MOON_C : SUN_C;
+      for (let j = 6; j >= 1; j--) { const q = bez(Math.max(0, u - j * .008)); g.fillStyle = rgba(c, .16 * (1 - j / 7)); g.beginPath(); g.arc(q[0], q[1], 2.5, 0, 7); g.fill(); }
+      glow(p[0], p[1], 14, mixc(c, WHITE, .5), .55); g.fillStyle = rgba(mixc(c, WHITE, .7), .9); g.beginPath(); g.arc(p[0], p[1], 2.2, 0, 7); g.fill();
+    }
+    // wisps in flight
+    S.flights = S.flights.filter(f => t - f.t0 < 2.4 + f.n * .06);
+    S.flights.forEach(f => {
+      for (let i = 0; i < Math.min(f.n, 24); i++) {
+        const k = (t - f.t0 - i * .06) / 1.8; if (k < 0 || k > 1) continue;
+        const c0 = hash(i + f.seed) > .5 ? MOON_C : SUN_C, tapped = f.known && hash(i * 3 + f.seed + 1) < f.ratio;
+        const u = ease(k), p = bez(u), c = tapped && u > .5 ? RED_C : c0;
+        for (let j = 7; j >= 1; j--) { const q = bez(Math.max(0, u - j * .012)); g.fillStyle = rgba(c, .3 * (1 - j / 8)); g.beginPath(); g.arc(q[0], q[1], 3, 0, 7); g.fill(); }
+        glow(p[0], p[1], 22, c, .8); g.fillStyle = rgba(mixc(c, WHITE, .75), 1); g.beginPath(); g.arc(p[0], p[1], 3.2, 0, 7); g.fill();
+        if (tapped && Math.abs(u - .5) < .04) { g.strokeStyle = rgba(RED_C, .8); g.lineWidth = 1.6; g.beginPath(); g.arc(320, 52, 15 + Math.abs(u - .5) * 300, 0, 7); g.stroke(); }
+        if (k > .94) { g.strokeStyle = rgba(c, (1 - k) * 10); g.lineWidth = 1.6; g.beginPath(); g.arc(R3[0], R3[1], 6 + (k - .94) * 300, 0, 7); g.stroke(); }
+      }
+    });
+    // foreground: ground and drifting mist
+    const gg = g.createLinearGradient(0, GROUND - 4, 0, SH); gg.addColorStop(0, '#0a0a12'); gg.addColorStop(1, '#050509');
+    g.fillStyle = gg; g.fillRect(-10, GROUND - 2, SW + 20, SH - GROUND + 12);
+    for (let i = 0; i < 3; i++) { const x = ((t * (5 + i * 3) + i * 230) % (SW + 300)) - 150; glow(x, GROUND - 4 + i * 6, 150, [150, 160, 200], .07 + .08 * s + .02 * i); }
+    label('ALICE', R0[0] - 26); label('BOB', R3[0] + 26);
+    // outcome effects
+    if (S.fx) {
+      const k = (tn - S.fx.t0) / 2.6;
+      if (k >= 0 && k < 1) {
+        if (S.fx.kind === 'good') {
+          for (let i = 0; i < 46; i++) {
+            const tw = i % 2 ? R0[0] - 26 : R3[0] + 26, kk = clamp(k * 1.25 - hash(i) * .25); if (kk <= 0 || kk >= 1) continue;
+            const x = tw + (hash(i + 4) - .5) * 70 + Math.sin(kk * 6 + i) * 8, y = GROUND - 30 - kk * (110 + hash(i + 2) * 70);
+            g.fillStyle = rgba(i % 3 ? SUN_C : [200, 255, 210], (1 - kk) * .95); g.beginPath(); g.arc(x, y, 1.6 + hash(i + 8) * 2, 0, 7); g.fill();
+          }
+          glow(SW / 2, 120, 300, [255, 235, 170], .12 * (1 - k));
+        } else if (S.fx.kind === 'bad') {
+          g.fillStyle = 'rgba(255,60,50,' + .28 * (1 - k) + ')'; g.fillRect(-10, -10, SW + 20, SH + 20);
+          const cyc = Math.floor(tn * 14); g.strokeStyle = 'rgba(255,200,190,' + (1 - k) + ')'; g.lineWidth = 2.4;
+          for (let b = 0; b < 2; b++) { let x = 170 + b * 300 + hash(cyc + b) * 60, y = 0; g.beginPath(); g.moveTo(x, y); while (y < 120) { x += (hash(cyc * 5 + b * 11 + y) - .5) * 40; y += 20; g.lineTo(x, y); } g.stroke(); }
+        }
+      }
+    }
+    g.restore();
+  }
+  function flight(n, ratio) {
+    if (RM) return;
+    S.flights.push({ t0: (performance.now() - S.t0) / 1000, n, ratio: ratio || 0, known: !!ratio, seed: Math.floor(Math.random() * 1000) });
+  }
+  function sceneState(P) {
+    const v = P && P.kind === 'game' ? P.view : null;
+    S.storm = v ? v.storm : 0; S.phase = v ? v.phase : '';
+    const res = v && v.result;
+    S.eve = !!v && ((v.humans || []).includes('eve') || (v.phase === 'result' && !!res && res.tapped > 0));
+    if (RM) drawScene(2.5);
+  }
+  function outcomeFx(v) {
+    const oc = v.result.outcome, towersWin = oc === 'caught' || oc === 'safe';
+    const evePlayer = v.role === 'eve' || v.mode === 'eve';
+    const good = evePlayer ? oc === 'breach' : towersWin;
+    const neutral = oc === 'false_alarm' || oc === 'no_key';
+    S.fx = neutral ? null : { kind: good ? 'good' : 'bad', t0: performance.now() / 1000, crow: oc === 'caught' };
+  }
+  function buildScene() {
+    sizeCanvas();
+    if (!RM) { const loop = () => { requestAnimationFrame(loop); if (!document.hidden) drawScene((performance.now() - S.t0) / 1000); }; requestAnimationFrame(loop); }
   }
 
   // ---------- drafts: what this player has picked but not yet sent ----------
@@ -419,7 +570,7 @@
     else if (P.kind === 'missing') html = screenMsg('This room has closed', 'The code is wrong, or the room expired. Ask the table to open a new game.');
     else html = screenMsg('Joining…', 'Finding your seat.');
     $('main').innerHTML = html;
-    if ($('orb')) $('orb').setAttribute('opacity', P.kind === 'game' && (P.view.humans || []).includes('eve') ? '1' : '0');
+    sceneState(P);
     if (act) { const el = document.querySelector('[data-f="' + act + '"]'); if (el) el.focus({ preventScroll: true }); }
     fit();
   }
@@ -448,7 +599,7 @@
     else if (a === 'setN') sendAct('set_n', { n: draft.n });
     else if (a === 'lockA') sendAct('alice_lock', { n: draft.n, bits: draft.bits, lens: draft.lens });
     else if (a === 'lockE') sendAct('eve_lock', { choice: draft.tap });
-    else if (a === 'lockB') { flight(v.n, false); sendAct('bob_lock', { lens: draft.lens }); }
+    else if (a === 'lockB') { flight(v.n, 0); sendAct('bob_lock', { lens: draft.lens }); }
     else if (a === 'doSample') sendAct('set_sample', { fraction: draft.f });
     else if (a === 'keep') sendAct('verdict', { choice: 'keep' });
     else if (a === 'abort') sendAct('verdict', { choice: 'abort' });
@@ -465,9 +616,11 @@
     if (np.kind === 'game') {
       const v = np.view;
       if (prev && prev.kind === 'game' && prev.view.round === v.round && prev.view.phase !== v.phase && ['sample', 'result'].includes(v.phase) && v.n && ['eve', 'bob'].includes(prev.view.phase))
-        flight(v.n, v.phase === 'result' && v.result && v.result.tapped > 0);
-      else if (prev && prev.kind === 'game' && v.phase === 'result' && prev.view.phase !== 'result' && v.n) flight(v.n, v.result && v.result.tapped > 0);
+        flight(v.n, v.phase === 'result' && v.result ? v.result.tapped / v.n : 0);
+      else if (prev && prev.kind === 'game' && v.phase === 'result' && prev.view.phase !== 'result' && v.n) flight(v.n, v.result ? v.result.tapped / v.n : 0);
       if (v.solo && v.score > best) { best = v.score; try { localStorage.setItem('qc_wisp_best', String(best)); } catch (er) {} }
+      const fresh = !(prev && prev.kind === 'game' && prev.view.phase === 'result' && prev.view.round === v.round);
+      if (v.phase === 'result' && v.result && fresh) outcomeFx(v);
     }
     draw();
   });
