@@ -3,7 +3,7 @@
 Welcome to the open-source repository for the **Quantum Café** interactive visualization suite, developed for Vilnius University (VU) and the Lithuanian Quantum Technologies Association (LKTA).
 
 This repository contains lightweight, interactive web applications built with Python and Streamlit, designed to present quantum concepts during public engagement events and hackathons.
-The app hosted on Streamlit can be found at the following address: [https://quantumcafe.streamlit.app/](https://quantumcafe.streamlit.app/). The Messenger Wisps lives at [https://quantumcafe.streamlit.app/The_Messenger_Wisps](https://quantumcafe.streamlit.app/The_Messenger_Wisps).
+The app hosted on Streamlit can be found at the following address: [https://quantumcafe.streamlit.app/](https://quantumcafe.streamlit.app/).
 
 ## Applications Included
 1. **Sorcerer's coins**: A duel against a rival sorcerer about entanglement. Eight fair quantum coins race to match a goal pattern of heads and tails; you cannot tilt them, but you can link them into Bell pairs and GHZ states of up to eight coins. Links cost mana, each one can fail, and the rival gets sharper every round. The run ends when you lose a duel, and you keep your score.
