@@ -368,7 +368,7 @@ function showOver(){
     '<div class="acts"><button class="btn" id="other">Another craft</button><button class="btn p" id="again">Try again</button></div>';
   $('again').onclick = () => start(craft);
   $('other').onclick = () => $('back').click();
-  sSheet.t = 1;
+  sSheet.t = 1; placeSheet();
 }
 
 // ---------- per-frame rendering of the spring-driven parts ----------
@@ -383,7 +383,7 @@ function render(t){
   if (!pick.hidden && v < 1) drawPreviews(t);
   const sh = clamp01(sSheet.x); $('scrim').style.opacity = sh; $('sheetbox').style.transform = 'translateY(' + ((1 - sh) * 110) + '%)'; $('sheetbox').style.opacity = RM ? sh : 1;
   $('sheet').style.pointerEvents = sh > .5 ? 'auto' : 'none';
-  if (sSheet.t === 0 && sh < .01) $('sheetbox').style.visibility = 'hidden'; else $('sheetbox').style.visibility = '';
+  if (sSheet.t === 0 && sh < .01) $('sheetbox').style.visibility = 'hidden'; else $('sheetbox').style.visibility = 'visible';
   if (game.hidden || !st) return;
   $('rarc').style.strokeDashoffset = RING * (1 - clamp01(sFid.x));
   const low = sFid.t < .86;
@@ -606,6 +606,27 @@ function drawPreviews(t){
   Object.assign(window, {}); g = keep.g; craft = keep.craft; st = keep.st; shown = keep.shown; castA = keep.castA;
 }
 
+
+// keep the result sheet on screen: centre it in the part of this frame that the player can see right now
+// (the frame is as tall as the game, which can be taller than the window)
+function visibleBand() {
+  try {
+    let w = window, top = 0;
+    while (w.frameElement) { top += w.frameElement.getBoundingClientRect().top; w = w.parent; }   // Streamlit Cloud nests the app in another frame
+    const H = document.documentElement.clientHeight;
+    return { top: Math.max(0, -top), bottom: Math.min(H, w.innerHeight - top), H };
+  } catch (e) { return null; }
+}
+let sheetScrolled = false;
+function placeSheet() {
+  const el = $('sheet'), b = visibleBand();
+  if (sSheet.t === 0) { if (sSheet.x < .01) { el.style.top = el.style.bottom = el.style.placeItems = ''; sheetScrolled = false; } return; }
+  if (!b) return;
+  if (b.bottom - b.top < Math.min(b.H, $('sheetbox').offsetHeight + 40) && !sheetScrolled) { sheetScrolled = true; try { window.frameElement.scrollIntoView({ block: 'center' }); } catch (e) {} }
+  el.style.top = b.top + 'px'; el.style.bottom = (b.H - b.bottom) + 'px'; el.style.placeItems = 'center';
+}
+try { let w = window; while (w.frameElement) { w = w.parent; w.document.addEventListener('scroll', placeSheet, true); w.addEventListener('resize', placeSheet); } } catch (e) {}
+
 // size the surrounding frame to the content, so there is no dead space under the interface (same-origin iframe)
   function fitFrame() {
     try {
@@ -617,7 +638,7 @@ function drawPreviews(t){
     } catch (e) {}
   }
   new ResizeObserver(fitFrame).observe(document.getElementById('app')); fitFrame();
-  addEventListener('load', fitFrame); setInterval(fitFrame, 400);     // backstop in case resize notifications are delayed
+  addEventListener('load', fitFrame); setInterval(() => { fitFrame(); placeSheet(); }, 400);     // backstop in case resize notifications are delayed
 buildCards();
 requestAnimationFrame(loop);
 </script>

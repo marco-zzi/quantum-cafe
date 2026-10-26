@@ -383,7 +383,7 @@
       '<p class="fact">' + P.fact + '</p>' +
       '<div class="acts"><button class="btn p" id="next">Next round</button></div>';
     $('next').onclick = () => { round++; loadRound(); };
-    sheet.t = 1;
+    sheet.t = 1; placeSheet();
   }
   function lose(why) {
     over = true; saveBest(); const mine = chance();
@@ -396,7 +396,7 @@
       '<p class="fact">' + P.fact + '</p>' +
       '<div class="acts"><button class="btn p" id="again">Play again</button></div>';
     $('again').onclick = () => { round = 0; score = 0; loadRound(); };
-    sheet.t = 1;
+    sheet.t = 1; placeSheet();
   }
   function saveBest() { if (score > best) { best = score; try { localStorage.setItem('qc_sorcerer_best', String(best)); } catch (e) {} } }
 
@@ -415,7 +415,28 @@
   }
 
   resetLinks(); loadRound();
-  // size the surrounding frame to the content, so there is no dead space under the interface (same-origin iframe)
+  
+// keep the result sheet on screen: centre it in the part of this frame that the player can see right now
+// (the frame is as tall as the game, which can be taller than the window)
+function visibleBand() {
+  try {
+    let w = window, top = 0;
+    while (w.frameElement) { top += w.frameElement.getBoundingClientRect().top; w = w.parent; }   // Streamlit Cloud nests the app in another frame
+    const H = document.documentElement.clientHeight;
+    return { top: Math.max(0, -top), bottom: Math.min(H, w.innerHeight - top), H };
+  } catch (e) { return null; }
+}
+let sheetScrolled = false;
+function placeSheet() {
+  const el = $('sheet'), b = visibleBand();
+  if (sheet.t === 0) { if (sheet.x < .01) { el.style.top = el.style.bottom = el.style.placeItems = ''; sheetScrolled = false; } return; }
+  if (!b) return;
+  if (b.bottom - b.top < Math.min(b.H, $('box').offsetHeight + 40) && !sheetScrolled) { sheetScrolled = true; try { window.frameElement.scrollIntoView({ block: 'center' }); } catch (e) {} }
+  el.style.top = b.top + 'px'; el.style.bottom = (b.H - b.bottom) + 'px'; el.style.placeItems = 'center';
+}
+try { let w = window; while (w.frameElement) { w = w.parent; w.document.addEventListener('scroll', placeSheet, true); w.addEventListener('resize', placeSheet); } } catch (e) {}
+
+// size the surrounding frame to the content, so there is no dead space under the interface (same-origin iframe)
   function fitFrame() {
     try {
       const fe = window.frameElement; if (!fe) return;
@@ -426,6 +447,6 @@
     } catch (e) {}
   }
   new ResizeObserver(fitFrame).observe(document.getElementById('app')); fitFrame();
-  addEventListener('load', fitFrame); setInterval(fitFrame, 400);     // backstop in case resize notifications are delayed
+  addEventListener('load', fitFrame); setInterval(() => { fitFrame(); placeSheet(); }, 400);     // backstop in case resize notifications are delayed
   requestAnimationFrame(frame); requestAnimationFrame(springStep);
 </script>
