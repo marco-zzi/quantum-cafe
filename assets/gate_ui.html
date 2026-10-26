@@ -1,0 +1,609 @@
+<style>
+  :root{--bg:#0b0b10;--label:#f5f5f7;--label2:rgba(235,235,245,.62);--label3:rgba(235,235,245,.34);
+        --fill:rgba(255,255,255,.08);--fill2:rgba(255,255,255,.14);--acc:255,190,120;--ok:#32d74b;--bad:#ff453a;
+        --sys:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI Variable Text","Segoe UI",system-ui,sans-serif;
+        --disp:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;
+        --serif:ui-serif,"New York","Iowan Old Style",Georgia,serif}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:transparent;color:var(--label);font:15px/1.4 var(--sys);-webkit-font-smoothing:antialiased}
+  #app{position:relative;background:var(--bg);border-radius:28px;padding:18px 18px 20px;overflow:hidden}
+  button{font:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+  :focus-visible{outline:2px solid rgb(var(--acc));outline-offset:3px;border-radius:12px}
+  .mat{background:rgba(26,26,34,.66);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%);border-top:1px solid rgba(255,255,255,.14)}
+  @media (prefers-reduced-transparency:reduce){.mat{background:#1c1c24;-webkit-backdrop-filter:none;backdrop-filter:none}}
+  .eyebrow{font:600 11px/1 var(--sys);letter-spacing:.08em;text-transform:uppercase;color:var(--label3)}
+  .num{font-variant-numeric:tabular-nums}
+
+  .top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:12px}
+  .top .lv{font:600 24px/1.1 var(--serif);letter-spacing:-.01em;margin-top:6px}
+  .ghost{white-space:nowrap;flex:none;padding:8px 14px;border-radius:999px;font-weight:600;font-size:14px;color:var(--label2);background:var(--fill);transition:transform .1s,color .2s,opacity .2s}
+  .ghost:hover:not(:disabled){color:var(--label)}.ghost:active:not(:disabled){transform:scale(.95)}.ghost:disabled{opacity:.35;cursor:default}
+  .prim{background:rgb(var(--acc));color:#17110a;font:700 16px/1 var(--disp);letter-spacing:-.01em;padding:13px 26px;border-radius:999px;transition:transform .1s,filter .2s,opacity .2s}
+  .prim:hover:not(:disabled){filter:brightness(1.07)}.prim:active:not(:disabled){transform:scale(.96)}.prim:disabled{opacity:.38;cursor:default}
+
+  /* the stage: stone wall, fortified gate, torches */
+  .stage{position:relative;width:100%;border-radius:24px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.06),0 18px 40px rgba(0,0,0,.45);
+         background:#0b0c1c;height:236px;transition:height .55s cubic-bezier(.2,.8,.2,1)}
+  .stage.full{height:var(--fullh,330px)}
+  #scene{display:block;width:100%;height:100%;--eye:#6d7298}
+  #port{transition:transform 1s cubic-bezier(.3,.7,.2,1)}
+  #sent .eyeglow{transition:fill .25s}
+  .flame{transform-box:fill-box;transform-origin:50% 100%;animation:flick 1.3s infinite ease-in-out alternate}
+  .flame.b{animation-duration:1.7s;animation-delay:-.6s}
+  .halo{animation:halo 2.4s infinite ease-in-out alternate}
+  .star{animation:tw 3.2s infinite ease-in-out alternate}
+  @keyframes flick{0%{transform:scale(1,1) skewX(-3deg)}50%{transform:scale(.92,1.1) skewX(3deg)}100%{transform:scale(1.05,.95) skewX(-2deg)}}
+  @keyframes halo{from{opacity:.75}to{opacity:1}}
+  @keyframes tw{from{opacity:.35}to{opacity:1}}
+  .sent-shake{animation:sshake .4s}
+  @keyframes sshake{20%{transform:translate(500px,70px) rotate(-3deg)}50%{transform:translate(500px,70px) rotate(3deg)}}
+  .banner{position:absolute;left:14px;right:14px;bottom:12px;display:flex;justify-content:space-between;align-items:flex-end;gap:12px;pointer-events:none}
+  .pill{padding:7px 12px;border-radius:999px;font:600 13px/1 var(--sys);color:var(--label)}
+
+  .panel{margin-top:14px}
+  .hud{display:flex;flex-wrap:wrap;gap:12px 22px;align-items:flex-end;margin:0 2px 12px}
+  .hud .v{font:700 26px/1 var(--disp);letter-spacing:-.025em;margin-top:6px;font-variant-numeric:tabular-nums}
+  .hud .v small{font:500 14px/1 var(--sys);letter-spacing:0;color:var(--label2)}
+  .mana{flex:1;min-width:160px}
+  .mbar{height:8px;border-radius:4px;background:var(--fill);margin-top:10px;overflow:hidden}
+  .mbar i{display:block;height:100%;border-radius:4px;background:rgb(var(--acc));transition:width .3s cubic-bezier(.2,.8,.2,1)}
+  .mbar.shake{animation:shake .35s}
+  @keyframes shake{20%{transform:translateX(-5px)}45%{transform:translateX(5px)}70%{transform:translateX(-3px)}}
+  .note{margin:0 2px 10px;min-height:20px;font-size:14px;line-height:1.4;color:rgb(var(--acc))}
+
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{display:flex;align-items:center;gap:9px;padding:9px 14px 9px 10px;border-radius:14px;background:var(--fill);font-weight:600;font-size:14px;color:var(--label2);
+        transition:background .2s,color .2s,transform .1s}
+  .chip:active{transform:scale(.97)}
+  .chip .sw{width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(255,255,255,.22);transition:background .2s,box-shadow .2s}
+  .chip[aria-pressed=true]{background:rgba(var(--acc),.17);color:var(--label)}
+  .chip[aria-pressed=true] .sw{background:rgb(var(--acc));box-shadow:none}
+  .chip[aria-pressed=true] .sw::after{content:"";display:block;width:6px;height:11px;border:solid #17110a;border-width:0 2.5px 2.5px 0;transform:translate(7px,3px) rotate(45deg)}
+
+  .deckwrap{display:flex;gap:14px;margin-top:14px}
+  .insp{flex:0 0 218px;border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:8px}
+  .insp .cap{font-size:13.5px;line-height:1.35;color:var(--label2)}
+  .insp .cap b{color:var(--label)}
+  .insp svg{width:100%;height:auto;display:block;border-radius:10px}
+  .pane{flex:1;min-width:0;height:430px;overflow-y:auto;border-radius:20px;background:rgba(255,255,255,.035);padding:10px}
+  .pane::-webkit-scrollbar{width:8px}.pane::-webkit-scrollbar-thumb{background:rgba(255,255,255,.16);border-radius:4px}
+  .grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px}
+  .cd{position:relative;display:block;border-radius:9px;transition:transform .18s cubic-bezier(.2,.8,.2,1),box-shadow .2s;touch-action:manipulation}
+  .cd svg{display:block;width:100%;height:auto;border-radius:9px}
+  .cd:hover{transform:translateY(-2px)}.cd:active{transform:scale(.96)}
+  .cd.rev{box-shadow:0 0 0 2.5px rgb(var(--acc)),0 0 14px rgba(var(--acc),.35)}
+  .cd.shake{animation:shake .35s}
+  .cd:not(.rev) .seal,.cdx:not(.rev) .seal{display:none}
+  .cd.rev .bar,.cd .bar{transition:opacity .2s}
+  .off-skin .b-skin,.off-hair .b-hair,.off-ears .b-ears,.off-horns .b-horns,.off-glow .b-glow,.off-strength .b-strength{opacity:.22}
+  .foot{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:14px;flex-wrap:wrap}
+  .foot .info{font-size:14px;color:var(--label2)}.foot b{color:var(--label);font-variant-numeric:tabular-nums}
+
+  .tgrid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr) minmax(0,1.1fr);gap:14px}
+  .box2{border-radius:20px;padding:14px 16px;background:rgba(255,255,255,.045)}
+  .big{font:700 40px/1 var(--disp);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+  .sub{font-size:13.5px;color:var(--label2);margin-top:6px;line-height:1.4}
+  .stack{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .mini{position:relative;width:54px;border-radius:7px;transition:box-shadow .25s,opacity .25s}
+  .mini svg{display:block;width:100%;height:auto;border-radius:7px}
+  .mini.ok{box-shadow:0 0 0 2.5px var(--ok)}.mini.no{box-shadow:0 0 0 2.5px var(--bad)}
+  .cdx .seal{display:block}
+  .spark{width:100%;height:76px;display:block;margin-top:8px}
+  .circ{width:100%;height:auto;display:block;margin-top:6px}
+  .lbl{font:600 11px/1 var(--sys);letter-spacing:.06em;text-transform:uppercase;fill:rgba(235,235,245,.5)}
+  .row{display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-top:14px;flex-wrap:wrap}
+
+  .lane{display:grid;grid-template-columns:minmax(0,.7fr) auto minmax(0,1.3fr);gap:18px;align-items:center}
+  .queue{text-align:center}
+  .queue .pile{position:relative;width:70px;height:110px;margin:8px auto 0}
+  .queue .pile i{position:absolute;inset:0;border-radius:8px;background:linear-gradient(160deg,#4a3d63,#241d33);box-shadow:0 0 0 1.5px rgba(201,165,92,.55),0 3px 8px rgba(0,0,0,.4)}
+  .queue .pile i:nth-child(1){transform:translate(-5px,5px) rotate(-3deg);opacity:.6}.queue .pile i:nth-child(2){transform:translate(-2px,2px) rotate(-1deg);opacity:.85}
+  .cur{position:relative;width:176px;min-height:282px}
+  .cur .cdx{position:absolute;inset:0;transition:transform .32s cubic-bezier(.2,.8,.2,1),opacity .3s,box-shadow .25s;border-radius:12px}
+  .cur .cdx svg{display:block;width:100%;height:auto;border-radius:12px}
+  .cur .cdx.in{transform:translateX(70px);opacity:0}
+  .cur .cdx.adm{box-shadow:0 0 0 3px var(--ok),0 0 18px rgba(50,215,75,.4)}
+  .cur .cdx.den{box-shadow:0 0 0 3px var(--bad),0 0 18px rgba(255,69,58,.35)}
+  .verdict{position:absolute;left:0;right:0;bottom:-12px;text-align:center;pointer-events:none}
+  .verdict span{display:inline-block;padding:6px 14px;border-radius:999px;font:700 13px/1 var(--sys);letter-spacing:.04em;text-transform:uppercase;background:rgba(20,20,28,.9);transform:scale(.8);opacity:0;transition:transform .25s cubic-bezier(.2,.8,.2,1),opacity .2s}
+  .verdict span.on{transform:none;opacity:1}
+  .verdict .a{color:var(--ok)}.verdict .d{color:var(--bad)}
+  .meters{display:flex;flex-direction:column;gap:16px}
+  .meter .t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;font-size:14px;color:var(--label2)}
+  .meter .t b{font:700 22px/1 var(--disp);letter-spacing:-.02em;color:var(--label);font-variant-numeric:tabular-nums}
+  .meter .trk{position:relative;height:10px;border-radius:5px;background:var(--fill);margin-top:9px}
+  .meter .trk i{display:block;height:100%;border-radius:5px;transition:width .3s cubic-bezier(.2,.8,.2,1),background .2s;background:var(--ok)}
+  .meter .trk u{position:absolute;top:-4px;bottom:-4px;width:2px;background:rgba(255,255,255,.7);border-radius:1px}
+  .meter .trk i.warn{background:var(--bad)}
+  .meter .s{font-size:12.5px;color:var(--label3);margin-top:7px}
+
+  .sheet{position:absolute;inset:0;display:grid;place-items:start center;padding-top:64px;pointer-events:none;overflow:hidden;z-index:6}
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.6);opacity:0;transition:opacity .35s}
+  .box{visibility:hidden;position:relative;pointer-events:auto;width:min(500px,calc(100% - 24px));padding:26px 24px 22px;border-radius:28px;text-align:center;
+       opacity:0;transform:translateY(24px) scale(.97);transition:transform .45s cubic-bezier(.2,.8,.2,1),opacity .3s}
+  .sheet.on{pointer-events:auto}.sheet.on .scrim{opacity:1}.sheet.on .box{visibility:visible;opacity:1;transform:none}
+  .box .eyebrow{color:rgb(var(--acc))}.box.lost .eyebrow{color:var(--bad)}.box.won .eyebrow{color:var(--ok)}
+  .box h3{font:600 30px/1.1 var(--serif);letter-spacing:-.015em;margin:8px 0 6px}
+  .box p{margin:8px auto;max-width:44ch;font-size:15px;line-height:1.45;color:var(--label2);text-align:left}
+  .box p b{color:var(--label);font-variant-numeric:tabular-nums}
+  .box .steps{margin:12px auto 4px;max-width:44ch;text-align:left;display:grid;gap:8px}
+  .box .steps div{display:flex;gap:12px;align-items:flex-start;font-size:14.5px;color:var(--label2)}
+  .box .steps em{flex:0 0 24px;height:24px;border-radius:50%;background:rgba(var(--acc),.18);color:rgb(var(--acc));font:700 13px/24px var(--sys);text-align:center;font-style:normal}
+  .box .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0 4px}
+  .box .stats div{background:var(--fill);border-radius:16px;padding:12px;text-align:left}
+  .box .stats b{display:block;font:700 28px/1.05 var(--disp);letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums}
+  .box .stats small{display:block;font-size:12.5px;color:var(--label3);margin-top:3px}
+  .box .stats .bad b{color:var(--bad)}.box .stats .good b{color:var(--ok)}
+  .acts{display:flex;gap:10px;margin-top:18px}
+  .btn{flex:1;padding:13px 16px;border-radius:14px;background:var(--fill2);font-weight:600;font-size:16px;transition:transform .1s}
+  .btn:active{transform:scale(.97)}.btn.p{background:rgb(var(--acc));color:#17110a}
+
+  @media (max-width:760px){
+    #app{padding:12px 12px 14px;border-radius:24px}
+    .top .lv{font-size:20px}
+    .stage{height:150px}.stage.full{height:var(--fullh,220px)}
+    .deckwrap{display:block}.insp{display:none}
+    .pane{height:400px;padding:8px}.grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+    .tgrid{grid-template-columns:1fr}
+    .lane{grid-template-columns:1fr;justify-items:center}
+    .queue .pile{display:none}
+    .chip{padding:8px 12px 8px 9px;font-size:13.5px}
+    .mini{width:46px}
+  }
+  @media (prefers-reduced-motion:reduce){.flame,.halo,.star,.cd,.chip,.stage,#port,.box,.scrim,.cur .cdx,.mbar i,.meter .trk i{animation:none!important;transition:none!important}}
+</style>
+
+<div id="app">
+  <div class="top">
+    <div><div class="eyebrow">The Gates of Kvantyus</div><div class="lv" id="title">Prepare the sentinel</div></div>
+    <button class="ghost" id="help" type="button">How to play</button>
+  </div>
+
+  <div class="stage" id="stage"></div>
+
+  <!-- 1. prepare: choose what to look at, examine creatures -->
+  <section class="panel" id="p-prepare">
+    <div class="hud">
+      <div class="mana"><div class="eyebrow">Mana</div><div class="v"><span id="mleft">36</span> <small>of <span id="mtot">36</span> left</small></div><div class="mbar" id="mbar"><i id="mfill"></i></div></div>
+      <div><div class="eyebrow">Examined</div><div class="v"><span id="ncount">0</span> <small id="nsplit"></small></div></div>
+      <div><div class="eyebrow">Cost per creature</div><div class="v"><span id="cost">6</span> <small>mana</small></div></div>
+    </div>
+    <p class="note" id="note"></p>
+    <div class="eyebrow" style="margin:0 2px 8px">What the sentinel will look at</div>
+    <div class="chips" id="chips"></div>
+    <div class="deckwrap">
+      <div class="insp mat" id="insp"></div>
+      <div class="pane" id="pane"><div class="grid" id="grid"></div></div>
+    </div>
+    <div class="foot">
+      <div class="info" id="hint"></div>
+      <button class="prim" id="train" type="button">Train the sentinel</button>
+    </div>
+  </section>
+
+  <!-- 2. train -->
+  <section class="panel" id="p-train" hidden>
+    <div class="tgrid">
+      <div class="box2"><div class="eyebrow">Its spell</div><div id="circ"></div><div class="sub" id="circsub"></div></div>
+      <div class="box2"><div class="eyebrow">What it remembers</div><div class="big" id="tacc">0%</div>
+        <div class="sub">of the creatures you examined, judged right.</div><svg class="spark" id="spark" viewBox="0 0 200 60" preserveAspectRatio="none"></svg>
+        <div class="sub" id="tstep"></div></div>
+      <div class="box2"><div class="eyebrow">The creatures it studies</div><div class="stack" id="tstack"></div></div>
+    </div>
+    <div class="row"><span class="sub" id="tmsg" style="margin:0 auto 0 2px"></span>
+      <button class="ghost" id="skiptrain" type="button">Skip</button>
+      <button class="prim" id="opengate" type="button" disabled>Open the gate</button></div>
+  </section>
+
+  <!-- 3. the gate -->
+  <section class="panel" id="p-gate" hidden>
+    <div class="lane">
+      <div class="queue"><div class="eyebrow">Waiting</div><div class="num" style="font:700 30px/1 var(--disp);margin-top:8px" id="qleft">0</div><div class="pile"><i></i><i></i><i></i></div></div>
+      <div class="cur" id="cur"></div>
+      <div class="meters">
+        <div class="meter"><div class="t"><span>Nobbubys among those who entered</span><b id="m1v">0%</b></div><div class="trk"><i id="m1b" style="width:0"></i><u id="m1m"></u></div><div class="s" id="m1s"></div></div>
+        <div class="meter"><div class="t"><span>Kvantyonis let in</span><b id="m2v">0%</b></div><div class="trk"><i id="m2b" style="width:0"></i><u id="m2m"></u></div><div class="s" id="m2s"></div></div>
+      </div>
+    </div>
+    <div class="row"><span class="sub" id="gmsg" style="margin:0 auto 0 2px"></span>
+      <button class="ghost" id="speed" type="button">Speed x1</button>
+      <button class="ghost" id="skipgate" type="button">Skip to the end</button></div>
+  </section>
+
+  <div class="sheet on" id="intro"><div class="scrim"></div><div class="box mat">
+    <div class="eyebrow">Welcome, guardian</div>
+    <h3>The Gates of Kvantyus</h3>
+    <p>You are the new guardian of the gates of Kvantyus, home of the Kvantyonis. Travellers from the whole realm queue outside, and some of them are Nobbubys, who must never get in.</p>
+    <p>Your predecessor left before teaching you the spell that tells them apart. You only have a deck of travellers and a little mana.</p>
+    <div class="steps">
+      <div><em>1</em><span>Choose which traits the sentinel will look at. Every trait makes each examination cost more mana.</span></div>
+      <div><em>2</em><span>Spend your mana to examine travellers: it reveals whether each one is a friend or a foe.</span></div>
+      <div><em>3</em><span>Train the sentinel on what you found. Then it judges everyone else at the gate, and you cannot overrule it.</span></div>
+    </div>
+    <p id="rules"></p>
+    <div class="acts"><button class="btn p" id="begin" type="button">Take your post</button></div>
+  </div></div>
+
+  <div class="sheet" id="result"><div class="scrim"></div><div class="box mat" id="rbox">
+    <div class="eyebrow" id="r-eyebrow"></div><h3 id="r-title"></h3><p id="r-text"></p>
+    <div class="stats" id="r-stats"></div><p id="r-hint" style="font-size:13.5px;color:var(--label3)"></p>
+    <div class="acts"><button class="btn p" id="again" type="button">Try again</button></div>
+  </div></div>
+</div>
+
+<script>
+__ENGINE__
+const DECK = __DECK__, CFG = __CFG__;
+const RM = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+const FEATS = GATE.FEATURES, NAMES = CFG.names;
+const PI = Math.PI, INK = '#2a2133', GOLD = '#c9a55c', PARCH = '#efe6d2';
+const SWATCH = { skin:'#7fd48a', hair:'#c070e8', ears:'#9fd0ff', horns:'#e8dcc0', glow:'#ffb347', strength:'#ff7a6b' };
+
+/* ---------------------------------------------------------------- the creature card (tarot style) */
+function hsl(h, s, l) {
+  h /= 360; const a = s * Math.min(l, 1 - l);
+  const f = n => { const k = (n + h * 12) % 12; return l - a * Math.max(-1, Math.min(k - 3, 9 - k, 1)); };
+  const to = v => Math.round(v * 255).toString(16).padStart(2, '0');
+  return '#' + to(f(0)) + to(f(8)) + to(f(4));
+}
+function cardSVG(c, uid) {
+  const t = {}; for (const f of FEATS) t[f] = c[f] / PI;
+  const skin = hsl(128, .22 + .55 * t.skin, .80 - .46 * t.skin), skinD = hsl(128, .30 + .5 * t.skin, .62 - .40 * t.skin);
+  const hair = hsl(300 * t.hair, .65, .55), bw = 52 + 38 * t.strength, ear = 6 + 40 * t.ears;
+  const horn = t.horns > .12 ? 4 + 52 * t.horns : 0, glow = t.glow, cx = 120, cy = 168;
+  const eye = hsl(48 - 36 * glow, .95, .36 + .34 * glow), f1 = v => v.toFixed(1);
+  let g = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 390" role="img" aria-hidden="true"><defs>
+<radialGradient id="bg${uid}" cx="50%" cy="38%" r="75%"><stop offset="0" stop-color="#4a3d63"/><stop offset="1" stop-color="#1c1626"/></radialGradient>
+<radialGradient id="gl${uid}"><stop offset="0" stop-color="${eye}" stop-opacity="${(.25 + .75 * glow).toFixed(2)}"/><stop offset="1" stop-color="${eye}" stop-opacity="0"/></radialGradient>
+<clipPath id="ar${uid}"><rect x="22" y="48" width="196" height="196" rx="6"/></clipPath></defs>
+<rect x="2" y="2" width="236" height="386" rx="14" fill="${PARCH}" stroke="${GOLD}" stroke-width="3"/>
+<rect x="9" y="9" width="222" height="372" rx="10" fill="none" stroke="${INK}" stroke-width="1" opacity=".5"/>
+<rect x="22" y="48" width="196" height="196" rx="6" fill="url(#bg${uid})" stroke="${INK}" stroke-width="1.5"/>
+<g clip-path="url(#ar${uid})"><circle cx="120" cy="70" r="46" fill="${GOLD}" opacity=".10"/>
+<path d="M${cx-bw},250 Q${cx-bw},${cy+42} ${cx},${cy+38} Q${cx+bw},${cy+42} ${cx+bw},250Z" fill="${skinD}" stroke="${INK}" stroke-width="1.5"/>
+<path d="M${cx-32},${cy+30} L${cx-30},${cy+44} Q${cx},${cy+60} ${cx+30},${cy+44} L${cx+32},${cy+30}Z" fill="${skinD}"/>
+<path d="M${cx-44},${cy-4} L${cx-44-Math.round(ear)},${cy-26} L${cx-38},${cy-32}Z" fill="${skin}" stroke="${INK}" stroke-width="1.5"/>
+<path d="M${cx+44},${cy-4} L${cx+44+Math.round(ear)},${cy-26} L${cx+38},${cy-32}Z" fill="${skin}" stroke="${INK}" stroke-width="1.5"/>`;
+  if (horn) for (const s of [-1, 1])
+    g += `<path d="M${cx+s*20},${cy-44} Q${Math.round(cx+s*(30+horn*.3))},${Math.round(cy-44-horn*.6)} ${Math.round(cx+s*(24+horn*.45))},${Math.round(cy-48-horn)} Q${cx+s*14},${cy-70} ${cx+s*8},${cy-42}Z" fill="#e8dcc0" stroke="${INK}" stroke-width="1.5"/>`;
+  g += `<ellipse cx="${cx}" cy="${cy}" rx="46" ry="52" fill="${skin}" stroke="${INK}" stroke-width="1.5"/>
+<path d="M${cx-47},${cy-8} Q${cx-50},${cy-62} ${cx},${cy-60} Q${cx+50},${cy-62} ${cx+47},${cy-8} Q${cx+30},${cy-34} ${cx},${cy-30} Q${cx-30},${cy-34} ${cx-47},${cy-8}Z" fill="${hair}" stroke="${INK}" stroke-width="1.5"/>
+<circle cx="${cx-19}" cy="${cy+2}" r="${f1(9+8*glow)}" fill="url(#gl${uid})"/><circle cx="${cx+19}" cy="${cy+2}" r="${f1(9+8*glow)}" fill="url(#gl${uid})"/>
+<ellipse cx="${cx-19}" cy="${cy+2}" rx="6" ry="4.5" fill="#fff" stroke="${INK}"/><ellipse cx="${cx+19}" cy="${cy+2}" rx="6" ry="4.5" fill="#fff" stroke="${INK}"/>
+<circle cx="${cx-19}" cy="${cy+2}" r="3" fill="${eye}"/><circle cx="${cx+19}" cy="${cy+2}" r="3" fill="${eye}"/>
+<path d="M${cx-10},${cy+30} Q${cx},${cy+36} ${cx+10},${cy+30}" fill="none" stroke="${INK}" stroke-width="2" stroke-linecap="round"/></g>
+<rect x="22" y="48" width="196" height="196" rx="6" fill="none" stroke="${GOLD}" stroke-width="1.5"/>
+<rect x="22" y="16" width="196" height="26" rx="4" fill="${INK}"/>
+<text x="120" y="34" text-anchor="middle" font-family="Georgia,serif" font-size="14" fill="${GOLD}" letter-spacing="2">${String(c.id).padStart(2, '0')} · TRAVELLER</text>`;
+  FEATS.forEach((f, i) => {
+    const y = 256 + i * 18;
+    g += `<g class="bar b-${f}"><text x="26" y="${y+9}" font-family="Georgia,serif" font-size="10.5" fill="${INK}">${NAMES[f]}</text>
+<rect x="102" y="${y}" width="112" height="9" rx="4.5" fill="${INK}" opacity=".15"/><rect x="102" y="${y}" width="${(112*t[f]).toFixed(1)}" height="9" rx="4.5" fill="${INK}" opacity=".78"/></g>`;
+  });
+  const fr = c.label === 'friend';
+  g += `<g class="seal"><circle cx="198" cy="64" r="15" fill="${fr ? '#3f8f5a' : '#a8323a'}" stroke="${GOLD}" stroke-width="2"/>` +
+       (fr ? '<path d="M191,64 L196,70 L206,58" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>'
+           : '<path d="M191,57 L205,71 M205,57 L191,71" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>') + '</g></svg>';
+  return g;
+}
+
+/* ---------------------------------------------------------------- the scene: wall, gate, towers, torches */
+function buildScene() {
+  const R = GATE.mulberry32(77), W = 1000, H = 360, GY = 322;
+  const stone = (x, y, w, h, r, base) => {
+    const l = (base || 36) + r() * 13;
+    return `<rect x="${x.toFixed(1)}" y="${y}" width="${w.toFixed(1)}" height="${h}" rx="2" fill="hsl(${244 + (r() * 16 | 0)} ${6 + (r() * 9 | 0)}% ${l.toFixed(1)}%)" stroke="rgba(10,8,22,.38)" stroke-width="1"/>`;
+  };
+  const blocks = (x0, y0, x1, y1, base) => {
+    let s = '', row = 0;
+    for (let y = y0; y < y1; y += 18, row++) {
+      let x = x0 - (row % 2 ? 22 : 0); const h = Math.min(18, y1 - y);
+      while (x < x1) { const w = 32 + R() * 34, xx = Math.max(x, x0), ww = Math.min(x + w, x1) - xx; if (ww > 5) s += stone(xx, y, ww, h, R, base); x += w; }
+    }
+    return s;
+  };
+  const merlons = (x0, x1, yTop, yBase, base) => {
+    let s = ''; for (let x = x0; x + 24 <= x1 + 1; x += 40) s += stone(x, yTop, 24, yBase - yTop, R, base || 40);
+    return s;
+  };
+  let s = `<svg id="scene" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMax slice" role="img" aria-label="The walls and gate of Kvantyus at night">
+<defs>
+<linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a0c24"/><stop offset=".55" stop-color="#241b4a"/><stop offset="1" stop-color="#5b3a62"/></linearGradient>
+<linearGradient id="yard" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#53386a"/><stop offset=".55" stop-color="#d98a5a"/><stop offset="1" stop-color="#ffd58a"/></linearGradient>
+<linearGradient id="wshade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".5"/></linearGradient>
+<linearGradient id="ground" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#403a52"/><stop offset="1" stop-color="#17151f"/></linearGradient>
+<linearGradient id="fog" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bec8ff" stop-opacity="0"/><stop offset="1" stop-color="#bec8ff" stop-opacity=".12"/></linearGradient>
+<linearGradient id="sst" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7d7a8e"/><stop offset="1" stop-color="#3e3b4f"/></linearGradient>
+<radialGradient id="fire"><stop offset="0" stop-color="#ffb04a" stop-opacity=".55"/><stop offset="1" stop-color="#ffb04a" stop-opacity="0"/></radialGradient>
+<radialGradient id="eyeg"><stop offset="0" style="stop-color:var(--eye)" stop-opacity=".9"/><stop offset="1" style="stop-color:var(--eye)" stop-opacity="0"/></radialGradient>
+<linearGradient id="flm" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ff7a1a"/><stop offset="1" stop-color="#ffe27a"/></linearGradient>
+<clipPath id="opening"><path d="M418 ${GY} V232 A82 82 0 0 1 582 232 V${GY} Z"/></clipPath>
+</defs>
+<rect width="${W}" height="${H}" fill="url(#sky)"/>`;
+  for (let i = 0; i < 70; i++) s += `<circle class="star" cx="${(R() * W).toFixed(0)}" cy="${(R() * 150).toFixed(0)}" r="${(.4 + R() * .8).toFixed(2)}" fill="#fff" style="animation-delay:${(-R() * 3).toFixed(1)}s"/>`;
+  s += `<circle cx="868" cy="58" r="22" fill="#f1ead2"/><circle cx="878" cy="52" r="20" fill="#241b4a"/>`;
+  // distant hills and the city beyond the wall
+  s += `<path d="M0 214 Q120 170 260 200 T520 190 T760 196 T1000 176 V${GY} H0Z" fill="#1a1636"/>`;
+  let city = '';
+  for (let x = 205; x < 800; x += 22 + R() * 26) {
+    const w = 20 + R() * 30, h = 36 + R() * 64, top = 196 - h;
+    city += `<rect x="${x.toFixed(0)}" y="${top.toFixed(0)}" width="${w.toFixed(0)}" height="${(h + 40).toFixed(0)}" fill="#1c1838"/>`;
+    city += R() < .5 ? `<polygon points="${x.toFixed(0)},${top.toFixed(0)} ${(x + w / 2).toFixed(0)},${(top - 16 - R() * 16).toFixed(0)} ${(x + w).toFixed(0)},${top.toFixed(0)}" fill="#26204a"/>`
+                     : `<path d="M${x.toFixed(0)} ${top.toFixed(0)} a${(w / 2).toFixed(0)} ${(w / 2.4).toFixed(0)} 0 0 1 ${w.toFixed(0)} 0Z" fill="#26204a"/>`;
+    for (let k = 0; k < 3; k++) if (R() < .7) city += `<rect x="${(x + 4 + R() * (w - 10)).toFixed(0)}" y="${(top + 8 + R() * h * .8).toFixed(0)}" width="3" height="4.5" fill="#ffd27a" opacity=".85"/>`;
+  }
+  s += city;
+  s += `<rect x="494" y="70" width="12" height="70" fill="#1c1838"/><polygon points="490,72 500,34 510,72" fill="#26204a"/><circle cx="500" cy="52" r="3" fill="#ffd27a"/>`;
+  // curtain wall with battlements
+  s += `<rect x="0" y="172" width="${W}" height="${GY - 172}" fill="#4a4660"/>${blocks(0, 172, W, GY, 34)}${merlons(0, W, 154, 172, 36)}`;
+  s += `<rect x="0" y="172" width="${W}" height="${GY - 172}" fill="url(#wshade)"/>`;
+  // towers
+  for (const [tx, tw] of [[38, 150], [812, 150]]) {
+    s += `<rect x="${tx}" y="92" width="${tw}" height="${GY - 92}" fill="#4f4b66"/>${blocks(tx, 92, tx + tw, GY, 38)}`;
+    s += `<rect x="${tx - 8}" y="76" width="${tw + 16}" height="18" fill="#57536f" stroke="rgba(10,8,22,.4)"/>${merlons(tx - 8, tx + tw + 8, 60, 76, 42)}`;
+    s += `<rect x="${tx}" y="92" width="${tw}" height="${GY - 92}" fill="url(#wshade)"/>`;
+    const mx = tx + tw / 2;
+    s += `<rect x="${mx - 6}" y="130" width="12" height="38" rx="6" fill="#0d0b1a"/><rect x="${mx - 5}" y="214" width="10" height="30" rx="5" fill="#0d0b1a"/>`;
+    s += `<rect x="${mx - 15}" y="168" width="30" height="40" rx="15" fill="#2a1d36" stroke="rgba(10,8,22,.55)" stroke-width="2"/><rect x="${mx - 11}" y="172" width="22" height="34" rx="11" fill="#ffc46b" opacity=".92"/><path d="M${mx} 172 V206 M${mx - 11} 189 H${mx + 11}" stroke="#2a1d36" stroke-width="1.5"/>`;
+    s += `<rect x="${mx - 1}" y="10" width="2" height="52" fill="#3a3550"/><path d="M${mx + 1} 12 h44 l-10 9 l10 9 h-44z" fill="#3a2e6b"/><circle cx="${mx + 17}" cy="21" r="5" fill="none" stroke="#cdd2ff" stroke-width="1.4"/>`;
+  }
+  // gatehouse
+  s += `<rect x="352" y="104" width="296" height="${GY - 104}" fill="#5a5672"/>${blocks(352, 104, 648, GY, 42)}`;
+  s += `<rect x="344" y="88" width="312" height="18" fill="#625e7a" stroke="rgba(10,8,22,.4)"/>${merlons(344, 656, 72, 88, 46)}`;
+  s += `<rect x="352" y="104" width="296" height="${GY - 104}" fill="url(#wshade)" opacity=".7"/>`;
+  // arch ring (voussoirs) and jambs
+  const cx = 500, cy = 232, r1 = 82, r2 = 102, P = (r, a) => `${(cx + r * Math.cos(a * PI / 180)).toFixed(1)},${(cy + r * Math.sin(a * PI / 180)).toFixed(1)}`;
+  for (let a = 180, i = 0; a < 360; a += 15, i++) s += `<polygon points="${P(r1, a)} ${P(r2, a)} ${P(r2, a + 15)} ${P(r1, a + 15)}" fill="hsl(248 8% ${i % 2 ? 50 : 43}%)" stroke="rgba(10,8,22,.5)" stroke-width="1.2"/>`;
+  for (let y = 232; y < GY; y += 18) { const h = Math.min(18, GY - y); s += `<rect x="398" y="${y}" width="20" height="${h}" fill="hsl(248 8% ${y % 36 ? 47 : 41}%)" stroke="rgba(10,8,22,.5)"/><rect x="582" y="${y}" width="20" height="${h}" fill="hsl(248 8% ${y % 36 ? 41 : 47}%)" stroke="rgba(10,8,22,.5)"/>`; }
+  s += `<polygon points="488,128 512,128 508,146 492,146" fill="#8a86a0" stroke="rgba(10,8,22,.55)" stroke-width="1.2"/>`;
+  s += `<rect x="446" y="104" width="108" height="22" rx="4" fill="#2a2740" stroke="rgba(10,8,22,.6)"/><text x="500" y="120" text-anchor="middle" font-family="Georgia,serif" font-size="14" fill="#cfc7e6" letter-spacing="3.5">KVANTYUS</text>`;
+  // beyond the gate, then the portcullis
+  s += `<g clip-path="url(#opening)"><rect x="418" y="140" width="164" height="190" fill="url(#yard)"/>`;
+  s += `<path d="M418 ${GY} V280 L440 262 V240 L462 232 V270 L484 252 L506 262 V236 L528 250 L550 238 V268 L582 258 V${GY}Z" fill="#241a3a"/>`;
+  for (const [x, y] of [[448, 252], [470, 268], [516, 250], [538, 256], [494, 276], [560, 272]]) s += `<rect x="${x}" y="${y}" width="4" height="6" fill="#ffd27a"/>`;
+  s += `<g id="port">`;
+  for (let x = 424; x <= 580; x += 14) s += `<rect x="${x - 2}" y="128" width="4.5" height="${GY - 110}" fill="#16161f"/><rect x="${x - 2}" y="128" width="1.6" height="${GY - 110}" fill="#4a4a5c"/><polygon points="${x - 2},${GY + 70} ${x + 2.5},${GY + 70} ${x + .25},${GY + 80}" fill="#16161f"/>`;
+  for (let y = 150; y <= 320; y += 28) s += `<rect x="418" y="${y}" width="164" height="4.5" fill="#16161f"/><rect x="418" y="${y}" width="164" height="1.6" fill="#4a4a5c"/>`;
+  s += `</g></g>`;
+  // torches
+  for (const [tx, tb] of [[376, ''], [624, 'b']]) {
+    s += `<circle class="halo" cx="${tx}" cy="224" r="46" fill="url(#fire)"/><rect x="${tx - 2}" y="238" width="4" height="26" rx="1" fill="#2a1c14"/><path d="M${tx - 8} 240 h16 l-3 10 h-10z" fill="#3b3b4a"/>`;
+    s += `<path class="flame ${tb}" d="M${tx} 238 C${tx - 8} 228 ${tx - 6} 214 ${tx} 202 C${tx + 6} 214 ${tx + 8} 228 ${tx} 238Z" fill="url(#flm)"/><path class="flame ${tb}" d="M${tx} 238 C${tx - 3} 232 ${tx - 2} 226 ${tx} 220 C${tx + 2} 226 ${tx + 3} 232 ${tx} 238Z" fill="#fff4b0"/>`;
+  }
+  // hanging banners
+  for (const bx of [296, 704]) s += `<rect x="${bx - 22}" y="188" width="44" height="4" rx="2" fill="#3a2a22"/><path d="M${bx - 17} 192 h34 v84 l-17 -14 l-17 14z" fill="#3a2e6b"/><path d="M${bx - 17} 192 h34 v84 l-17 -14 l-17 14z" fill="none" stroke="rgba(255,255,255,.12)"/><circle cx="${bx}" cy="222" r="9" fill="none" stroke="#cdd2ff" stroke-width="1.6"/><path d="M${bx} 222 L${bx + 6} 215" stroke="#cdd2ff" stroke-width="1.6" stroke-linecap="round"/><circle cx="${bx}" cy="222" r="1.8" fill="#cdd2ff"/>`;
+  // sentinel on the gatehouse
+  s += `<g id="sent" style="transform:translate(500px,70px)"><rect x="-26" y="-6" width="52" height="8" rx="2" fill="#5d5a74" stroke="rgba(10,8,22,.5)"/>
+<path d="M-17 -6 Q-36 -22 -30 -50 Q-22 -34 -13 -28Z" fill="#46435c" stroke="rgba(10,8,22,.5)"/><path d="M17 -6 Q36 -22 30 -50 Q22 -34 13 -28Z" fill="#46435c" stroke="rgba(10,8,22,.5)"/>
+<path d="M-17 -6 Q-21 -30 -9 -38 L-13 -54 L-4 -44 Q0 -46 4 -44 L13 -54 L9 -38 Q21 -30 17 -6Z" fill="url(#sst)" stroke="rgba(10,8,22,.55)" stroke-width="1.4"/>
+<circle class="eyeglow" cx="-6" cy="-31" r="11" style="fill:url(#eyeg)"/><circle class="eyeglow" cx="6" cy="-31" r="11" style="fill:url(#eyeg)"/>
+<circle cx="-6" cy="-31" r="3.1" style="fill:var(--eye)"/><circle cx="6" cy="-31" r="3.1" style="fill:var(--eye)"/>
+<path d="M-4 -22 L0 -17 L4 -22Z" fill="#2c2a3c"/></g>`;
+  // ground, road, lamps, ivy, moss
+  s += `<rect x="0" y="${GY}" width="${W}" height="${H - GY}" fill="url(#ground)"/><polygon points="418,${GY} 582,${GY} 650,${H} 350,${H}" fill="#554f68"/>`;
+  for (let i = 0; i < 46; i++) { const y = GY + 2 + R() * (H - GY - 4), k = (y - GY) / (H - GY), x = 418 - 68 * k + R() * (164 + 136 * k); s += `<ellipse cx="${x.toFixed(0)}" cy="${y.toFixed(0)}" rx="${(5 + 5 * k + R() * 3).toFixed(1)}" ry="${(2 + 2 * k).toFixed(1)}" fill="hsl(250 8% ${(26 + R() * 14).toFixed(0)}%)" stroke="rgba(10,8,22,.4)"/>`; }
+  for (const lx of [236, 764]) s += `<circle class="halo" cx="${lx}" cy="268" r="30" fill="url(#fire)"/><rect x="${lx - 2}" y="270" width="4" height="${GY - 270}" fill="#26232f"/><rect x="${lx - 7}" y="256" width="14" height="16" rx="3" fill="#2c2a3c"/><rect x="${lx - 4}" y="259" width="8" height="10" rx="2" fill="#ffd27a"/>`;
+  const ivy = (x, side, len, seed) => {
+    const r = GATE.mulberry32(seed); let pts = [], leaves = '';
+    for (let t = 0; t <= len; t += 6) { const px = x + side * (Math.sin(t / 15) * 7 + t * .06), py = GY - t; pts.push(`${px.toFixed(1)},${py.toFixed(1)}`);
+      if (r() < .85) leaves += `<ellipse cx="${(px + (r() - .5) * 14).toFixed(1)}" cy="${(py + (r() - .5) * 6).toFixed(1)}" rx="${(3 + r() * 3).toFixed(1)}" ry="${(2 + r() * 2).toFixed(1)}" transform="rotate(${(r() * 180) | 0} ${px.toFixed(1)} ${py.toFixed(1)})" fill="hsl(${110 + (r() * 30 | 0)} 38% ${(22 + r() * 14).toFixed(0)}%)"/>`; }
+    return `<polyline points="${pts.join(' ')}" fill="none" stroke="#25402c" stroke-width="2.4" stroke-linecap="round"/>${leaves}`;
+  };
+  s += ivy(60, 1, 120, 3) + ivy(86, 1, 70, 8) + ivy(930, -1, 110, 5) + ivy(970, -1, 60, 9) + ivy(344, 1, 54, 12);
+  for (const [mx, my, mw] of [[150, 318, 30], [300, 320, 24], [690, 319, 26], [880, 318, 34], [352, 316, 18]]) s += `<ellipse cx="${mx}" cy="${my}" rx="${mw}" ry="5" fill="#3f6b46" opacity=".32"/>`;
+  s += `<rect x="0" y="230" width="${W}" height="130" fill="url(#fog)"/></svg>`;
+  return s;
+}
+
+/* ---------------------------------------------------------------- state */
+const MAN = CFG.budget;
+const S = { phase: 'intro', feats: new Set(FEATS), reveal: new Set(), inspect: null, trainer: null, hist: [], test: [], rows: [], speed: 1, gateTimer: null, raf: 0, run: 0 };
+const byId = new Map(DECK.map(c => [c.id, c]));
+const featList = () => FEATS.filter(f => S.feats.has(f));
+const cost = () => S.feats.size;
+const spent = () => S.reveal.size * cost();
+
+function setPhase(p) {
+  S.phase = p;
+  $('#p-prepare').hidden = p !== 'prepare'; $('#p-train').hidden = p !== 'train'; $('#p-gate').hidden = p !== 'gate';
+  $('#stage').classList.toggle('full', p !== 'prepare');
+  $('#title').textContent = { prepare: 'Prepare the sentinel', train: 'The sentinel studies', gate: 'The gate is open', intro: 'The Gates of Kvantyus' }[p] || 'The Gates of Kvantyus';
+  fit();
+}
+function eyes(color) { $('#scene').style.setProperty('--eye', color); }
+function portcullis(open) { $('#port').style.transform = open ? 'translateY(-196px)' : 'translateY(0)'; }
+function shake(el) { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+const say = t => { $('#note').textContent = t || ''; };
+
+/* ---------------------------------------------------------------- prepare */
+function buildPrepare() {
+  $('#chips').innerHTML = FEATS.map(f => `<button class="chip" type="button" data-f="${f}" aria-pressed="true"><span class="sw"></span>${NAMES[f]}</button>`).join('');
+  $('#grid').innerHTML = DECK.map(c => `<button class="cd" type="button" data-id="${c.id}" aria-pressed="false" aria-label="Traveller ${c.id}, not examined">${cardSVG(c, 'g' + c.id)}</button>`).join('');
+  $('#mtot').textContent = MAN;
+  $('#rules').innerHTML = `The city is lost if more than <b>${Math.round(CFG.maxFoes * 100)}%</b> of those who enter are Nobbubys, or if fewer than <b>${Math.round(CFG.minFriends * 100)}%</b> of the Kvantyonis are let in.`;
+  $('#chips').addEventListener('click', e => { const b = e.target.closest('.chip'); if (b) toggleFeat(b.dataset.f); });
+  $('#grid').addEventListener('click', e => { const b = e.target.closest('.cd'); if (b) toggleReveal(+b.dataset.id, b); });
+  $('#grid').addEventListener('pointerover', e => { const b = e.target.closest('.cd'); if (b && e.pointerType === 'mouse') inspect(+b.dataset.id); });
+  $('#grid').addEventListener('focusin', e => { const b = e.target.closest('.cd'); if (b) inspect(+b.dataset.id); });
+  inspect(DECK[0].id); refresh();
+}
+function toggleFeat(f) {
+  const on = S.feats.has(f);
+  if (on && S.feats.size === 1) { say('The sentinel needs at least one trait to look at.'); return; }
+  const n = S.feats.size + (on ? -1 : 1);
+  if (S.reveal.size * n > MAN) { say(`Not enough mana for that: ${S.reveal.size} creatures examined at ${n} traits each would cost ${S.reveal.size * n} of your ${MAN}.`); shake($('#mbar')); return; }
+  on ? S.feats.delete(f) : S.feats.add(f); say(''); refresh();
+}
+function toggleReveal(id, el) {            // examining is final: a label seen cannot be handed back for mana
+  if (!S.reveal.has(id)) {
+    if (spent() + cost() > MAN) { say(`That costs ${cost()} mana and you have ${MAN - spent()} left. Look at fewer traits to make each examination cheaper.`); shake($('#mbar')); shake(el); return; }
+    S.reveal.add(id); say('');
+  }
+  inspect(id); refresh();
+}
+function inspect(id) {
+  S.inspect = id; const c = byId.get(id), rev = S.reveal.has(id);
+  $('#insp').innerHTML = `<div class="cdx${rev ? ' rev' : ''}">${cardSVG(c, 'i' + id)}</div><div class="cap">${rev
+    ? `<b>Traveller ${id}</b>: ${c.label === 'friend' ? 'a Kvantyoni, a friend.' : 'a Nobbuby, a foe.'} Already examined.`
+    : `<b>Traveller ${id}</b>: unknown. Click to examine it for ${cost()} mana. This cannot be undone.`}</div>`;
+  $('#insp').className = 'insp mat ' + offClasses();
+}
+const offClasses = () => FEATS.filter(f => !S.feats.has(f)).map(f => 'off-' + f).join(' ');
+function refresh() {
+  const left = MAN - spent(), nf = [...S.reveal].filter(i => byId.get(i).label === 'friend').length, nx = S.reveal.size - nf;
+  $('#mleft').textContent = left; $('#mfill').style.width = (left / MAN * 100) + '%'; $('#cost').textContent = cost();
+  $('#ncount').textContent = S.reveal.size; $('#nsplit').textContent = S.reveal.size ? `${nf} friends, ${nx} foes` : '';
+  $$('.chip').forEach(b => b.setAttribute('aria-pressed', S.feats.has(b.dataset.f)));
+  $('#grid').className = 'grid ' + offClasses();
+  $$('.cd').forEach(b => { const id = +b.dataset.id, r = S.reveal.has(id), c = byId.get(id);
+    b.classList.toggle('rev', r); b.setAttribute('aria-pressed', r);
+    b.setAttribute('aria-label', `Traveller ${id}, ${r ? (c.label === 'friend' ? 'examined: a friend' : 'examined: a foe') : 'not examined'}`); });
+  if (S.inspect) inspect(S.inspect);
+  const ok = nf > 0 && nx > 0;
+  $('#train').disabled = !ok;
+  $('#hint').innerHTML = !S.reveal.size ? 'Choose the traits, then click travellers to examine them. Examining cannot be undone.'
+    : !ok ? 'The sentinel needs to see at least one friend and one foe.'
+    : `<b>${S.reveal.size}</b> examined, <b>${left}</b> mana left. Fewer traits means more travellers to learn from.`;
+}
+
+/* ---------------------------------------------------------------- training */
+function circuitSVG(n) {
+  const feats = featList(), dy = 24, w = 330, h = 18 + dy * n, L = GATE.LAYERS;
+  let s = `<svg class="circ" viewBox="0 0 ${w} ${h}" aria-hidden="true">`;
+  for (let q = 0; q < n; q++) s += `<line x1="62" x2="${w - 8}" y1="${14 + q * dy}" y2="${14 + q * dy}" stroke="rgba(255,255,255,.22)"/><text class="lbl" x="0" y="${18 + q * dy}">${NAMES[feats[q]].split(' ')[0]}</text>`;
+  for (let l = 0; l < L; l++) {
+    const x0 = 72 + l * 124;
+    for (let q = 0; q < n; q++) {
+      s += `<circle cx="${x0 + 8}" cy="${14 + q * dy}" r="7" fill="#1c1c24" stroke="rgba(235,235,245,.7)"/><text x="${x0 + 8}" y="${18 + q * dy}" text-anchor="middle" font-size="9" fill="rgba(235,235,245,.8)" font-style="italic">x</text>`;
+      s += `<rect class="lrn" data-q="${q}" data-l="${l}" x="${x0 + 26}" y="${6 + q * dy}" width="40" height="16" rx="5" fill="rgb(255,190,120)" fill-opacity=".25"/><text x="${x0 + 46}" y="${18 + q * dy}" text-anchor="middle" font-size="9" fill="rgba(255,255,255,.85)">Ry Rz</text>`;
+    }
+    if (n > 1) { const xc = x0 + 84; for (let q = 0; q < n && !(n === 2 && q === 1); q++) { const q2 = (q + 1) % n; if (n > 2 && q2 === 0) { s += `<path d="M${xc} ${14 + q * dy} h12 V14 h-12" fill="none" stroke="rgb(190,200,255)" stroke-opacity=".7"/>`; } else s += `<line x1="${xc}" x2="${xc}" y1="${14 + q * dy}" y2="${14 + q2 * dy}" stroke="rgb(190,200,255)" stroke-opacity=".7" stroke-width="1.6"/>`; }
+      for (let q = 0; q < n; q++) s += `<circle cx="${xc}" cy="${14 + q * dy}" r="3.2" fill="rgb(190,200,255)"/>`; }
+  }
+  return s + '</svg>';
+}
+function startTraining() {
+  const feats = featList(), cards = [...S.reveal].map(i => byId.get(i)), X = GATE.project(cards, feats), y = cards.map(GATE.labelOf);
+  const seed = GATE.hash(cards.map(c => c.id).sort((a, b) => a - b).join(',') + feats.join());
+  S.trainer = GATE.trainer(X, y, seed, { steps: CFG.steps }); S.train = { cards, X, y, feats }; S.hist = [];
+  setPhase('train'); eyes('#b79cff');
+  $('#circ').innerHTML = circuitSVG(feats.length);
+  const nq = feats.length;
+  $('#circsub').textContent = `${nq} qubit${nq > 1 ? 's' : ''}, one per trait. Each creature's traits tilt the qubits, the learnable gates rotate them, and the links entangle them. ${GATE.nParams(nq)} knobs to tune.`;
+  $('#tstack').className = 'stack ' + offClasses();
+  $('#tstack').innerHTML = cards.map(c => `<div class="mini" data-id="${c.id}">${cardSVG(c, 't' + c.id).replace('class="seal"', 'class="seal" style="display:block"')}</div>`).join('');
+  $('#opengate').disabled = true; $('#skiptrain').disabled = false; $('#tmsg').textContent = 'Training: nudging the knobs so the verdicts match what you found.';
+  S.run++; const run = S.run; let last = 0;
+  const frame = ts => {
+    if (S.run !== run) return;
+    if (ts - last >= (RM ? 0 : 42)) { last = ts; trainStep(); }
+    if (S.trainer.t < S.trainer.steps) S.raf = requestAnimationFrame(frame); else trainDone();
+  };
+  S.raf = requestAnimationFrame(frame);
+}
+function trainStep() {
+  const tr = S.trainer, loss = tr.step(), out = GATE.forward(tr.theta, S.train.X);
+  let ok = 0; S.train.cards.forEach((c, i) => { const good = (out[i] >= 0) === (c.label === 'friend'); ok += good; const m = $(`.mini[data-id="${c.id}"]`); m.classList.toggle('ok', good); m.classList.toggle('no', !good); });
+  S.hist.push(loss); S.acc = ok / out.length;
+  $('#tacc').textContent = Math.round(S.acc * 100) + '%'; $('#tstep').textContent = `Step ${tr.t} of ${tr.steps}  ·  error ${loss.toFixed(2)}`;
+  const mx = Math.max(...S.hist, .2), pts = S.hist.map((v, i) => `${(i / (tr.steps - 1) * 200).toFixed(1)},${(58 - v / mx * 54).toFixed(1)}`).join(' ');
+  $('#spark').innerHTML = `<polyline points="${pts}" fill="none" stroke="rgb(255,190,120)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+  $$('.lrn').forEach(r => { const q = +r.dataset.q, l = +r.dataset.l, k = (l * S.train.feats.length + q) * 2; const a = Math.abs(Math.sin((tr.theta[k] + tr.theta[k + 1]) / 2)); r.setAttribute('fill-opacity', (.18 + .7 * a).toFixed(2)); });
+  eyes(`hsl(${265 + 60 * S.acc} 70% ${58 + 12 * Math.sin(tr.t / 3)}%)`);
+}
+function trainDone() {
+  eyes('#ffd27a'); $('#opengate').disabled = false; $('#skiptrain').disabled = true;
+  $('#tmsg').innerHTML = `Done. It remembers <b>${Math.round(S.acc * 100)}%</b> of what you showed it. The real test is everyone it has never seen.`;
+}
+function skipTraining() { cancelAnimationFrame(S.raf); S.run++; while (S.trainer.t < S.trainer.steps) trainStep(); trainDone(); }
+
+/* ---------------------------------------------------------------- the gate */
+function openGate() {
+  const feats = S.train.feats, ids = new Set(S.reveal), r = GATE.mulberry32(GATE.hash([...ids].join(',') + 'queue'));
+  const test = DECK.filter(c => !ids.has(c.id)); for (let i = test.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [test[i], test[j]] = [test[j], test[i]]; }
+  const verdicts = GATE.judge(S.trainer.theta, test, feats);
+  S.test = test.map((c, i) => ({ c, v: verdicts[i].v, admit: verdicts[i].friend, truth: c.label })); S.rows = []; S.at = 0; S.speed = 1;
+  S.friendsTotal = test.filter(c => c.label === 'friend').length;
+  setPhase('gate'); eyes('#6d7298'); $('#speed').textContent = 'Speed x1'; $('#cur').className = 'cur ' + offClasses(); $('#cur').innerHTML = '';
+  $('#m1m').style.left = (CFG.maxFoes * 100) + '%'; $('#m2m').style.left = (CFG.minFriends * 100) + '%';
+  $('#m1s').textContent = `Limit ${Math.round(CFG.maxFoes * 100)}%`; $('#m2s').textContent = `Need ${Math.round(CFG.minFriends * 100)}% of the ${S.friendsTotal} Kvantyonis in the queue`;
+  $('#gmsg').textContent = ''; S.run++; const run = S.run; S.gate = run; setTimeout(() => nextCreature(run), 500); S.touched = false;
+}
+function nextCreature(run) {
+  if (S.gate !== run) return;
+  if (S.at >= S.test.length) { setTimeout(() => { if (S.gate === run) finish(); }, 500); return; }
+  if (S.at === 8 && !S.touched) { S.speed = 3; $('#speed').textContent = 'Speed x3'; }
+  const t = S.test[S.at], k = (RM ? .001 : 1) * (S.speed === 1 ? .75 : .25);
+  $('#qleft').textContent = S.test.length - S.at - 1;
+  const el = document.createElement('div'); el.className = 'cdx in'; el.innerHTML = cardSVG(t.c, 'q' + t.c.id) + '<div class="verdict"><span></span></div>';
+  $('#cur').innerHTML = ''; $('#cur').appendChild(el); void el.offsetWidth; el.classList.remove('in');
+  const span = el.querySelector('.verdict span');
+  setTimeout(() => { if (S.gate !== run) return;
+    span.textContent = t.admit ? 'Let in' : 'Turned away'; span.className = 'on ' + (t.admit ? 'a' : 'd'); eyes(t.admit ? '#32d74b' : '#ff453a'); portcullis(t.admit); el.classList.add(t.admit ? 'adm' : 'den'); }, 360 * k);
+  setTimeout(() => { if (S.gate !== run) return; el.classList.add('rev'); S.rows.push(t); meters(); }, 700 * k);
+  setTimeout(() => { if (S.gate !== run) return; portcullis(false); S.at++; nextCreature(run); }, 1100 * k);
+}
+function meters() {
+  const o = GATE.outcome(S.rows, { maxFoes: CFG.maxFoes, minFriends: CFG.minFriends });
+  const c = o.contamination, r = S.friendsTotal ? o.tp / S.friendsTotal : 0;
+  $('#m1v').textContent = Math.round(c * 100) + '%'; $('#m1b').style.width = Math.min(100, c * 100) + '%'; $('#m1b').classList.toggle('warn', c > CFG.maxFoes);
+  $('#m2v').textContent = Math.round(r * 100) + '%'; $('#m2b').style.width = Math.min(100, r * 100) + '%';
+}
+function skipGate() {
+  S.gate = 0; portcullis(false);
+  while (S.at < S.test.length) { S.rows.push(S.test[S.at]); S.at++; }
+  $('#qleft').textContent = 0; $('#cur').innerHTML = ''; meters(); finish();
+}
+function finish() {
+  S.gate = 0; portcullis(false);
+  const o = GATE.outcome(S.rows, { maxFoes: CFG.maxFoes, minFriends: CFG.minFriends }), pct = v => Math.round(v * 100) + '%';
+  const correct = S.rows.filter(r => r.admit === (r.truth === 'friend')).length;
+  $('#rbox').className = 'box mat ' + (o.saved ? 'won' : 'lost'); eyes(o.saved ? '#32d74b' : '#ff453a');
+  $('#r-eyebrow').textContent = o.saved ? 'Dawn over Kvantyus' : 'Kvantyus has fallen';
+  $('#r-title').textContent = o.saved ? 'The city stands' : 'The city is lost';
+  const why = [];
+  if (o.contamination > CFG.maxFoes) why.push(`${pct(o.contamination)} of those who entered were Nobbubys (the limit is ${pct(CFG.maxFoes)})`);
+  if (o.rescued < CFG.minFriends) why.push(`only ${pct(o.rescued)} of the Kvantyonis were let in (you needed ${pct(CFG.minFriends)})`);
+  $('#r-text').innerHTML = o.saved ? `The sentinel judged <b>${correct} of ${S.rows.length}</b> travellers correctly, and the city kept its peace.` : `The sentinel judged <b>${correct} of ${S.rows.length}</b> travellers correctly, but ${why.join(', and ')}.`;
+  $('#r-stats').innerHTML = `<div class="${o.contamination > CFG.maxFoes ? 'bad' : 'good'}">Nobbubys inside<b>${pct(o.contamination)}</b><small>${o.fp} of ${o.entered} who entered</small></div>
+    <div class="${o.rescued < CFG.minFriends ? 'bad' : 'good'}">Kvantyonis let in<b>${pct(o.rescued)}</b><small>${o.tp} of ${o.friends}</small></div>
+    <div>It remembered<b>${pct(S.acc)}</b><small>of the ${S.reveal.size} you examined</small></div><div>It judged right<b>${pct(correct / S.rows.length)}</b><small>of ${S.rows.length} strangers</small></div>`;
+  const nf = S.feats.size, hint = [];
+  const strangers = correct / S.rows.length;
+  if (S.acc - strangers >= .1) hint.push(`It remembered ${pct(S.acc)} of the ${S.reveal.size} travellers you showed it but judged only ${pct(strangers)} of the strangers right: it learned the examples, not the rule. More examples, or fewer traits, would help.`);
+  if (!o.saved) hint.push('Look at the bars of the travellers you examined: which traits really differ between friends and foes?');
+  else hint.push('Try again with fewer examined travellers or a different set of traits, and see how little it takes.');
+  $('#r-hint').textContent = hint.join(' ');
+  setTimeout(() => $('#result').classList.add('on'), 450);
+}
+
+/* ---------------------------------------------------------------- wiring */
+function resetAll() {
+  S.run++; S.gate = 0; cancelAnimationFrame(S.raf); portcullis(false); eyes('#6d7298');
+  S.reveal.clear(); $('#result').classList.remove('on'); setPhase('prepare'); say(''); refresh(); $('#cur').innerHTML = '';
+}
+$('#stage').innerHTML = buildScene();
+buildPrepare();
+$('#train').onclick = startTraining; $('#skiptrain').onclick = skipTraining; $('#opengate').onclick = openGate;
+$('#skipgate').onclick = skipGate;
+$('#speed').onclick = () => { S.touched = true; S.speed = S.speed === 1 ? 3 : 1; $('#speed').textContent = 'Speed x' + S.speed; };
+$('#again').onclick = resetAll;
+$('#begin').onclick = () => { $('#intro').classList.remove('on'); if (S.phase === 'intro') setPhase('prepare'); };
+$('#help').onclick = () => $('#intro').classList.add('on');
+setPhase('intro'); $('#p-prepare').hidden = false; $('#stage').classList.remove('full');
+
+function sizeStage() { const w = $('#stage').getBoundingClientRect().width; document.documentElement.style.setProperty('--fullh', Math.round(w * 360 / 1000) + 'px'); }
+function fit() {
+  try {
+    sizeStage();
+    const fe = window.frameElement; if (!fe) return;
+    const h = Math.ceil(document.getElementById('app').getBoundingClientRect().height) + 2, v = h + 'px';
+    if (fe.style.height !== v) fe.style.setProperty('height', v, 'important');
+    const par = fe.parentElement;                                   // Streamlit's wrapper has its own fixed height and min-height
+    if (par && par.style.height !== v) { par.style.setProperty('height', v, 'important'); par.style.setProperty('min-height', v, 'important'); par.style.setProperty('flex', '0 0 ' + v, 'important'); }
+  } catch (e) {}
+}
+new ResizeObserver(fit).observe(document.getElementById('app')); fit();
+addEventListener('load', fit); addEventListener('resize', fit); setInterval(fit, 400);     // backstop in case resize notifications are delayed
+</script>

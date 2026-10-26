@@ -45,7 +45,7 @@ cards = "".join([
          "Play: The Messenger Wisps", "The_Messenger_Wisps"),
     card("Session 4 · 13 May 2027", "From Theory to Practice",
          "An interactive introductory workshop laying the foundational skills for future collaborative problem-solving challenges.",
-         "Coming: quantum machine learning"),
+         "Play: The Gates of Kvantyus", "The_Gates_of_Kvantyus"),
 ])
 st.markdown(f'<div class="qc-grid">{cards}</div>', unsafe_allow_html=True)
 st.caption("Each session closes with a hands-on app, and the same ideas continue in take-home notebooks. "
